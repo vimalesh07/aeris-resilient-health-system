@@ -789,25 +789,36 @@ nav {
   .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
-    width: 270px;
+    width: 280px;
     z-index: 50;
     transform: translateX(-100%);
-    transition: transform .2s ease;
-    box-shadow: 15px 0 40px rgba(0, 0, 0, 0.5);
+    transition: transform .25s ease;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.7);
   }
   .sidebar.open { transform: translateX(0); }
-  .main-content { padding: 0 16px 84px; }
-  .topbar { height: 62px; padding-left: 44px; }
+  .mobile-close { display: grid; margin-left: auto; }
+  .main-content { padding: 0 16px 90px; }
+  .topbar { height: 68px; padding-left: 48px; gap: 8px; flex-wrap: wrap; }
   .mobile-brand { display: flex; font-size: 14px; color: #FFFFFF; }
   .mobile-brand .brand-mark { width: 26px; height: 26px; font-size: 11px; }
-  .menu-trigger { display: grid; position: absolute; top: 14px; left: 14px; z-index: 10; }
-  .content-head { display: block; padding: 20px 0 16px; }
+  .menu-trigger { display: grid; position: absolute; top: 16px; left: 14px; z-index: 10; }
+  .top-status { font-size: 11px; }
+  .top-actions { gap: 6px; flex-wrap: wrap; }
+  .top-actions .demo-toggle span { display: none; } /* Show clean icons on small mobile header */
+  .content-head { display: block; padding: 18px 0 14px; }
+  .content-head h1 { font-size: 26px; }
   .head-actions { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; }
   .demo-toggle, .scenario-button { justify-content: center; }
-  .scenario-strip { align-items: flex-start; flex-direction: column; }
-  .metrics-grid { gap: 10px; }
-  .risk-body { flex-direction: column; align-items: flex-start; }
-  .risk-gauge-wrap { align-self: center; }
+  .scenario-strip { align-items: flex-start; flex-direction: column; padding: 10px 14px; }
+  .scenario-pills { justify-content: flex-start; width: 100%; }
+  .scenario-pills button { flex: 1 1 auto; text-align: center; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .metric-card { padding: 14px 12px 10px; }
+  .metric-value { font-size: 24px; }
+  .risk-panel, .sensor-panel, .alerts-panel, .baseline-panel { padding: 16px; }
+  .risk-body { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .risk-gauge-wrap { align-self: center; max-width: 190px; }
+  .contributors { grid-template-columns: 1fr; gap: 8px; }
   .mobile-bottom {
     display: flex;
     position: fixed;
@@ -817,9 +828,10 @@ nav {
     right: 0;
     height: 64px;
     background: #3B0000;
-    border-top: 1px solid rgba(255, 193, 7, 0.3);
+    border-top: 1px solid rgba(255, 193, 7, 0.35);
     justify-content: space-around;
     align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   }
   .mobile-bottom button {
     border: 0;
@@ -832,11 +844,17 @@ nav {
     justify-content: center;
     font-size: 10px;
     font-weight: 600;
+    min-height: 48px;
+    min-width: 48px;
   }
   .mobile-bottom button.active {
     color: var(--yellow);
     font-weight: 800;
   }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid { grid-template-columns: 1fr; }
 }
 
 :focus-visible {

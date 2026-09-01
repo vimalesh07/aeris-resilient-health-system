@@ -18,7 +18,6 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
       setCounter((c) => {
         if (c > 1) return c - 1
 
-        // Phase transition logic
         if (phase === 'Inhale') {
           setPhase('Hold')
           return 4
@@ -45,51 +44,64 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
         inset: 0,
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(6px)',
+        backdropFilter: 'blur(8px)',
         display: 'grid',
         placeItems: 'center',
-        padding: 20,
+        padding: '16px 16px calc(16px + env(safe-area-inset-bottom))',
       }}
     >
       <div
         className="panel"
         style={{
           width: '100%',
-          maxWidth: 460,
-          padding: 30,
+          maxWidth: 440,
+          padding: '28px 20px 24px',
           background: '#FFF',
-          borderRadius: 16,
+          borderRadius: 20,
           color: '#171717',
           textAlign: 'center',
           position: 'relative',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
         }}
       >
         <button
           onClick={onClose}
-          style={{ position: 'absolute', top: 16, right: 16, border: 0, background: 'transparent', cursor: 'pointer' }}
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            width: 44,
+            height: 44,
+            display: 'grid',
+            placeItems: 'center',
+            border: 0,
+            background: 'transparent',
+            cursor: 'pointer',
+            borderRadius: '50%',
+          }}
           aria-label="Close guided breathing"
         >
-          <X size={20} />
+          <X size={22} />
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--main-red)', marginBottom: 8 }}>
           <HeartPulse size={20} />
-          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             Guided HRV Recovery
           </span>
         </div>
 
-        <h2 style={{ fontSize: 22, fontWeight: 800, margin: '4px 0 6px', color: '#171717' }}>Paced Resonance Breathing</h2>
-        <p style={{ fontSize: 13, color: '#4B5563', margin: 0 }}>
-          Aligning heart rate variability (HRV) with respiration to ease physiological stress.
+        <h2 style={{ fontSize: 20, fontWeight: 800, margin: '4px 0 6px', color: '#171717' }}>Paced Resonance Breathing</h2>
+        <p style={{ fontSize: 12, color: '#4B5563', margin: 0, lineHeight: 1.5 }}>
+          Aligning heart rate variability with respiration to lower autonomic physiological stress.
         </p>
 
         {/* Breathing Animation Circle */}
-        <div style={{ height: 210, display: 'grid', placeItems: 'center', margin: '24px 0' }}>
+        <div style={{ height: 200, display: 'grid', placeItems: 'center', margin: '20px 0' }}>
           <div
             style={{
-              width: 140,
-              height: 140,
+              width: 130,
+              height: 130,
               borderRadius: '50%',
               background: phase === 'Inhale' ? 'var(--yellow)' : phase === 'Hold' ? 'var(--bright-yellow)' : 'var(--main-red)',
               color: phase === 'Exhale' ? '#FFF' : '#171717',
@@ -99,26 +111,26 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
               justifyContent: 'center',
               transform: `scale(${circleScale})`,
               transition: `transform ${phase === 'Inhale' ? '4s' : phase === 'Hold' ? '0.3s' : '6s'} ease-in-out, background 0.5s ease`,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
             }}
           >
-            <span style={{ fontSize: 20, fontWeight: 900 }}>{phase}</span>
-            <span style={{ fontSize: 32, fontWeight: 900 }}>{counter}s</span>
+            <span style={{ fontSize: 18, fontWeight: 900 }}>{phase}</span>
+            <span style={{ fontSize: 30, fontWeight: 900 }}>{counter}s</span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 12, color: '#4B5563', marginBottom: 20, fontWeight: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 12, color: '#4B5563', marginBottom: 20, fontWeight: 700 }}>
           <span>Cycle: {cycle}</span>
           <span>
-            Time Remaining: {Math.floor(totalSeconds / 60)}:{String(totalSeconds % 60).padStart(2, '0')}
+            Remaining: {Math.floor(totalSeconds / 60)}:{String(totalSeconds % 60).padStart(2, '0')}
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           <button
             className="demo-toggle"
             onClick={() => setIsRunning(!isRunning)}
-            style={{ background: 'var(--yellow)', color: '#171717', border: 0 }}
+            style={{ background: 'var(--yellow)', color: '#171717', border: 0, flex: 1, minHeight: 44, justifyContent: 'center' }}
           >
             {isRunning ? <Pause size={16} /> : <Play size={16} />}
             <span>{isRunning ? 'Pause' : 'Resume'}</span>
@@ -132,6 +144,7 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
               setCounter(4)
               setCycle(1)
             }}
+            style={{ flex: 1, minHeight: 44, justifyContent: 'center' }}
           >
             <RotateCcw size={15} />
             <span>Reset</span>

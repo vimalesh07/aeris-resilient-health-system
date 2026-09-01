@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Activity, Bell, BellRing, ShieldCheck, Wifi, WifiOff } from 'lucide-react'
+import { Activity, Bell, BellRing, Wifi, WifiOff } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
 export function TopBar() {
@@ -10,75 +10,77 @@ export function TopBar() {
 
   return (
     <header className="topbar">
-      <div className="mobile-brand">
-        <span className="brand-mark">
-          <Activity size={16} />
-        </span>
-        AERIS
+      {/* Left section: Brand & Status */}
+      <div className="topbar-left">
+        <div className="topbar-brand">
+          <span className="brand-mark">
+            <Activity size={16} />
+          </span>
+          <strong className="brand-title">AERIS</strong>
+        </div>
+
+        <div className="top-status">
+          <span className="live-dot" />
+          <span className="live-text">Edge AI</span>
+          <span className="top-divider desktop-only" />
+          <span className="muted desktop-only">
+            {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </span>
+        </div>
       </div>
 
-      <div className="top-status">
-        <span className="live-dot" />
-        Live Edge Monitoring
-        <span className="top-divider" />
-        <span className="muted">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-      </div>
-
+      {/* Right section: Actions */}
       <div className="top-actions">
-        {/* Enable Chrome Notifications Toggle */}
+        {/* Chrome Push Toggle (Desktop Only) */}
         <button
-          className="demo-toggle"
+          className="top-pill-button desktop-only"
           onClick={enableChromeNotifications}
-          title="Enable Chrome Push Notifications for System Risk Alerts"
+          title="Enable Chrome Push Notifications"
           style={{
             background: notificationsEnabled ? 'var(--yellow)' : 'rgba(255,255,255,0.1)',
             color: notificationsEnabled ? '#171717' : '#FFF',
-            border: 0,
           }}
         >
-          {notificationsEnabled ? <BellRing size={14} /> : <Bell size={14} />}
-          <span>{notificationsEnabled ? 'Chrome Push Active' : 'Enable Chrome Alerts'}</span>
+          {notificationsEnabled ? <BellRing size={13} /> : <Bell size={13} />}
+          <span>{notificationsEnabled ? 'Push Active' : 'Chrome Alerts'}</span>
         </button>
 
+        {/* Offline Mode Toggle (Desktop Only) */}
         <button
-          className="demo-toggle"
+          className="top-pill-button desktop-only"
           onClick={() => setIsOffline(!isOffline)}
-          title="Toggle Edge Privacy Processing Mode"
-          style={{ background: isOffline ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)', color: '#FFF' }}
+          title="Toggle Privacy Mode"
+          style={{
+            background: isOffline ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+            color: '#FFF',
+          }}
         >
-          {isOffline ? <WifiOff size={14} /> : <Wifi size={14} />}
-          <span>{isOffline ? 'LOCAL PROCESSING ENABLED' : 'ONLINE HUB'}</span>
+          {isOffline ? <WifiOff size={13} /> : <Wifi size={13} />}
+          <span>{isOffline ? 'LOCAL PROCESSING' : 'ONLINE HUB'}</span>
         </button>
 
+        {/* Alert Bell */}
         <button
           className="icon-button relative"
           onClick={() => setActiveView('Alerts')}
           aria-label="View alerts"
+          title="System Risk Advisories"
         >
           <Bell size={18} />
           {unackCount > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: -3,
-                right: -3,
-                background: 'var(--main-red)',
-                color: '#FFF',
-                borderRadius: '50%',
-                width: 16,
-                height: 16,
-                fontSize: 10,
-                fontWeight: 900,
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
+            <span className="alert-counter-badge">
               {unackCount}
             </span>
           )}
         </button>
 
-        <button className="avatar" onClick={() => setActiveView('Settings')}>
+        {/* Profile Avatar */}
+        <button
+          className="avatar"
+          onClick={() => setActiveView('Settings')}
+          aria-label="User Settings"
+          title="Settings & Profile"
+        >
           VM
         </button>
       </div>

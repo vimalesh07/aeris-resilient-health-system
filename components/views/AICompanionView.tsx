@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { Bot, Loader2, Send, Sparkles, User, Zap } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { generateCompanionResponse } from '@/lib/companion'
@@ -8,6 +8,7 @@ import { ChatMessage } from '@/types/aeris'
 
 export function AICompanionView() {
   const { telemetry, risks, baseline, isOffline } = useTelemetry()
+  const chatBottomRef = useRef<HTMLDivElement>(null)
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -20,6 +21,10 @@ export function AICompanionView() {
   ])
   const [input, setInput] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isLoading])
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input
@@ -41,11 +46,9 @@ export function AICompanionView() {
 
     try {
       if (isOffline) {
-        // Explicit Offline Mode Active -> Local Engine
         replyText = generateCompanionResponse(query, telemetry, risks, baseline)
         replySource = 'Local Rule Engine'
       } else {
-        // Call live Gemini API Route
         const res = await fetch('/api/companion', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -71,7 +74,7 @@ export function AICompanionView() {
         }
       }
     } catch (err) {
-      console.warn('Gemini API connection fallback to local context engine:', err)
+      console.warn('Gemini API fallback to local engine:', err)
       replyText = generateCompanionResponse(query, telemetry, risks, baseline)
       replySource = 'Local Rule Engine'
     } finally {
@@ -91,23 +94,23 @@ export function AICompanionView() {
     'Why is my heat risk score elevated?',
     'Explain my physiological stress pattern',
     'Is my body temperature variance normal?',
-    'What hardware sensors are currently active?',
+    'What hardware sensors are active?',
   ]
 
   return (
-    <div style={{ paddingTop: 20 }}>
-      <div style={{ marginBottom: 24 }}>
+    <div style={{ paddingTop: 16 }}>
+      <div style={{ marginBottom: 20 }}>
         <p className="eyebrow">Transparent AI Intelligence Verification</p>
-        <h1 style={{ fontSize: 32, fontWeight: 800, margin: '4px 0 8px', color: '#FFF' }}>AERIS AI Companion</h1>
+        <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>AERIS AI Companion</h1>
         <p className="subhead">
           Live AI Assistant showing exact response provenance: <strong>Gemini 3.6 Flash API</strong> vs. <strong>Local Rule Engine</strong>.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 310px', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
         {/* Chat Window */}
-        <article className="panel" style={{ padding: 24, display: 'flex', flexDirection: 'column', height: 560 }}>
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingRight: 6 }}>
+        <article className="panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', height: 'clamp(460px, 60vh, 580px)' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingRight: 4 }}>
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -120,8 +123,8 @@ export function AICompanionView() {
               >
                 <span
                   style={{
-                    width: 34,
-                    height: 34,
+                    width: 36,
+                    height: 36,
                     borderRadius: '50%',
                     background: msg.sender === 'user' ? '#171717' : 'var(--yellow)',
                     color: msg.sender === 'user' ? '#FFF' : '#171717',
@@ -137,18 +140,18 @@ export function AICompanionView() {
 
                 <div
                   style={{
-                    maxWidth: '82%',
+                    maxWidth: '85%',
                     background: msg.sender === 'user' ? '#171717' : '#F3F4F6',
                     color: msg.sender === 'user' ? '#FFF' : '#171717',
-                    padding: '12px 16px',
-                    borderRadius: 12,
+                    padding: '12px 14px',
+                    borderRadius: 14,
                     fontSize: 13,
                     lineHeight: 1.5,
                   }}
                 >
                   <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{msg.text}</p>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, pt: 4, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 4 }}>
                     {msg.sender === 'aeris' && msg.source && (
                       <span
                         style={{
@@ -164,7 +167,7 @@ export function AICompanionView() {
                         }}
                       >
                         {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={11} /> : <Zap size={11} />}
-                        {msg.source === 'Gemini 3.6 Flash' ? 'Source: Gemini 3.6 Flash API' : 'Source: Local Rule Engine (Offline)'}
+                        {msg.source === 'Gemini 3.6 Flash' ? '✨ Gemini' : '⚡ Local'}
                       </span>
                     )}
 
@@ -177,13 +180,14 @@ export function AICompanionView() {
             {isLoading && (
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#6B7280', fontSize: 12 }}>
                 <Loader2 size={16} className="animate-spin" />
-                <span>Evaluating telemetry via Gemini 3.6 Flash API...</span>
+                <span>Evaluating telemetry...</span>
               </div>
             )}
+            <div ref={chatBottomRef} />
           </div>
 
-          {/* Quick Presets */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '14px 0 10px' }}>
+          {/* Touch-Friendly Prompt Shortcuts */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', margin: '12px 0 10px', paddingBottom: 4 }}>
             {presets.map((preset) => (
               <button
                 key={preset}
@@ -193,10 +197,14 @@ export function AICompanionView() {
                   border: '1px solid #E5E7EB',
                   background: '#F9FAFB',
                   color: '#374151',
-                  padding: '4px 10px',
+                  padding: '6px 12px',
+                  minHeight: 38,
                   borderRadius: 20,
                   fontSize: 11,
                   fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  cursor: 'pointer',
                 }}
               >
                 {preset}
@@ -204,19 +212,20 @@ export function AICompanionView() {
             ))}
           </div>
 
-          {/* Input Box */}
-          <div style={{ display: 'flex', gap: 10 }}>
+          {/* Input Box with Min 44px Touch Standard */}
+          <div style={{ display: 'flex', gap: 8 }}>
             <input
               type="text"
               value={input}
               disabled={isLoading}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask a question about your health signals or weather..."
+              placeholder="Ask about your health signals or weather..."
               style={{
                 flex: 1,
                 padding: '10px 14px',
-                borderRadius: 8,
+                minHeight: 44,
+                borderRadius: 10,
                 border: '1px solid #E5E7EB',
                 fontSize: 13,
                 outline: 'none',
@@ -229,35 +238,38 @@ export function AICompanionView() {
                 background: 'var(--yellow)',
                 color: '#171717',
                 border: 0,
-                padding: '0 18px',
-                borderRadius: 8,
+                padding: '0 16px',
+                minHeight: 44,
+                borderRadius: 10,
                 fontWeight: 800,
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 6,
+                cursor: 'pointer',
               }}
             >
-              {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-              Send
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              <span>Send</span>
             </button>
           </div>
         </article>
 
-        {/* Right System Provenance Card */}
-        <article className="panel" style={{ padding: 22, background: '#3B0000', color: '#FFF', borderColor: 'var(--yellow)' }}>
+        {/* Right System Provenance Audit Card */}
+        <article className="panel" style={{ padding: 20, background: '#3B0000', color: '#FFF', borderColor: 'var(--yellow)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, color: 'var(--yellow)' }}>
             <Sparkles size={18} />
             <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Data Source Audit</h3>
           </div>
 
           <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ background: 'rgba(255,193,7,0.15)', padding: 10, borderRadius: 6, border: '1px solid var(--yellow)' }}>
+            <div style={{ background: 'rgba(255,193,7,0.15)', padding: 10, borderRadius: 8, border: '1px solid var(--yellow)' }}>
               <span style={{ display: 'block', color: 'var(--yellow)', fontWeight: 800 }}>
                 {isOffline ? '⚡ Offline Engine Active' : '✨ Gemini 3.6 Flash Active'}
               </span>
               <small style={{ color: '#FFF', fontSize: 10 }}>
                 {isOffline
-                  ? 'All responses generated locally using rule-based context engine.'
+                  ? 'Responses generated locally on-device using rule engine.'
                   : 'Live responses generated via Google Gemini 3.6 Flash API.'}
               </small>
             </div>

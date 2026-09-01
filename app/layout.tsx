@@ -5,9 +5,13 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'AERIS — Personal Health Intelligence',
   description: 'AERIS turns everyday signals into clear, personal health intelligence.',
-  generator: 'v0.app',
+  generator: 'AERIS Edge AI',
   icons: {
     icon: [
+      {
+        url: '/icon.png',
+        type: 'image/png',
+      },
       {
         url: '/icon-light-32x32.png',
         media: '(prefers-color-scheme: light)',
@@ -16,21 +20,14 @@ export const metadata: Metadata = {
         url: '/icon-dark-32x32.png',
         media: '(prefers-color-scheme: dark)',
       },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
     ],
     apple: '/apple-icon.png',
   },
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#3B0000',
 }
 
 export default function RootLayout({

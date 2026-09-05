@@ -100,3 +100,32 @@ export interface HistoricalPoint {
   mobility: number
   overallRisk: number
 }
+
+export type SafePlaceType = 'Hospital' | 'PHC' | 'Shelter' | 'Pharmacy'
+
+export type SafePlaceFilter = 'All' | 'Hospital' | 'PHC' | 'Shelter' | 'Pharmacy'
+
+export interface SafePlace {
+  id: string
+  name: string
+  type: SafePlaceType
+  lat: number
+  lon: number
+  distanceKm?: number
+  address: string
+  phone?: string
+  openNow?: boolean
+  isDemo?: boolean
+  recommendationReason?: string
+  capabilities?: string[]
+}
+
+export interface UserLocation {
+  lat: number
+  lon: number
+  accuracy?: number
+  displayName?: string
+  shortName?: string
+  source?: 'gps' | 'search'
+}
+

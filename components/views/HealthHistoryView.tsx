@@ -7,6 +7,11 @@ import { useTelemetry } from '@/hooks/useTelemetry'
 export function HealthHistoryView() {
   const { history, timeframe, setTimeframe } = useTelemetry()
 
+  const avgHR = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.heartRate, 0) / history.length) : 70
+  const avgHRV = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.hrv, 0) / history.length) : 65
+  const minTemp = history.length ? Math.min(...history.map((h) => h.bodyTemp)).toFixed(1) : '36.2'
+  const maxTemp = history.length ? Math.max(...history.map((h) => h.bodyTemp)).toFixed(1) : '37.0'
+
   return (
     <div style={{ paddingTop: 16 }}>
       <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
@@ -65,8 +70,8 @@ export function HealthHistoryView() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: '#4B5563' }}>
-            <span>Avg HR: <strong>74 BPM</strong></span>
-            <span>Avg HRV: <strong>58 ms</strong></span>
+            <span>Avg HR: <strong>{avgHR} BPM</strong></span>
+            <span>Avg HRV: <strong>{avgHRV} ms</strong></span>
           </div>
         </article>
 
@@ -90,8 +95,8 @@ export function HealthHistoryView() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: '#4B5563' }}>
-            <span>Min: <strong>36.4°C</strong></span>
-            <span>Max: <strong>{Math.max(...history.map((h) => h.bodyTemp))}°C</strong></span>
+            <span>Min: <strong>{minTemp}°C</strong></span>
+            <span>Max: <strong>{maxTemp}°C</strong></span>
           </div>
         </article>
       </div>

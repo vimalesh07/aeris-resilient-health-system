@@ -23,6 +23,7 @@ interface TelemetryContextType {
   enableChromeNotifications: () => Promise<boolean>
   telemetry: TelemetryData
   baseline: PersonalBaseline
+  updateBaseline: (updates: Partial<PersonalBaseline>) => void
   risks: RiskScores
   alerts: AlertItem[]
   acknowledgeAlert: (id: string) => void
@@ -47,12 +48,22 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [activeView, setActiveView] = useState<string>('Dashboard')
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d'>('24h')
 
-  const baseline = DEFAULT_BASELINE
+  const [baseline, setBaseline] = useState<PersonalBaseline>(DEFAULT_BASELINE)
   const notifiedIdsRef = useRef<Set<string>>(new Set())
 
   const [telemetry, setTelemetry] = useState<TelemetryData>(() => getScenarioTarget('Normal'))
   const [alerts, setAlerts] = useState<AlertItem[]>([])
   const [sensors] = useState<HardwareSensor[]>(CORE_SENSORS)
+
+  const updateBaseline = (updates: Partial<PersonalBaseline>) => {
+    setBaseline((prev) => ({
+      ...prev,
+      ...updates,
+      restingHRRange: updates.restingHR !== undefined ? { min: updates.restingHR - 8, max: updates.restingHR + 8 } : updates.restingHRRange || prev.restingHRRange,
+      hrvRange: updates.hrvBaseline !== undefined ? { min: Math.max(20, updates.hrvBaseline - 15), max: updates.hrvBaseline + 20 } : updates.hrvRange || prev.hrvRange,
+      tempRange: updates.tempBaseline !== undefined ? { min: Number((updates.tempBaseline - 0.4).toFixed(1)), max: Number((updates.tempBaseline + 0.5).toFixed(1)) } : updates.tempRange || prev.tempRange,
+    }))
+  }
 
   // Memoize risk scores so reference only changes when telemetry changes
   const risks = useMemo(() => calculateRiskScores(telemetry, baseline), [telemetry, baseline])
@@ -195,7 +206,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [isSimulationRunning, scenario, useRealWeather, realWeatherData])
 
-  // Evaluate alerts cleanly when telemetry changes
+  // Evaluate alerts cleanly when telemetry or risks change
   useEffect(() => {
     const updated = evaluateAlerts(telemetry, risks, alerts)
 
@@ -220,7 +231,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         }
       })
     }
-  }, [telemetry, notificationsEnabled])
+  }, [telemetry, risks, notificationsEnabled])
 
   const acknowledgeAlert = (id: string) => {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, acknowledged: true } : a)))
@@ -249,6 +260,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         enableChromeNotifications,
         telemetry,
         baseline,
+        updateBaseline,
         risks,
         alerts,
         acknowledgeAlert,

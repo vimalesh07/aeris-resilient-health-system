@@ -1,21 +1,21 @@
 import { AlertItem, RiskScores, TelemetryData } from '@/types/aeris'
 
 export function evaluateAlerts(telemetry: TelemetryData, risks: RiskScores, existingAlerts: AlertItem[]): AlertItem[] {
-  const alerts: AlertItem[] = [...existingAlerts]
+  const activeAlerts: AlertItem[] = []
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   // Helper to add or update alert
   const addAlert = (newAlert: Omit<AlertItem, 'time' | 'acknowledged' | 'dismissed'>) => {
-    const existingIndex = alerts.findIndex((a) => a.id === newAlert.id)
-    if (existingIndex >= 0) {
-      // Preserve acknowledged state if already acknowledged
-      alerts[existingIndex] = {
-        ...alerts[existingIndex],
+    const existing = existingAlerts.find((a) => a.id === newAlert.id)
+    if (existing) {
+      activeAlerts.push({
         ...newAlert,
-        time: alerts[existingIndex].time,
-      }
+        time: existing.time,
+        acknowledged: existing.acknowledged,
+        dismissed: existing.dismissed,
+      })
     } else {
-      alerts.unshift({
+      activeAlerts.push({
         ...newAlert,
         time,
         acknowledged: false,
@@ -102,9 +102,9 @@ export function evaluateAlerts(telemetry: TelemetryData, risks: RiskScores, exis
         `Humidity: ${telemetry.humidity}%`,
         `External AQI: ${telemetry.externalAqi}`,
       ],
-      recommendedAction: 'Environmental conditions have changed and your mobility pattern is slightly different from baseline.',
+      recommendedAction: 'Environmental conditions have changed. Stay sheltered and take precaution against wet or slippery surfaces.',
     })
   }
 
-  return alerts.filter((a) => !a.dismissed)
+  return activeAlerts.filter((a) => !a.dismissed)
 }

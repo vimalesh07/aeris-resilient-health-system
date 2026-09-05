@@ -8,6 +8,7 @@ import {
   HeartPulse,
   History,
   LayoutDashboard,
+  MapPin,
   MessageSquareText,
   MoreHorizontal,
   Settings2,
@@ -24,6 +25,7 @@ import { HealthHistoryView } from '@/components/views/HealthHistoryView'
 import { MobilityView } from '@/components/views/MobilityView'
 import { PrivacyView } from '@/components/views/PrivacyView'
 import { RiskIntelligenceView } from '@/components/views/RiskIntelligenceView'
+import { SafePlacesView } from '@/components/views/SafePlacesView'
 import { SettingsView } from '@/components/views/SettingsView'
 import { StressWellbeingView } from '@/components/views/StressWellbeingView'
 import { VitalsView } from '@/components/views/VitalsView'
@@ -61,6 +63,8 @@ function MainApp() {
         return <MobilityView />
       case 'Climate Health':
         return <ClimateHealthView />
+      case 'Safe Places':
+        return <SafePlacesView />
       case 'Alerts':
         return <AlertsView />
       case 'Health History':
@@ -84,6 +88,7 @@ function MainApp() {
   }
 
   const MORE_ITEMS = [
+    { label: 'Safe Place Finder', view: 'Safe Places', icon: MapPin, desc: 'Nearby emergency hospitals & shelters' },
     { label: 'AI Companion', view: 'AI Companion', icon: MessageSquareText, desc: 'Contextual LLM Health Assistant' },
     { label: 'Health History', view: 'Health History', icon: History, desc: 'Longitudinal telemetry archives' },
     { label: 'Privacy & Data', view: 'Privacy & Data', icon: ShieldCheck, desc: 'Zero-cloud encryption settings' },

@@ -10,18 +10,29 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
   const [cycle, setCycle] = useState<number>(1)
   const [totalSeconds, setTotalSeconds] = useState<number>(120)
 
+  const phaseRef = React.useRef<'Inhale' | 'Hold' | 'Exhale'>(phase)
+  phaseRef.current = phase
+
   useEffect(() => {
-    if (!isRunning || totalSeconds <= 0) return
+    if (!isRunning) return
 
     const timer = setInterval(() => {
-      setTotalSeconds((t) => t - 1)
+      setTotalSeconds((t) => {
+        if (t <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return t - 1
+      })
+
       setCounter((c) => {
         if (c > 1) return c - 1
 
-        if (phase === 'Inhale') {
+        const currentPhase = phaseRef.current
+        if (currentPhase === 'Inhale') {
           setPhase('Hold')
           return 4
-        } else if (phase === 'Hold') {
+        } else if (currentPhase === 'Hold') {
           setPhase('Exhale')
           return 6
         } else {
@@ -33,7 +44,7 @@ export function GuidedBreathingModal({ onClose }: { onClose: () => void }) {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [isRunning, phase, totalSeconds])
+  }, [isRunning])
 
   const circleScale = phase === 'Inhale' ? 1.35 : phase === 'Hold' ? 1.35 : 0.85
 

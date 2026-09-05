@@ -21,6 +21,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { RiskGauge } from '@/components/RiskGauge'
+import { SafePlaceFinder } from '@/components/SafePlaceFinder'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { Scenario } from '@/types/aeris'
 
@@ -188,6 +189,56 @@ export function DashboardView() {
                 Fused from physiological vitals, body temperature variance, motion gait symmetry, and local climate context.
                 This is an early warning indicator, not a medical diagnosis.
               </p>
+
+              {/* Emergency High Health Risk Callout */}
+              {risks.overall >= 50 && (
+                <div
+                  style={{
+                    margin: '12px 0',
+                    padding: '10px 12px',
+                    background: 'rgba(198, 40, 40, 0.25)',
+                    border: '1px solid var(--main-red)',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div>
+                    <strong style={{ color: '#FFF', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <AlertTriangle size={15} style={{ color: 'var(--yellow)' }} />
+                      ⚠️ High Health Risk Detected
+                    </strong>
+                    <p style={{ margin: '2px 0 0', fontSize: 11, color: '#FFF8F0' }}>
+                      Find the nearest safe healthcare facility.
+                    </p>
+                  </div>
+                  <button
+                    className="demo-toggle on"
+                    onClick={() => {
+                      const el = document.getElementById('safe-place-finder-section')
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' })
+                      } else {
+                        setActiveView('Safe Places')
+                      }
+                    }}
+                    style={{
+                      fontSize: 12,
+                      padding: '5px 10px',
+                      background: 'var(--main-red)',
+                      border: '1px solid var(--yellow)',
+                      color: '#FFF',
+                      fontWeight: 800,
+                    }}
+                  >
+                    Find Safe Place
+                  </button>
+                </div>
+              )}
+
               <button className="text-button" onClick={() => setActiveView('AI Companion')}>
                 Ask AERIS Companion <ArrowUpRight size={14} />
               </button>
@@ -328,6 +379,11 @@ export function DashboardView() {
             </button>
           </div>
         </article>
+      </section>
+
+      {/* Safe Place Finder Section */}
+      <section id="safe-place-finder-section" style={{ marginTop: 24 }}>
+        <SafePlaceFinder />
       </section>
     </>
   )

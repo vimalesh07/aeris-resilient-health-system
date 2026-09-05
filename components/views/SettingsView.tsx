@@ -5,10 +5,18 @@ import { CheckCircle, RefreshCw, Save, Settings2, Sliders } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
 export function SettingsView() {
-  const { baseline, isOffline, setIsOffline, sensors } = useTelemetry()
+  const { baseline, updateBaseline, isOffline, setIsOffline, sensors } = useTelemetry()
+  const [restingHR, setRestingHR] = useState<number>(baseline.restingHR)
+  const [hrvBaseline, setHrvBaseline] = useState<number>(baseline.hrvBaseline)
+  const [tempBaseline, setTempBaseline] = useState<number>(baseline.tempBaseline)
   const [saved, setSaved] = useState<boolean>(false)
 
   const handleSave = () => {
+    updateBaseline({
+      restingHR: Number(restingHR) || baseline.restingHR,
+      hrvBaseline: Number(hrvBaseline) || baseline.hrvBaseline,
+      tempBaseline: Number(tempBaseline) || baseline.tempBaseline,
+    })
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
@@ -38,7 +46,8 @@ export function SettingsView() {
               </label>
               <input
                 type="number"
-                defaultValue={baseline.restingHR}
+                value={restingHR}
+                onChange={(e) => setRestingHR(Number(e.target.value))}
                 style={{ width: '100%', padding: '10px 14px', minHeight: 44, borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 14, outline: 'none' }}
               />
             </div>
@@ -49,7 +58,8 @@ export function SettingsView() {
               </label>
               <input
                 type="number"
-                defaultValue={baseline.hrvBaseline}
+                value={hrvBaseline}
+                onChange={(e) => setHrvBaseline(Number(e.target.value))}
                 style={{ width: '100%', padding: '10px 14px', minHeight: 44, borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 14, outline: 'none' }}
               />
             </div>
@@ -61,7 +71,8 @@ export function SettingsView() {
               <input
                 type="number"
                 step="0.1"
-                defaultValue={baseline.tempBaseline}
+                value={tempBaseline}
+                onChange={(e) => setTempBaseline(Number(e.target.value))}
                 style={{ width: '100%', padding: '10px 14px', minHeight: 44, borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 14, outline: 'none' }}
               />
             </div>

@@ -12,7 +12,23 @@ export interface ExternalWeatherData {
   timestamp: string
 }
 
-export async function fetchRealWeather(latitude?: number, longitude?: number): Promise<ExternalWeatherData> {
+export async function fetchRealWeather(latitude?: number, longitude?: number, isServer = false): Promise<ExternalWeatherData> {
+  // If running in browser and not explicitly requested as server execution, call backend API route
+  if (typeof window !== 'undefined' && !isServer) {
+    try {
+      const params = new URLSearchParams()
+      if (latitude !== undefined) params.set('lat', String(latitude))
+      if (longitude !== undefined) params.set('lon', String(longitude))
+      const query = params.toString() ? `?${params.toString()}` : ''
+      const res = await fetch(`/api/weather${query}`)
+      if (res.ok) {
+        return await res.json()
+      }
+    } catch (err) {
+      console.warn('Weather API route call failed, falling back to direct client fetch:', err)
+    }
+  }
+
   let lat = latitude || 28.6139 // Default New Delhi / fallback
   let lon = longitude || 77.209
   let locationName = 'Local Region'

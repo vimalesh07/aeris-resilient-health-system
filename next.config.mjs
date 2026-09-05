@@ -2,7 +2,10 @@
 const nextConfig = {
   devIndicators: false,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
+  },
+  turbopack: {
+    root: process.cwd(),
   },
   images: {
     unoptimized: true,

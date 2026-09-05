@@ -75,9 +75,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         body,
         icon: '/icon.svg',
         tag: tag || String(Date.now()),
-        renotify: true,
         requireInteraction: false,
-      })
+      } satisfies NotificationOptions)
     } catch (e) {
       console.warn('Notification dispatch warning:', e)
     }

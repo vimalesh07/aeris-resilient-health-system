@@ -1,12 +1,21 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { ArduinoHealthData, useHealthData } from '@/hooks/useHealthData'
 import { evaluateAlerts } from '@/lib/alerts'
 import { ExternalWeatherData, fetchRealWeather } from '@/lib/external-weather'
 import { calculateRiskScores } from '@/lib/risk-engine'
 import { CORE_SENSORS } from '@/lib/sensors'
 import { DEFAULT_BASELINE, generateHistoryPoints, getScenarioTarget, tickTelemetry } from '@/lib/telemetry'
 import { AlertItem, HardwareSensor, HistoricalPoint, PersonalBaseline, RiskScores, Scenario, TelemetryData } from '@/types/aeris'
+
+export interface RealHistoryPoint {
+  time: string
+  heartRate: number
+  spo2: number
+  bodyTemp: number
+  stress: number
+}
 
 interface TelemetryContextType {
   scenario: Scenario
@@ -29,18 +38,27 @@ interface TelemetryContextType {
   acknowledgeAlert: (id: string) => void
   dismissAlert: (id: string) => void
   history: HistoricalPoint[]
+  realHistory: RealHistoryPoint[]
   timeframe: '24h' | '7d' | '30d'
   setTimeframe: (t: '24h' | '7d' | '30d') => void
   sensors: HardwareSensor[]
   activeView: string
   setActiveView: (v: string) => void
+
+  // Arduino Live Serial Telemetry
+  arduinoData: ArduinoHealthData | null
+  wsConnected: boolean
+  arduinoConnected: boolean
+  rawLogs: string[]
 }
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined)
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
+  const { data: arduinoData, wsConnected, arduinoConnected, rawLogs } = useHealthData()
+
   const [scenario, setScenarioState] = useState<Scenario>('Normal')
-  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(true)
+  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(false)
   const [isOffline, setIsOffline] = useState<boolean>(true)
   const [useRealWeather, setUseRealWeather] = useState<boolean>(false)
   const [realWeatherData, setRealWeatherData] = useState<ExternalWeatherData | null>(null)
@@ -53,7 +71,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   const [telemetry, setTelemetry] = useState<TelemetryData>(() => getScenarioTarget('Normal'))
   const [alerts, setAlerts] = useState<AlertItem[]>([])
-  const [sensors] = useState<HardwareSensor[]>(CORE_SENSORS)
+  const [realHistory, setRealHistory] = useState<RealHistoryPoint[]>([])
 
   const updateBaseline = (updates: Partial<PersonalBaseline>) => {
     setBaseline((prev) => ({
@@ -67,6 +85,88 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   // Memoize risk scores so reference only changes when telemetry changes
   const risks = useMemo(() => calculateRiskScores(telemetry, baseline), [telemetry, baseline])
+
+  const lastLoggedBpmRef = useRef<number | null>(null)
+  const lastLoggedSpo2Ref = useRef<number | null>(null)
+
+  // Live Sync MAX30102 Real Hardware Data over Telemetry when connected
+  useEffect(() => {
+    if (!arduinoConnected || !arduinoData) return
+
+    setTelemetry((prev) => {
+      const activeBpm = arduinoData.stableBpm || arduinoData.bpm
+      const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+
+      return {
+        ...prev,
+        heartRate: activeBpm !== null ? activeBpm : prev.heartRate,
+        spo2: activeSpo2 !== null ? activeSpo2 : prev.spo2,
+      }
+    })
+  }, [arduinoConnected, arduinoData])
+
+  // Append real sensor readings to realHistory when valid data arrives
+  useEffect(() => {
+    if (!arduinoConnected || !arduinoData) return
+    const activeBpm = arduinoData.stableBpm || arduinoData.bpm
+    const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+
+    if (activeBpm !== null && activeSpo2 !== null) {
+      if (activeBpm !== lastLoggedBpmRef.current || activeSpo2 !== lastLoggedSpo2Ref.current) {
+        lastLoggedBpmRef.current = activeBpm
+        lastLoggedSpo2Ref.current = activeSpo2
+
+        const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        setRealHistory((prev) => [
+          ...prev.slice(-19),
+          {
+            time: timeLabel,
+            heartRate: activeBpm,
+            spo2: activeSpo2,
+            bodyTemp: telemetry.bodyTemp,
+            stress: risks.stress,
+          },
+        ])
+      }
+    }
+  }, [arduinoConnected, arduinoData, telemetry.bodyTemp, risks.stress])
+
+  // Dynamically reflect Arduino MAX30102 status inside sensor array
+  const sensors = useMemo<HardwareSensor[]>(() => {
+    return CORE_SENSORS.map((s) => {
+      if (s.id === 'max30102') {
+        const isConn = Boolean(arduinoData?.connected && wsConnected)
+        const hasFinger = Boolean(arduinoData?.fingerDetected)
+        const activeBpm = arduinoData?.stableBpm || arduinoData?.bpm
+        const activeSpo2 = arduinoData?.stableSpo2 || arduinoData?.spo2
+
+        let signalsText = '🔴 DISCONNECTED'
+        let quality = 0
+
+        if (isConn) {
+          if (hasFinger && activeBpm !== null && activeSpo2 !== null) {
+            signalsText = `🟢 CONNECTED (Live BPM: ${activeBpm}, SpO₂: ${activeSpo2}%)`
+            quality = 98
+          } else if (arduinoData?.status === 'STABILIZING') {
+            signalsText = '🟡 STABILIZING'
+            quality = 50
+          } else {
+            signalsText = '🟡 NO FINGER DETECTED'
+            quality = 40
+          }
+        }
+
+        return {
+          ...s,
+          connected: isConn,
+          signalQuality: quality,
+          signals: signalsText,
+          lastSync: isConn ? 'Live COM3' : 'Offline',
+        }
+      }
+      return s
+    })
+  }, [arduinoData, wsConnected])
 
   // Check if browser notifications already granted
   useEffect(() => {
@@ -130,9 +230,16 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       target.rain = realWeatherData.rain
       target.externalAqi = realWeatherData.externalAqi
     }
-    setTelemetry(target)
 
-    // Clear notified IDs on scenario change so new scenario alerts fire popups
+    // Preserve real MAX30102 readings if Arduino is connected
+    if (arduinoConnected && arduinoData) {
+      const activeBpm = arduinoData.stableBpm || arduinoData.bpm
+      const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+      if (activeBpm !== null) target.heartRate = activeBpm
+      if (activeSpo2 !== null) target.spo2 = activeSpo2
+    }
+
+    setTelemetry(target)
     notifiedIdsRef.current.clear()
 
     if (notificationsEnabled) {
@@ -192,6 +299,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     const interval = setInterval(() => {
       setTelemetry((prev) => {
         const next = tickTelemetry(prev, scenario)
+
+        // Real Arduino MAX30102 values ALWAYS override fake tick values
+        if (arduinoConnected && arduinoData) {
+          const activeBpm = arduinoData.stableBpm || arduinoData.bpm
+          const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+          if (activeBpm !== null) next.heartRate = activeBpm
+          if (activeSpo2 !== null) next.spo2 = activeSpo2
+        }
+
         if (useRealWeather && realWeatherData) {
           next.ambientTemp = realWeatherData.ambientTemp
           next.humidity = realWeatherData.humidity
@@ -204,13 +320,11 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     }, 1500)
 
     return () => clearInterval(interval)
-  }, [isSimulationRunning, scenario, useRealWeather, realWeatherData])
+  }, [isSimulationRunning, scenario, useRealWeather, realWeatherData, arduinoConnected, arduinoData])
 
   // Evaluate alerts cleanly when telemetry or risks change
   useEffect(() => {
     const updated = evaluateAlerts(telemetry, risks, alerts)
-
-    // Compare with current alerts to check if anything changed to avoid infinite setState loops
     const changed =
       updated.length !== alerts.length ||
       updated.some((u, i) => u.id !== alerts[i]?.id || u.acknowledged !== alerts[i]?.acknowledged)
@@ -266,11 +380,16 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         acknowledgeAlert,
         dismissAlert,
         history,
+        realHistory,
         timeframe,
         setTimeframe,
         sensors,
         activeView,
         setActiveView,
+        arduinoData,
+        wsConnected,
+        arduinoConnected,
+        rawLogs,
       }}
     >
       {children}

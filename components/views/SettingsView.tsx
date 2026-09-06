@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { CheckCircle, RefreshCw, Save, Settings2, Sliders } from 'lucide-react'
+import { ArduinoDebugPanel } from '@/components/ArduinoDebugPanel'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
 export function SettingsView() {
@@ -30,6 +31,9 @@ export function SettingsView() {
           Tune baseline sensitivity, alert thresholds, offline mode, and prototype hardware diagnostic tools.
         </p>
       </div>
+
+      {/* Arduino Hardware COM3 Serial Developer Debug Panel */}
+      <ArduinoDebugPanel />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 18 }}>
         {/* Baseline Targets Tuning */}

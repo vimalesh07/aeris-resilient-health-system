@@ -12,20 +12,14 @@ import {
   HeartPulse,
   MoreHorizontal,
   Navigation,
-  Pause,
-  Play,
   Radio,
   ShieldCheck,
   Thermometer,
-  Waves,
-  Zap,
+  Wind,
 } from 'lucide-react'
 import { RiskGauge } from '@/components/RiskGauge'
 import { SafePlaceFinder } from '@/components/SafePlaceFinder'
 import { useTelemetry } from '@/hooks/useTelemetry'
-import { Scenario } from '@/types/aeris'
-
-const SCENARIOS: Scenario[] = ['Normal', 'Stress', 'Heat', 'Temperature Anomaly', 'Mobility', 'Monsoon']
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -37,17 +31,26 @@ function getGreeting() {
 
 export function DashboardView() {
   const {
-    scenario,
-    setScenario,
-    isSimulationRunning,
-    setIsSimulationRunning,
     telemetry,
     baseline,
     risks,
     alerts,
     sensors,
     setActiveView,
+    arduinoData,
+    arduinoConnected,
   } = useTelemetry()
+
+  const connectedCount = sensors.filter((s) => s.connected).length
+  const isArduinoActive = Boolean(arduinoConnected && arduinoData?.connected)
+
+  // Direct Live Values from Arduino COM3 (Null if no finger / stabilizing)
+  const realBpm = arduinoData?.stableBpm ?? arduinoData?.bpm ?? null
+  const realSpo2 = arduinoData?.stableSpo2 ?? arduinoData?.spo2 ?? null
+
+  const isMeasuring = Boolean(isArduinoActive && (realBpm !== null || realSpo2 !== null))
+  const isStabilizing = Boolean(isArduinoActive && arduinoData?.status === 'STABILIZING')
+  const isNoFinger = Boolean(isArduinoActive && arduinoData?.status === 'NO FINGER' && !isMeasuring)
 
   return (
     <>
@@ -57,76 +60,89 @@ export function DashboardView() {
           <p className="eyebrow">Personal Health & Climate Resilience Intelligence</p>
           <h1>{getGreeting()}, Vimal.</h1>
           <p className="subhead">
-            All 5 core Edge AI sensors active. Processing privacy-preserving health risks locally.
+            {isArduinoActive
+              ? `Physical Arduino UNO (COM3) MAX30102 active. BPM: ${realBpm || '--'}, SpO₂: ${realSpo2 || '--'}%`
+              : 'All 5 core Edge AI sensors active. Processing privacy-preserving health risks locally.'}
           </p>
-        </div>
-
-        <div className="head-actions">
-          <button
-            className={`demo-toggle ${isSimulationRunning ? 'on' : ''}`}
-            onClick={() => setIsSimulationRunning(!isSimulationRunning)}
-          >
-            {isSimulationRunning ? <Pause size={15} /> : <Play size={15} />}
-            {isSimulationRunning ? 'Pause simulation' : 'Run simulation'}
-          </button>
-        </div>
-      </div>
-
-      {/* Demo Scenario Pill Selector */}
-      <div className="scenario-strip">
-        <span>
-          <Zap size={16} /> Demo Scenarios:
-        </span>
-        <div className="scenario-pills">
-          {SCENARIOS.map((name) => (
-            <button
-              key={name}
-              className={scenario === name ? 'selected' : ''}
-              onClick={() => setScenario(name)}
-            >
-              {name}
-            </button>
-          ))}
         </div>
       </div>
 
       {/* Top Vitals & Environmental Metrics Grid */}
       <section className="metrics-grid">
+        {/* CARD 1: HEART RATE (Direct from Arduino BPM) */}
         <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
           <div className="metric-top">
             <span className="icon-box red">
               <HeartPulse size={18} />
             </span>
             <span className="delta">
-              <ArrowUpRight size={13} />
-              {telemetry.heartRate > baseline.restingHRRange.max ? `+${telemetry.heartRate - baseline.restingHRRange.max} BPM` : 'Optimal'}
+              {isArduinoActive ? (
+                realBpm !== null ? (
+                  realBpm <= baseline.restingHRRange.max ? (
+                    <span style={{ color: '#059669' }}>Optimal</span>
+                  ) : (
+                    <span style={{ color: 'var(--main-red)' }}>Elevated</span>
+                  )
+                ) : isStabilizing ? (
+                  <span style={{ color: 'var(--yellow)' }}>Stabilizing</span>
+                ) : (
+                  <span style={{ color: 'var(--yellow)' }}>No Finger</span>
+                )
+              ) : (
+                <>
+                  <ArrowUpRight size={13} />
+                  {telemetry.heartRate > baseline.restingHRRange.max ? `+${telemetry.heartRate - baseline.restingHRRange.max} BPM` : 'Optimal'}
+                </>
+              )}
             </span>
           </div>
-          <p className="eyebrow">Heart Rate</p>
+          <p className="eyebrow">Heart Rate {isArduinoActive ? '(COM3 LIVE)' : ''}</p>
           <div className="metric-value">
-            {telemetry.heartRate}
+            {isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate}
             <small>BPM</small>
           </div>
-          <small style={{ color: '#6B7280', fontSize: 11 }}>Baseline: {baseline.restingHRRange.min}–{baseline.restingHRRange.max} BPM</small>
+          <small style={{ color: '#6B7280', fontSize: 11 }}>
+            {isArduinoActive
+              ? `Status: ${arduinoData?.status || 'Active'}`
+              : `Baseline: ${baseline.restingHRRange.min}–${baseline.restingHRRange.max} BPM`}
+          </small>
         </article>
 
-        <article className="panel metric-card" onClick={() => setActiveView('Stress & Well-being')} style={{ cursor: 'pointer' }}>
+        {/* CARD 2: BLOOD OXYGEN (Direct from Arduino SpO2) */}
+        <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
           <div className="metric-top">
             <span className="icon-box yellow">
-              <Waves size={18} />
+              <Activity size={18} />
             </span>
             <span className="delta">
-              {telemetry.hrv < baseline.hrvRange.min ? 'Reduced' : 'Normal'}
+              {isArduinoActive ? (
+                realSpo2 !== null ? (
+                  realSpo2 >= 95 ? (
+                    <span style={{ color: '#059669' }}>Optimal</span>
+                  ) : (
+                    <span style={{ color: 'var(--main-red)' }}>Needs Attention</span>
+                  )
+                ) : isStabilizing ? (
+                  <span style={{ color: 'var(--yellow)' }}>Stabilizing</span>
+                ) : (
+                  <span style={{ color: 'var(--yellow)' }}>No Finger</span>
+                )
+              ) : (
+                <span style={{ color: telemetry.spo2 >= 95 ? '#059669' : 'var(--main-red)' }}>
+                  {telemetry.spo2 >= 95 ? 'Optimal' : 'Monitored'}
+                </span>
+              )}
             </span>
           </div>
-          <p className="eyebrow">HRV (Physiological)</p>
+          <p className="eyebrow">Blood Oxygen {isArduinoActive ? '(COM3 LIVE)' : ''}</p>
           <div className="metric-value">
-            {telemetry.hrv}
-            <small>ms</small>
+            {isArduinoActive ? (realSpo2 !== null ? realSpo2 : '--') : telemetry.spo2}
+            <small>%</small>
           </div>
-          <small style={{ color: '#6B7280', fontSize: 11 }}>Baseline: {baseline.hrvRange.min}–{baseline.hrvRange.max} ms</small>
+          <small style={{ color: '#6B7280', fontSize: 11 }}>Expected: 95–100%</small>
         </article>
 
+        {/* CARD 3: BODY TEMPERATURE */}
         <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
           <div className="metric-top">
             <span className="icon-box red">
@@ -144,6 +160,7 @@ export function DashboardView() {
           <small style={{ color: '#6B7280', fontSize: 11 }}>Baseline: {baseline.tempRange.min}–{baseline.tempRange.max}°C</small>
         </article>
 
+        {/* CARD 4: AMBIENT WEATHER */}
         <article className="panel metric-card" onClick={() => setActiveView('Climate Health')} style={{ cursor: 'pointer' }}>
           <div className="metric-top">
             <span className="icon-box dark">
@@ -269,14 +286,14 @@ export function DashboardView() {
               <h2>Sensor Health</h2>
             </div>
             <span className="healthy">
-              <CheckCircle2 size={14} /> 5 / 5 Connected
+              <CheckCircle2 size={14} /> {connectedCount} / 5 Connected
             </span>
           </div>
 
           <div className="sensor-list">
             {sensors.map((sensor) => (
               <div className="sensor-row" key={sensor.id}>
-                <span className="sensor-icon yellow">
+                <span className={`sensor-icon ${sensor.connected ? 'yellow' : 'dark'}`}>
                   <Radio size={16} />
                 </span>
                 <div className="sensor-name">
@@ -284,7 +301,10 @@ export function DashboardView() {
                   <small>{sensor.signals}</small>
                 </div>
                 <div className="sensor-bar">
-                  <i style={{ width: `${sensor.signalQuality}%` }} />
+                  <i
+                    style={{ width: `${sensor.signalQuality}%` }}
+                    className={sensor.connected ? '' : 'red'}
+                  />
                 </div>
                 <b>{sensor.signalQuality}%</b>
               </div>
@@ -293,8 +313,8 @@ export function DashboardView() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid #E5E7EB', fontSize: 11, color: '#4B5563' }}>
             <span>External AQI Data: <b>{telemetry.externalAqi} (Good)</b></span>
-            <button className="text-button" onClick={() => setActiveView('Privacy & Data')}>
-              Privacy Architecture <ArrowUpRight size={14} />
+            <button className="text-button" onClick={() => setActiveView('Settings')}>
+              COM3 Diagnostics <ArrowUpRight size={14} />
             </button>
           </div>
         </article>
@@ -351,7 +371,7 @@ export function DashboardView() {
             <div className="chart-label">
               <span>Resting Heart Rate Target</span>
               <b>
-                {telemetry.heartRate} <small>BPM</small>
+                {isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate} <small>BPM</small>
               </b>
             </div>
             <p style={{ fontSize: 12, color: '#4B5563', margin: '8px 0' }}>
@@ -362,7 +382,7 @@ export function DashboardView() {
                 style={{
                   background: 'var(--main-red)',
                   height: '100%',
-                  width: `${Math.min(100, Math.max(10, ((telemetry.heartRate - 50) / 60) * 100))}%`,
+                  width: `${Math.min(100, Math.max(10, (((realBpm || telemetry.heartRate) - 50) / 60) * 100))}%`,
                   borderRadius: 10,
                 }}
               />
@@ -370,9 +390,9 @@ export function DashboardView() {
           </div>
 
           <div className="baseline-foot">
-            <span style={{ color: telemetry.heartRate <= baseline.restingHRRange.max ? '#059669' : 'var(--main-red)' }}>
+            <span style={{ color: (realBpm || telemetry.heartRate) <= baseline.restingHRRange.max ? '#059669' : 'var(--main-red)' }}>
               <CheckCircle2 size={15} />
-              {telemetry.heartRate <= baseline.restingHRRange.max ? 'Within target baseline' : 'Elevated from baseline'}
+              {(realBpm || telemetry.heartRate) <= baseline.restingHRRange.max ? 'Within target baseline' : 'Elevated from baseline'}
             </span>
             <button className="text-button" onClick={() => setActiveView('Settings')}>
               Tune Baseline <ArrowUpRight size={14} />

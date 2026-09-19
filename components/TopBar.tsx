@@ -34,7 +34,12 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
           </button>
         )}
 
-        <div className="topbar-brand">
+        <div
+          className="topbar-brand"
+          onClick={() => setActiveView('Dashboard')}
+          style={{ cursor: 'pointer' }}
+          title="Go to Home Dashboard"
+        >
           <span className="brand-mark">
             <Activity size={15} />
           </span>

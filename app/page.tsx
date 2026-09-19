@@ -71,6 +71,8 @@ function MainApp() {
       case 'Alerts':
         return <AlertsView />
       case 'Safe Places':
+      case 'Safe Place Finder':
+      case 'SafePlace Finder':
         return <SafePlacesView />
       case 'Health History':
       case 'History':
@@ -92,6 +94,13 @@ function MainApp() {
     setActiveView(targetView)
     setMobileMenuOpen(false)
   }
+
+  const MOBILE_MAIN_ITEMS = [
+    { label: 'SafePlace Finder', view: 'Safe Places', icon: MapPin, desc: 'Nearby emergency hospitals, clinics & cooling shelters' },
+    { label: 'Dashboard', view: 'Dashboard', icon: LayoutDashboard, desc: 'Home & live emergency overview' },
+    { label: 'Vitals', view: 'Vitals', icon: HeartPulse, desc: 'Real-time MAX30102 vitals stream' },
+    { label: 'Alerts', view: 'Alerts', icon: AlertTriangle, desc: 'Active risk alerts & emergency SOS', hasAlertBadge: true },
+  ]
 
   const MOBILE_INTELLIGENCE_ITEMS = [
     { label: 'Risk Intelligence', icon: BrainCircuit, desc: 'Predictive multivariant health risk index' },
@@ -124,7 +133,12 @@ function MainApp() {
         <aside className="mobile-drawer" aria-label="Mobile Navigation Menu">
           {/* Drawer Header */}
           <div className="mobile-drawer-header">
-            <div className="topbar-brand">
+            <div
+              className="topbar-brand"
+              onClick={() => handleMobileNavigate('Dashboard')}
+              style={{ cursor: 'pointer' }}
+              title="Go to Home Dashboard"
+            >
               <span className="brand-mark">
                 <Activity size={16} />
               </span>
@@ -142,7 +156,32 @@ function MainApp() {
 
           {/* Drawer Body */}
           <div className="mobile-drawer-body">
-            {/* Section 1: Health Intelligence */}
+            {/* Section 1: Main Features */}
+            <p className="mobile-drawer-section-title">Main Navigation</p>
+            <div className="mobile-drawer-nav">
+              {MOBILE_MAIN_ITEMS.map(({ label, view, icon: Icon, desc, hasAlertBadge }) => (
+                <button
+                  key={label}
+                  className={`mobile-drawer-item ${activeView === (view || label) || (view === 'Safe Places' && (activeView === 'Safe Places' || activeView === 'SafePlace Finder')) ? 'active' : ''}`}
+                  onClick={() => handleMobileNavigate(view || label)}
+                >
+                  <div className="mobile-drawer-icon" style={{ position: 'relative' }}>
+                    <Icon size={18} />
+                    {hasAlertBadge && unackAlertCount > 0 && (
+                      <span className="bottom-nav-alert-badge">
+                        {unackAlertCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mobile-drawer-text">
+                    <span className="mobile-drawer-label">{label}</span>
+                    <span className="mobile-drawer-desc">{desc}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Section 2: Health Intelligence */}
             <p className="mobile-drawer-section-title">Health Intelligence</p>
             <div className="mobile-drawer-nav">
               {MOBILE_INTELLIGENCE_ITEMS.map(({ label, icon: Icon, desc }) => (
@@ -162,7 +201,7 @@ function MainApp() {
               ))}
             </div>
 
-            {/* Section 2: System Tools & Settings */}
+            {/* Section 3: System Tools & Settings */}
             <p className="mobile-drawer-section-title">System & Operations</p>
             <div className="mobile-drawer-nav">
               {MOBILE_SYSTEM_ITEMS.map(({ label, icon: Icon, desc }) => (
@@ -211,56 +250,6 @@ function MainApp() {
         <HeartRateLimitSosPopup thresholdBpm={115} />
         {renderView()}
       </main>
-
-      {/* Fixed Mobile Bottom Navigation Bar (Main Core Features Only) */}
-      <nav className="mobile-bottom" aria-label="Mobile bottom navigation">
-        {/* 1. Home */}
-        <button
-          className={activeView === 'Dashboard' || activeView === 'Overview' ? 'active' : ''}
-          onClick={() => setActiveView('Dashboard')}
-          title="Home Dashboard"
-        >
-          <LayoutDashboard size={20} />
-          <span>Home</span>
-        </button>
-
-        {/* 2. Vitals */}
-        <button
-          className={activeView === 'Vitals' ? 'active' : ''}
-          onClick={() => setActiveView('Vitals')}
-          title="Live Vitals Stream"
-        >
-          <HeartPulse size={20} />
-          <span>Vitals</span>
-        </button>
-
-        {/* 3. Alerts */}
-        <button
-          className={activeView === 'Alerts' ? 'active' : ''}
-          onClick={() => setActiveView('Alerts')}
-          title="Risk Alerts & SOS"
-        >
-          <div style={{ position: 'relative', display: 'inline-flex' }}>
-            <AlertTriangle size={20} />
-            {unackAlertCount > 0 && (
-              <span className="bottom-nav-alert-badge">
-                {unackAlertCount}
-              </span>
-            )}
-          </div>
-          <span>Alerts</span>
-        </button>
-
-        {/* 4. Safe Places */}
-        <button
-          className={activeView === 'Safe Places' ? 'active' : ''}
-          onClick={() => setActiveView('Safe Places')}
-          title="Emergency Safe Haven & Clinic Map"
-        >
-          <MapPin size={20} />
-          <span>Safe Places</span>
-        </button>
-      </nav>
     </div>
   )
 }

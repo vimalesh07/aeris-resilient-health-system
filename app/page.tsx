@@ -2,17 +2,20 @@
 
 import React, { useEffect, useState } from 'react'
 import {
+  Activity,
   AlertTriangle,
   BrainCircuit,
+  CloudSun,
   Cpu,
   HeartPulse,
   History,
   LayoutDashboard,
   MapPin,
   MessageSquareText,
-  MoreHorizontal,
+  Navigation,
   Settings2,
   ShieldCheck,
+  Waves,
   X,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
@@ -29,19 +32,21 @@ import { SafePlacesView } from '@/components/views/SafePlacesView'
 import { SettingsView } from '@/components/views/SettingsView'
 import { StressWellbeingView } from '@/components/views/StressWellbeingView'
 import { VitalsView } from '@/components/views/VitalsView'
+import { HeartRateLimitSosPopup } from '@/components/HeartRateLimitSosPopup'
+import { EmergencySosModal } from '@/components/EmergencySosModal'
 import { TelemetryProvider, useTelemetry } from '@/hooks/useTelemetry'
 
 function MainApp() {
-  const { activeView, setActiveView, alerts } = useTelemetry()
-  const [moreBottomSheetOpen, setMoreBottomSheetOpen] = useState<boolean>(false)
+  const { activeView, setActiveView, alerts, isSosActive, dismissSos, isHardwareConnected } = useTelemetry()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   const unackAlertCount = alerts.filter((a) => !a.acknowledged).length
 
-  // Close bottom sheet on Escape key press
+  // Close mobile drawer on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setMoreBottomSheetOpen(false)
+        setMobileMenuOpen(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -63,10 +68,10 @@ function MainApp() {
         return <MobilityView />
       case 'Climate Health':
         return <ClimateHealthView />
-      case 'Safe Places':
-        return <SafePlacesView />
       case 'Alerts':
         return <AlertsView />
+      case 'Safe Places':
+        return <SafePlacesView />
       case 'Health History':
       case 'History':
         return <HealthHistoryView />
@@ -76,148 +81,144 @@ function MainApp() {
       case 'Privacy':
         return <PrivacyView />
       case 'Settings':
+      case 'Device Diagnostics':
         return <SettingsView />
       default:
         return <DashboardView />
     }
   }
 
-  const handleMoreNavigate = (targetView: string) => {
+  const handleMobileNavigate = (targetView: string) => {
     setActiveView(targetView)
-    setMoreBottomSheetOpen(false)
+    setMobileMenuOpen(false)
   }
 
-  const MORE_ITEMS = [
-    { label: 'Safe Place Finder', view: 'Safe Places', icon: MapPin, desc: 'Nearby emergency hospitals & shelters' },
-    { label: 'AI Companion', view: 'AI Companion', icon: MessageSquareText, desc: 'Contextual LLM Health Assistant' },
-    { label: 'Health History', view: 'Health History', icon: History, desc: 'Longitudinal telemetry archives' },
-    { label: 'Privacy & Data', view: 'Privacy & Data', icon: ShieldCheck, desc: 'Zero-cloud encryption settings' },
-    { label: 'System Settings', view: 'Settings', icon: Settings2, desc: 'Personal baselines & preferences' },
-    { label: 'Device Diagnostics', view: 'Settings', icon: Cpu, desc: 'BLE prototype hardware status' },
+  const MOBILE_INTELLIGENCE_ITEMS = [
+    { label: 'Risk Intelligence', icon: BrainCircuit, desc: 'Predictive multivariant health risk index' },
+    { label: 'Stress & Well-being', icon: Waves, desc: 'HRV-driven ANS balance & cognitive load' },
+    { label: 'Mobility', icon: Navigation, desc: 'Gait symmetry & active fall detection' },
+    { label: 'Climate Health', icon: CloudSun, desc: 'Heat, humidity & AQI vulnerability metrics' },
+  ]
+
+  const MOBILE_SYSTEM_ITEMS = [
+    { label: 'AI Companion', icon: MessageSquareText, desc: 'Contextual LLM clinical assistant' },
+    { label: 'Health History', icon: History, desc: 'Longitudinal telemetry archives' },
+    { label: 'Privacy & Data', icon: ShieldCheck, desc: 'Zero-cloud local cryptographic vault' },
+    { label: 'Device Diagnostics', icon: Cpu, desc: 'COM3 serial hardware bridge & MAX30102' },
+    { label: 'Settings', icon: Settings2, desc: 'Personal baseline vitals & alert setup' },
   ]
 
   return (
     <div className="app-shell">
-      {/* More Bottom Sheet Backdrop */}
-      {moreBottomSheetOpen && (
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
         <div
-          onClick={() => setMoreBottomSheetOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 90,
-          }}
+          onClick={() => setMobileMenuOpen(false)}
+          className="mobile-drawer-backdrop"
           aria-hidden="true"
         />
       )}
 
-      {/* Mobile Bottom Sheet for More Menu */}
-      {moreBottomSheetOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 95,
-            background: '#3B0000',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            borderTop: '2px solid var(--yellow)',
-            padding: '20px 20px calc(24px + env(safe-area-inset-bottom))',
-            boxShadow: '0 -10px 40px rgba(0,0,0,0.6)',
-            color: '#FFF',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: 12 }}>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#FFF' }}>AERIS System & Tools</h3>
-              <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--bright-yellow)' }}>Select a module to view</p>
+      {/* Mobile Top Hamburger Drawer Menu */}
+      {mobileMenuOpen && (
+        <aside className="mobile-drawer" aria-label="Mobile Navigation Menu">
+          {/* Drawer Header */}
+          <div className="mobile-drawer-header">
+            <div className="topbar-brand">
+              <span className="brand-mark">
+                <Activity size={16} />
+              </span>
+              <strong className="brand-title">AERIS</strong>
             </div>
             <button
-              onClick={() => setMoreBottomSheetOpen(false)}
-              style={{
-                width: 44,
-                height: 44,
-                display: 'grid',
-                placeItems: 'center',
-                border: 0,
-                background: 'rgba(255,255,255,0.1)',
-                color: '#FFF',
-                borderRadius: '50%',
-                cursor: 'pointer',
-              }}
-              aria-label="Close menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="icon-button"
+              aria-label="Close navigation menu"
+              title="Close menu"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {MORE_ITEMS.map(({ label, view, icon: Icon, desc }) => (
-              <button
-                key={label}
-                onClick={() => handleMoreNavigate(view)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '12px 14px',
-                  minHeight: 48,
-                  background: activeView === view ? 'var(--yellow)' : 'rgba(255,255,255,0.08)',
-                  color: activeView === view ? '#171717' : '#FFF',
-                  border: 0,
-                  borderRadius: 12,
-                  textAlign: 'left',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    background: activeView === view ? '#171717' : 'rgba(255,193,7,0.2)',
-                    color: activeView === view ? 'var(--yellow)' : 'var(--bright-yellow)',
-                    display: 'grid',
-                    placeItems: 'center',
-                  }}
+          {/* Drawer Body */}
+          <div className="mobile-drawer-body">
+            {/* Section 1: Health Intelligence */}
+            <p className="mobile-drawer-section-title">Health Intelligence</p>
+            <div className="mobile-drawer-nav">
+              {MOBILE_INTELLIGENCE_ITEMS.map(({ label, icon: Icon, desc }) => (
+                <button
+                  key={label}
+                  className={`mobile-drawer-item ${activeView === label ? 'active' : ''}`}
+                  onClick={() => handleMobileNavigate(label)}
                 >
-                  <Icon size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div>{label}</div>
-                  <small style={{ fontSize: 11, opacity: 0.8, fontWeight: 500 }}>{desc}</small>
-                </div>
-              </button>
-            ))}
+                  <div className="mobile-drawer-icon">
+                    <Icon size={18} />
+                  </div>
+                  <div className="mobile-drawer-text">
+                    <span className="mobile-drawer-label">{label}</span>
+                    <span className="mobile-drawer-desc">{desc}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Section 2: System Tools & Settings */}
+            <p className="mobile-drawer-section-title">System & Operations</p>
+            <div className="mobile-drawer-nav">
+              {MOBILE_SYSTEM_ITEMS.map(({ label, icon: Icon, desc }) => (
+                <button
+                  key={label}
+                  className={`mobile-drawer-item ${activeView === label ? 'active' : ''}`}
+                  onClick={() => handleMobileNavigate(label)}
+                >
+                  <div className="mobile-drawer-icon">
+                    <Icon size={18} />
+                  </div>
+                  <div className="mobile-drawer-text">
+                    <span className="mobile-drawer-label">{label}</span>
+                    <span className="mobile-drawer-desc">{desc}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* Drawer Footer */}
+          <div className="mobile-drawer-footer">
+            <div
+              className="profile"
+              onClick={() => handleMobileNavigate('Settings')}
+              style={{ cursor: 'pointer', margin: 0 }}
+            >
+              <span className="avatar">VM</span>
+              <div>
+                <strong>Vimal</strong>
+                <small>{isHardwareConnected ? 'COM3 Live Hardware' : 'Personal Edge Hub'}</small>
+              </div>
+              <Settings2 size={16} style={{ color: 'var(--text-muted)' }} />
+            </div>
+          </div>
+        </aside>
       )}
 
-      {/* Desktop Left Sidebar */}
+      {/* Desktop Left Sidebar (Unchanged for laptop/desktop view) */}
       <Sidebar open={false} setOpen={() => {}} />
 
       {/* Main Content Wrapper */}
       <main className="main-content">
-        <TopBar />
+        <TopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        {isSosActive && <EmergencySosModal onClose={dismissSos} />}
+        <HeartRateLimitSosPopup thresholdBpm={115} />
         {renderView()}
       </main>
 
-      {/* Fixed 64px Mobile Bottom Navigation Bar */}
+      {/* Fixed Mobile Bottom Navigation Bar (Main Core Features Only) */}
       <nav className="mobile-bottom" aria-label="Mobile bottom navigation">
         {/* 1. Home */}
         <button
           className={activeView === 'Dashboard' || activeView === 'Overview' ? 'active' : ''}
-          onClick={() => {
-            setActiveView('Dashboard')
-            setMoreBottomSheetOpen(false)
-          }}
+          onClick={() => setActiveView('Dashboard')}
+          title="Home Dashboard"
         >
           <LayoutDashboard size={20} />
           <span>Home</span>
@@ -226,35 +227,18 @@ function MainApp() {
         {/* 2. Vitals */}
         <button
           className={activeView === 'Vitals' ? 'active' : ''}
-          onClick={() => {
-            setActiveView('Vitals')
-            setMoreBottomSheetOpen(false)
-          }}
+          onClick={() => setActiveView('Vitals')}
+          title="Live Vitals Stream"
         >
           <HeartPulse size={20} />
           <span>Vitals</span>
         </button>
 
-        {/* 3. Insights */}
-        <button
-          className={activeView === 'Risk Intelligence' || activeView === 'Stress & Well-being' || activeView === 'Mobility' || activeView === 'Climate Health' ? 'active' : ''}
-          onClick={() => {
-            setActiveView('Risk Intelligence')
-            setMoreBottomSheetOpen(false)
-          }}
-        >
-          <BrainCircuit size={20} />
-          <span>Insights</span>
-        </button>
-
-        {/* 4. Alerts */}
+        {/* 3. Alerts */}
         <button
           className={activeView === 'Alerts' ? 'active' : ''}
-          onClick={() => {
-            setActiveView('Alerts')
-            setMoreBottomSheetOpen(false)
-          }}
-          style={{ position: 'relative' }}
+          onClick={() => setActiveView('Alerts')}
+          title="Risk Alerts & SOS"
         >
           <div style={{ position: 'relative', display: 'inline-flex' }}>
             <AlertTriangle size={20} />
@@ -267,13 +251,14 @@ function MainApp() {
           <span>Alerts</span>
         </button>
 
-        {/* 5. More */}
+        {/* 4. Safe Places */}
         <button
-          className={moreBottomSheetOpen || activeView === 'AI Companion' || activeView === 'Health History' || activeView === 'Privacy & Data' || activeView === 'Settings' ? 'active' : ''}
-          onClick={() => setMoreBottomSheetOpen(!moreBottomSheetOpen)}
+          className={activeView === 'Safe Places' ? 'active' : ''}
+          onClick={() => setActiveView('Safe Places')}
+          title="Emergency Safe Haven & Clinic Map"
         >
-          <MoreHorizontal size={20} />
-          <span>More</span>
+          <MapPin size={20} />
+          <span>Safe Places</span>
         </button>
       </nav>
     </div>

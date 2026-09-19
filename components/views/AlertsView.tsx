@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { AlertTriangle, Bell, BellRing, CheckCircle, Eye, Trash2, X } from 'lucide-react'
+import { Bell, BellRing, CheckCircle, Eye, Trash2, X } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { AlertItem } from '@/types/aeris'
+import { RiskBadge } from '@/components/ui/RiskBadge'
 
 export function AlertsView() {
   const { alerts, acknowledgeAlert, dismissAlert, notificationsEnabled, enableChromeNotifications } = useTelemetry()
@@ -17,7 +18,7 @@ export function AlertsView() {
             position: 'fixed',
             inset: 0,
             zIndex: 100,
-            background: 'rgba(0,0,0,0.85)',
+            background: 'rgba(0,0,0,0.8)',
             backdropFilter: 'blur(6px)',
             display: 'grid',
             placeItems: 'center',
@@ -29,38 +30,40 @@ export function AlertsView() {
             style={{
               width: '100%',
               maxWidth: 480,
-              padding: 22,
-              background: '#FFF',
-              color: '#171717',
-              borderRadius: 18,
+              padding: 20,
+              background: 'var(--panel-bg)',
+              color: 'var(--text-primary)',
+              borderRadius: 12,
               position: 'relative',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+              border: '1px solid var(--border-focus)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span className={`badge ${selectedAlert.severity.toLowerCase()}`}>{selectedAlert.severity} Severity</span>
+              <RiskBadge level={selectedAlert.severity} size="sm" />
               <button
                 onClick={() => setSelectedAlert(null)}
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 32,
+                  height: 32,
                   display: 'grid',
                   placeItems: 'center',
-                  border: 0,
-                  background: 'transparent',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--panel-elevated)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   borderRadius: '50%',
                 }}
                 aria-label="Close alert details"
               >
-                <X size={22} />
+                <X size={18} />
               </button>
             </div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 8px', color: '#171717' }}>{selectedAlert.title}</h2>
-            <p style={{ fontSize: 13, color: '#374151', marginBottom: 14, lineHeight: 1.5 }}>{selectedAlert.trigger}</p>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 6px', color: 'var(--text-primary)' }}>{selectedAlert.title}</h2>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>{selectedAlert.trigger}</p>
 
-            <h4 style={{ fontSize: 12, fontWeight: 800, margin: '0 0 6px', color: '#171717', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Supporting Telemetry Signals</h4>
-            <ul style={{ paddingLeft: 18, fontSize: 12, color: '#4B5563', marginBottom: 16 }}>
+            <h4 style={{ fontSize: 11, fontWeight: 700, margin: '0 0 6px', color: 'var(--text-muted)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Telemetry Rationale</h4>
+            <ul style={{ paddingLeft: 16, fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: 14 }}>
               {selectedAlert.supportingSignals.map((sig, idx) => (
                 <li key={idx} style={{ marginBottom: 4 }}>
                   {sig}
@@ -68,20 +71,34 @@ export function AlertsView() {
               ))}
             </ul>
 
-            <div style={{ background: '#FEF3C7', padding: 12, borderRadius: 10, fontSize: 12, color: '#78350F', fontWeight: 700, marginBottom: 18, lineHeight: 1.5 }}>
+            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8, fontSize: 12, color: 'var(--yellow)', fontWeight: 600, marginBottom: 16, lineHeight: 1.4 }}>
               Recommended Action: {selectedAlert.recommendedAction}
             </div>
 
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
-                className="demo-toggle"
                 onClick={() => {
                   acknowledgeAlert(selectedAlert.id)
                   setSelectedAlert(null)
                 }}
-                style={{ background: 'var(--yellow)', color: '#171717', border: 0, minHeight: 44, padding: '0 18px', width: '100%', justifyContent: 'center' }}
+                style={{
+                  background: 'var(--yellow)',
+                  color: '#080B10',
+                  border: 0,
+                  minHeight: 38,
+                  padding: '0 16px',
+                  width: '100%',
+                  borderRadius: 8,
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-mono)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                }}
               >
-                <CheckCircle size={16} /> Acknowledge Alert
+                <CheckCircle size={15} /> Acknowledge Advisory
               </button>
             </div>
           </div>
@@ -91,36 +108,41 @@ export function AlertsView() {
       <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <p className="eyebrow">Real-Time Risk Advisories</p>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>System Alerts</h1>
+          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Operational Alert Queue</h1>
           <p className="subhead">
-            Dynamic early warnings generated on-device when telemetry anomalies cross personal baseline thresholds.
+            Dynamic early warning advisories generated on-device when physiological signals cross baseline thresholds.
           </p>
         </div>
 
         {/* Chrome Push Notification Toggle Button */}
         <button
-          className="demo-toggle"
           onClick={enableChromeNotifications}
           style={{
-            background: notificationsEnabled ? 'var(--yellow)' : 'rgba(255,255,255,0.1)',
-            color: notificationsEnabled ? '#171717' : '#FFF',
-            border: 0,
-            minHeight: 44,
-            padding: '8px 16px',
-            fontWeight: 800,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '6px 12px',
+            borderRadius: 8,
+            fontSize: 11,
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 700,
+            border: notificationsEnabled ? '1px solid var(--yellow)' : '1px solid var(--border-subtle)',
+            background: notificationsEnabled ? 'rgba(255,193,7,0.12)' : 'var(--panel-elevated)',
+            color: notificationsEnabled ? 'var(--yellow)' : 'var(--text-secondary)',
+            cursor: 'pointer',
           }}
         >
-          {notificationsEnabled ? <BellRing size={16} /> : <Bell size={16} />}
-          <span>{notificationsEnabled ? 'Chrome Desktop Push Active' : 'Enable Chrome Alerts'}</span>
+          {notificationsEnabled ? <BellRing size={14} /> : <Bell size={14} />}
+          <span>{notificationsEnabled ? 'Desktop Push Active' : 'Enable Desktop Push'}</span>
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {alerts.length === 0 ? (
-          <article className="panel" style={{ padding: 28, textAlign: 'center', color: '#6B7280' }}>
-            <CheckCircle size={32} style={{ color: '#10B981', margin: '0 auto 10px' }} />
-            <h3 style={{ fontSize: 17, color: '#171717', margin: 0 }}>Zero Active System Alerts</h3>
-            <p style={{ fontSize: 12, margin: '4px 0 0' }}>All 5 core sensors reporting signals within personal baseline limits.</p>
+          <article className="panel" style={{ padding: 28, textAlign: 'center', color: 'var(--text-muted)' }}>
+            <CheckCircle size={28} style={{ color: 'var(--risk-safe)', margin: '0 auto 10px' }} />
+            <h3 style={{ fontSize: 16, color: 'var(--text-primary)', margin: 0 }}>Zero Active System Alerts</h3>
+            <p style={{ fontSize: 12, margin: '4px 0 0' }}>All 5 core sensors reporting signals strictly within personal baseline limits.</p>
           </article>
         ) : (
           alerts.map((alert) => (
@@ -129,36 +151,60 @@ export function AlertsView() {
               key={alert.id}
               style={{
                 padding: 16,
-                borderLeft: `5px solid ${alert.severity === 'Critical' ? 'var(--main-red)' : alert.severity === 'High' ? '#F97316' : 'var(--yellow)'}`,
-                opacity: alert.acknowledged ? 0.75 : 1,
+                borderLeft: `4px solid ${alert.severity === 'Critical' ? 'var(--risk-critical)' : alert.severity === 'High' ? 'var(--risk-warning)' : 'var(--yellow)'}`,
+                opacity: alert.acknowledged ? 0.65 : 1,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#171717' }}>{alert.title}</h3>
-                    <span className={`badge ${alert.severity.toLowerCase()}`}>{alert.severity}</span>
-                    {alert.acknowledged && <span style={{ fontSize: 11, color: '#059669', fontWeight: 700 }}>✓ Acknowledged</span>}
+                    <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{alert.title}</h3>
+                    <RiskBadge level={alert.severity} size="sm" />
+                    {alert.acknowledged && <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--risk-safe)', fontWeight: 700 }}>✓ ACKNOWLEDGED</span>}
                   </div>
-                  <small style={{ color: '#6B7280', fontSize: 11 }}>Triggered at {alert.time}</small>
+                  <small style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>Triggered at {alert.time}</small>
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
-                    className="outline-button"
                     onClick={() => setSelectedAlert(alert)}
-                    style={{ padding: '6px 12px', minHeight: 38, fontSize: 11 }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 10px',
+                      background: 'var(--panel-elevated)',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
                   >
-                    <Eye size={14} /> View Details
+                    <Eye size={13} /> View Details
                   </button>
 
                   {!alert.acknowledged && (
                     <button
-                      className="demo-toggle"
                       onClick={() => acknowledgeAlert(alert.id)}
-                      style={{ padding: '6px 12px', minHeight: 38, fontSize: 11, background: 'var(--yellow)', color: '#171717', border: 0 }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '5px 10px',
+                        background: 'var(--yellow)',
+                        color: '#080B10',
+                        border: 0,
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                      }}
                     >
-                      <CheckCircle size={14} /> Acknowledge
+                      <CheckCircle size={13} /> Acknowledge
                     </button>
                   )}
 
@@ -166,17 +212,17 @@ export function AlertsView() {
                     className="icon-button"
                     onClick={() => dismissAlert(alert.id)}
                     title="Dismiss alert"
-                    style={{ width: 38, height: 38, minWidth: 38, minHeight: 38 }}
+                    style={{ width: 32, height: 32, minWidth: 32, minHeight: 32 }}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
 
-              <p style={{ fontSize: 13, color: '#374151', margin: '10px 0 8px', lineHeight: 1.5 }}>{alert.trigger}</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '8px 0 8px', lineHeight: 1.5 }}>{alert.trigger}</p>
 
-              <div style={{ background: '#F9FAFB', padding: 10, borderRadius: 8, fontSize: 12, color: '#4B5563' }}>
-                <strong>Recommended Action:</strong> {alert.recommendedAction}
+              <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--yellow)' }}>Recommended Action:</strong> {alert.recommendedAction}
               </div>
             </article>
           ))

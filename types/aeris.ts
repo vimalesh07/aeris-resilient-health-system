@@ -1,35 +1,77 @@
 export type Scenario =
+  // Everyday Wellness Modes
   | 'Normal'
   | 'Stress'
   | 'Heat'
   | 'Temperature Anomaly'
   | 'Mobility'
   | 'Monsoon'
+  // Climate Disaster Resilience Modes
+  | 'disaster_heatwave'
+  | 'disaster_flood'
+  | 'disaster_aqi_spike'
+  | 'disaster_fall_sos'
 
 export type ActivityState = 'Sedentary' | 'Light Activity' | 'Moderate Walking' | 'Active Motion'
+export type BiologicalSex = 'Male' | 'Female' | 'Other'
+export type UserActivityLevel = 'Sedentary' | 'Lightly Active' | 'Moderately Active' | 'Very Active' | 'Athlete'
+
+export interface UserProfile {
+  name: string
+  age: number
+  sex: BiologicalSex
+  heightCm: number
+  weightKg: number
+  activityLevel: UserActivityLevel
+  knownRestingHR?: number | null
+  knownHrvBaseline?: number | null
+  healthNotes?: string
+  units: 'metric' | 'imperial'
+  emergencyContactPhone?: string
+  enableSmsAlerts?: boolean
+  enableWhatsappAlerts?: boolean
+}
 
 export interface TelemetryData {
-  heartRate: number // 60–100 BPM
-  hrv: number // 30–90 ms
-  bodyTemp: number // 36.2–37.4°C
-  spo2: number // 94–100%
-  ambientTemp: number // 25–42°C
-  humidity: number // 40–95%
-  pressure: number // 980–1030 hPa
-  rain: boolean // ON/OFF
+  heartRate: number // BPM (e.g. 76)
+  hrv: number | null // ms (null if unmeasured)
+  bodyTemp: number // °C (e.g. 36.5)
+  spo2: number // % (e.g. 90)
+  ambientTemp: number // °C
+  humidity: number // %
+  pressure: number // hPa
+  weatherCondition: string
+  rain: boolean
+  precipitation: number
+  externalAqi: number // External US AQI
+  pm25: number | null // µg/m³ (External API)
+  pm10: number | null // µg/m³ (External API)
+  o3: number | null // µg/m³ (External API)
+  no2: number | null // µg/m³ (External API)
+  aqiStale?: boolean
   activity: ActivityState
-  activityLevel: number // 0-100
-  gaitVariability: number // 0-100
-  gaitSymmetry: number // 50-100%
+  activityLevel: number
+  gaitVariability: number
+  gaitSymmetry: number
   steps: number
-  cadence: number // steps/min
-  walkingSpeed: number // m/s
-  externalAqi: number // Optional external AQI
+  cadence: number
+  walkingSpeed: number
   timestamp: string
 }
 
+export interface CircadianBaselineBin {
+  hourBin: number // 0 to 23
+  samplesCount: number
+  avgRestingHR: number
+  avgBodyTemp: number
+  avgSpo2: number
+  avgHrv: number | null
+  stdDevBodyTemp: number
+  isConverged: boolean
+}
+
 export interface PersonalBaseline {
-  restingHR: number
+  restingHR: number // Personalized learned resting HR
   restingHRRange: { min: number; max: number }
   hrvBaseline: number
   hrvRange: { min: number; max: number }
@@ -38,19 +80,63 @@ export interface PersonalBaseline {
   activityBaseline: number
   gaitSymmetryBaseline: number
   gaitVariabilityBaseline: number
+  isLearningMode: boolean
+  totalSamplesCount: number
+  confidence: 'High' | 'Medium' | 'Learning'
+  lastUpdated: string
+  timeOfDayModel: string
+  refRestingHRRange: { min: number; max: number } // Demographic reference range
+  circadianBins?: Record<number, CircadianBaselineBin>
 }
 
 export interface RiskScores {
-  physiological: number
-  stress: number
-  temperature: number
-  heat: number
-  mobility: number
-  environmental: number
-  overall: number
+  physiological: number // 0-100
+  stress: number // 0-100
+  temperature: number // 0-100
+  heat: number // 0-100 derived from PSI
+  psi: number // Raw PSI 0-9
+  wbgt: number // Wet-Bulb Globe Temp °C
+  mobility: number // 0-100
+  environmental: number // 0-100
+  overall: number // Composite Risk Index (CRI) 0-100
   statusLevel: 'Normal' | 'Monitor' | 'Warning' | 'High Risk'
   statusLabel: string
   color: 'green' | 'yellow' | 'orange' | 'red'
+  criticalOverride: boolean
+  overrideReason?: string
+  contributions: {
+    physiological: number
+    temperature: number
+    heat: number
+    environmental: number
+    mobility: number
+  }
+  explanations: string[]
+  climateBodyAnalysis: string[]
+  tempAnomaly: {
+    detected: boolean
+    label: string
+  }
+}
+
+export interface DailyAnalysis {
+  avgHR: number
+  maxHR: number
+  avgSpo2: number
+  minSpo2: number
+  avgBodyTemp: number
+  maxBodyTemp: number
+  tempAnomalyCount: number
+  avgAmbientTemp: number
+  maxAmbientTemp: number
+  avgHumidity: number
+  avgAqi: number
+  maxAqi: number
+  avgCri: number
+  maxCri: number
+  timeInTier: { green: number; yellow: number; orange: number; red: number }
+  climateLinkedEventsCount: number
+  trendInsights: string[]
 }
 
 export interface AlertItem {
@@ -91,10 +177,12 @@ export interface ChatMessage {
 export interface HistoricalPoint {
   time: string
   heartRate: number
-  hrv: number
+  hrv: number | null
+  spo2: number
   bodyTemp: number
   ambientTemp: number
   humidity: number
+  aqi: number
   stress: number
   heatRisk: number
   mobility: number
@@ -128,4 +216,3 @@ export interface UserLocation {
   shortName?: string
   source?: 'gps' | 'search'
 }
-

@@ -1,47 +1,76 @@
 'use client'
 
 import React from 'react'
-import { BrainCircuit, Cpu, Layers, ShieldCheck, Zap } from 'lucide-react'
-import { RiskGauge } from '@/components/RiskGauge'
+import { Info, Layers, ShieldAlert } from 'lucide-react'
+import { HumanRiskVisualization } from '@/components/HumanRiskVisualization'
 import { useTelemetry } from '@/hooks/useTelemetry'
+import { RiskBadge } from '@/components/ui/RiskBadge'
 
 export function RiskIntelligenceView() {
   const { risks, telemetry, baseline } = useTelemetry()
 
   const subRisks = [
-    { title: 'Physiological Risk', score: risks.physiological, desc: 'Elevated HR above resting baseline & HRV reduction', chip: 'MAX30102' },
-    { title: 'Physiological Stress', score: risks.stress, desc: 'Autonomic nervous system strain derived from HRV & HR (No GSR)', chip: 'MAX30102' },
-    { title: 'Temperature Anomaly', score: risks.temperature, desc: 'Core body temperature deviation above learned baseline', chip: 'MAX30205' },
-    { title: 'Prototype Heat Strain', score: risks.heat, desc: 'Combined ambient heat index + physiological strain', chip: 'BME280 + MAX30102' },
-    { title: 'Mobility & Gait Variation', score: risks.mobility, desc: 'Gait asymmetry & step cadence variability', chip: 'MPU6050' },
-    { title: 'Environmental Resilience', score: risks.environmental, desc: 'Barometric pressure drop, rain contact & external AQI', chip: 'BME280 + Rain Sensor' },
+    { title: 'Physiological Risk (30% Weight)', score: risks.physiological, desc: 'Elevated HR above baseline & SpO₂ drop', chip: 'MAX30102' },
+    { title: 'Subclinical Temp Anomaly (20% Weight)', score: risks.temperature, desc: 'Core body temperature deviation above circadian baseline', chip: 'MAX30205' },
+    { title: 'Heat Strain Index / PSI (20% Weight)', score: risks.heat, desc: `Physiological Strain Index (PSI ${risks.psi}/9, WBGT ${risks.wbgt}°C)`, chip: 'MAX30102 + Ambient' },
+    { title: 'Environmental Risk (15% Weight)', score: risks.environmental, desc: `External AQI ${telemetry.externalAqi}, PM2.5 & pressure`, chip: 'Open-Meteo API' },
+    { title: 'Mobility & Gait Variation (15% Weight)', score: risks.mobility, desc: 'Gait asymmetry & step cadence variability', chip: 'MPU6050' },
+    { title: 'Autonomic Stress Score', score: risks.stress, desc: 'HRV & HR stress calculation', chip: 'MAX30102' },
   ]
 
   const flowSteps = [
-    '5 Core Sensors',
-    'ESP32 Node',
-    'BLE Gateway',
-    'Edge Feature Extraction',
-    'Personal Baseline',
-    'Multi-Modal Fusion',
-    'AERIS Risk Score',
+    'Physical MAX30102 (COM3)',
+    'Temperature & Weather API',
+    'Circadian Baseline (14d)',
+    'Feature Extraction',
+    'Late Fusion CRI Engine',
+    'Single-Domain Override',
+    'AERIS Composite Risk Index',
   ]
 
   return (
     <div style={{ paddingTop: 16 }}>
       <div style={{ marginBottom: 20 }}>
-        <p className="eyebrow">Edge AI Multi-Modal Risk Architecture</p>
-        <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>Risk Intelligence</h1>
+        <p className="eyebrow">AERIS Multi-Modal Fusion Engine</p>
+        <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Risk Intelligence & Fusion Architecture</h1>
         <p className="subhead">
-          Fusing 6 distinct telemetry channels on-device to compute real-time early warning risk scores.
+          On-device Late Fusion Risk Engine fusing physiological biometrics with ambient environmental hazard telemetry.
         </p>
       </div>
 
+      {/* Single-Domain Critical Override Banner */}
+      {risks.criticalOverride && (
+        <article
+          style={{
+            margin: '0 0 16px',
+            padding: '14px 18px',
+            background: 'rgba(198, 40, 40, 0.15)',
+            border: '1px solid var(--main-red)',
+            borderRadius: 10,
+            color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ShieldAlert size={22} style={{ color: 'var(--main-red)' }} />
+            <div>
+              <strong style={{ fontSize: 14, color: 'var(--text-primary)' }}>SINGLE-DOMAIN CRITICAL OVERRIDE ACTIVE</strong>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>{risks.overrideReason}</p>
+            </div>
+          </div>
+          <RiskBadge level="CRITICAL" score={risks.overall} size="md" />
+        </article>
+      )}
+
       {/* Sensor Data Flow Diagram */}
-      <article className="panel" style={{ padding: 20, marginBottom: 20, background: '#3B0000', color: '#FFF', borderColor: 'var(--yellow)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <Layers size={20} style={{ color: 'var(--yellow)' }} />
-          <h3 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>On-Device Multi-Modal Fusion Flow</h3>
+      <article className="panel" style={{ padding: 18, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <Layers size={18} style={{ color: 'var(--yellow)' }} />
+          <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>On-Device Multi-Modal Fusion Flow</h3>
         </div>
         <div
           style={{
@@ -50,62 +79,102 @@ export function RiskIntelligenceView() {
             gap: 8,
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(0,0,0,0.3)',
-            padding: 14,
-            borderRadius: 12,
-            fontSize: 12,
+            background: 'var(--panel-elevated)',
+            border: '1px solid var(--border-subtle)',
+            padding: 12,
+            borderRadius: 10,
+            fontSize: 11,
+            fontFamily: 'var(--font-mono)',
             fontWeight: 700,
-            color: '#FFF',
+            color: 'var(--text-primary)',
           }}
         >
           {flowSteps.map((step, idx) => (
             <React.Fragment key={step}>
               <span
                 style={{
-                  background: idx === flowSteps.length - 1 ? 'var(--yellow)' : 'rgba(255,255,255,0.1)',
-                  color: idx === flowSteps.length - 1 ? '#171717' : '#FFF',
-                  padding: '6px 12px',
-                  borderRadius: 8,
+                  background: idx === flowSteps.length - 1 ? 'var(--yellow)' : 'var(--panel-bg)',
+                  color: idx === flowSteps.length - 1 ? '#080B10' : 'var(--text-primary)',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '5px 10px',
+                  borderRadius: 6,
                   textAlign: 'center',
                   fontWeight: 800,
                 }}
               >
                 {step}
               </span>
-              {idx < flowSteps.length - 1 && <span style={{ color: 'var(--yellow)', fontSize: 14 }}>➔</span>}
+              {idx < flowSteps.length - 1 && <span style={{ color: 'var(--yellow)', fontSize: 12 }}>➔</span>}
             </React.Fragment>
           ))}
         </div>
       </article>
 
-      {/* Main Score & Threshold Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 20 }}>
-        <article className="panel" style={{ padding: 20, display: 'grid', placeItems: 'center' }}>
-          <p className="eyebrow" style={{ width: '100%', textAlign: 'left' }}>Overall AERIS Risk Index</p>
-          <RiskGauge risks={risks} />
-          <div style={{ marginTop: 14, textAlign: 'center' }}>
-            <span className={`status-pill ${risks.color}`}>{risks.statusLabel}</span>
-            <p style={{ fontSize: 12, color: '#4B5563', margin: '8px 0 0' }}>
-              Multi-signal agreement check: <strong>Active</strong> (Prevents false alarms)
-            </p>
+      {/* Main 3D Digital Twin & CRI Engine Card */}
+      <article className="panel" style={{ padding: 20, marginBottom: 20 }}>
+        <HumanRiskVisualization
+          risks={risks}
+          currentBpm={telemetry.heartRate}
+          currentTemp={telemetry.bodyTemp}
+          currentSpo2={telemetry.spo2}
+          baselineHR={baseline.restingHR}
+          baselineTemp={baseline.tempBaseline}
+        />
+      </article>
+
+      {/* Late Fusion Contribution Breakdown */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 20 }}>
+        <article className="panel" style={{ padding: 20 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Late Fusion Contribution Weights</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Physiological Risk (30% weight)</span>
+              <strong>+{risks.contributions.physiological} / 30 pts</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Temperature Anomaly (20% weight)</span>
+              <strong>+{risks.contributions.temperature} / 20 pts</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Heat Strain / PSI (20% weight)</span>
+              <strong>+{risks.contributions.heat} / 20 pts</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Environmental Risk (15% weight)</span>
+              <strong>+{risks.contributions.environmental} / 15 pts</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Mobility & Gait (15% weight)</span>
+              <strong>+{risks.contributions.mobility} / 15 pts</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, fontWeight: 800, fontSize: 13, color: 'var(--text-primary)' }}>
+              <span>Total Composite Risk Index (CRI)</span>
+              <span>{risks.overall} / 100</span>
+            </div>
           </div>
         </article>
 
+        {/* Climate-Health Explainability */}
         <article className="panel" style={{ padding: 20 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 12px', color: '#171717' }}>Prototype Risk Thresholds</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { range: '0 – 25', label: 'Normal (Low Risk)', desc: 'Biometric & environmental signals strictly within baseline.', color: '#10B981' },
-              { range: '26 – 50', label: 'Monitor (Moderate Risk)', desc: 'Minor signal variation; continued passive edge tracking.', color: 'var(--yellow)' },
-              { range: '51 – 75', label: 'Warning (Elevated Risk)', desc: 'Multi-signal strain detected; user advisory generated.', color: '#F97316' },
-              { range: '76 – 100', label: 'High Risk (High Attention)', desc: 'Significant physiological or climate hazard anomaly.', color: 'var(--main-red)' },
-            ].map((item) => (
-              <div key={item.range} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: 10, background: '#F9FAFB', borderRadius: 8, borderLeft: `4px solid ${item.color}` }}>
-                <span style={{ font: "12px 'Geist Mono', monospace", fontWeight: 800, width: 68, color: '#171717', flexShrink: 0 }}>{item.range}</span>
-                <div>
-                  <strong style={{ fontSize: 13, color: '#171717', display: 'block' }}>{item.label}</strong>
-                  <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>{item.desc}</p>
-                </div>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>CLIMATE ↔ PHYSIOLOGY EXPLAINABILITY</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {risks.explanations.map((exp, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: 10,
+                  background: 'var(--panel-elevated)',
+                  borderRadius: 8,
+                  borderLeft: '3px solid var(--main-red)',
+                  fontSize: 12,
+                  color: 'var(--text-primary)',
+                }}
+              >
+                <Info size={16} style={{ color: 'var(--main-red)', flexShrink: 0, marginTop: 2 }} />
+                <span>{exp}</span>
               </div>
             ))}
           </div>
@@ -113,26 +182,26 @@ export function RiskIntelligenceView() {
       </div>
 
       {/* 6 Sub-Risk Scores Grid */}
-      <h3 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 14px', color: '#FFF' }}>Fused Sub-Risk Indicators</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Fused Sub-Risk Modules</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
         {subRisks.map((sub) => (
-          <article className="panel" style={{ padding: 18 }} key={sub.title}>
+          <article className="panel" style={{ padding: 16 }} key={sub.title}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <strong style={{ fontSize: 14, color: '#171717' }}>{sub.title}</strong>
-              <span className={`badge ${sub.score > 60 ? 'high' : sub.score > 30 ? 'medium' : 'low'}`}>{sub.score} / 100</span>
+              <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>{sub.title}</strong>
+              <RiskBadge level={sub.score > 60 ? 'CRITICAL' : sub.score > 30 ? 'WARNING' : 'SAFE'} score={sub.score} size="sm" />
             </div>
-            <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 10px' }}>{sub.desc}</p>
-            <div style={{ background: '#E5E7EB', height: 8, borderRadius: 10, overflow: 'hidden' }}>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '0 0 10px' }}>{sub.desc}</p>
+            <div style={{ background: 'var(--panel-elevated)', height: 6, borderRadius: 4, overflow: 'hidden' }}>
               <div
                 style={{
                   height: '100%',
                   width: `${sub.score}%`,
-                  background: sub.score > 60 ? 'var(--main-red)' : sub.score > 30 ? 'var(--yellow)' : '#10B981',
+                  background: sub.score > 60 ? 'var(--risk-critical)' : sub.score > 30 ? 'var(--risk-warning)' : 'var(--risk-safe)',
                 }}
               />
             </div>
-            <div style={{ marginTop: 8, fontSize: 10, color: '#6B7280', textAlign: 'right' }}>
-              Hardware Source: <strong>{sub.chip}</strong>
+            <div style={{ marginTop: 8, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textAlign: 'right' }}>
+              Sensor: <strong>{sub.chip}</strong>
             </div>
           </article>
         ))}

@@ -1,14 +1,15 @@
 'use client'
 
 import React from 'react'
-import { Calendar, History, TrendingUp } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
+import { RiskBadge } from '@/components/ui/RiskBadge'
 
 export function HealthHistoryView() {
   const { history, timeframe, setTimeframe } = useTelemetry()
 
   const avgHR = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.heartRate, 0) / history.length) : 70
-  const avgHRV = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.hrv, 0) / history.length) : 65
+  const validHrvs = history.map((h) => h.hrv).filter((v): v is number => v !== null)
+  const avgHRV = validHrvs.length ? Math.round(validHrvs.reduce((sum, v) => sum + v, 0) / validHrvs.length) : 65
   const minTemp = history.length ? Math.min(...history.map((h) => h.bodyTemp)).toFixed(1) : '36.2'
   const maxTemp = history.length ? Math.max(...history.map((h) => h.bodyTemp)).toFixed(1) : '37.0'
 
@@ -17,14 +18,14 @@ export function HealthHistoryView() {
       <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <p className="eyebrow">Longitudinal Signal Intelligence</p>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>Health History</h1>
+          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Health History</h1>
           <p className="subhead">
             Tracking biometrics, stress patterns, and climate resilience over time.
           </p>
         </div>
 
-        {/* Timeframe Selector with 44px Touch Standard */}
-        <div style={{ display: 'flex', gap: 4, background: '#3B0000', padding: 4, borderRadius: 10, border: '1px solid var(--yellow)', width: '100%', maxWidth: 340 }}>
+        {/* Timeframe Selector */}
+        <div style={{ display: 'flex', gap: 4, background: 'var(--panel-elevated)', padding: 4, borderRadius: 8, border: '1px solid var(--border-subtle)', width: '100%', maxWidth: 320 }}>
           {(['24h', '7d', '30d'] as const).map((tf) => (
             <button
               key={tf}
@@ -32,12 +33,13 @@ export function HealthHistoryView() {
               style={{
                 flex: 1,
                 background: timeframe === tf ? 'var(--yellow)' : 'transparent',
-                color: timeframe === tf ? '#171717' : '#FFF',
+                color: timeframe === tf ? '#080B10' : 'var(--text-secondary)',
                 border: 0,
-                padding: '8px 12px',
-                minHeight: 44,
-                borderRadius: 8,
+                padding: '6px 12px',
+                minHeight: 36,
+                borderRadius: 6,
                 fontSize: 12,
+                fontFamily: 'var(--font-mono)',
                 fontWeight: 800,
                 cursor: 'pointer',
               }}
@@ -50,82 +52,82 @@ export function HealthHistoryView() {
 
       {/* Historical Signal Charts Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 18 }}>
-        {/* Heart Rate & HRV History Card */}
+        {/* Heart Rate Trend Card */}
         <article className="panel" style={{ padding: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, margin: '0 0 12px', color: '#171717' }}>Heart Rate & HRV ({timeframe.toUpperCase()} Trend)</h3>
-          <div style={{ height: 150, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid #E5E7EB' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Heart Rate ({timeframe.toUpperCase()} Trend)</h3>
+          <div style={{ height: 140, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--border-subtle)' }}>
             {history.map((pt, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div
                   style={{
                     width: '100%',
                     background: 'var(--main-red)',
-                    height: `${Math.max(14, ((pt.heartRate - 50) / 60) * 110)}px`,
-                    borderRadius: 4,
+                    height: `${Math.max(12, ((pt.heartRate - 50) / 60) * 100)}px`,
+                    borderRadius: 3,
                   }}
                   title={`${pt.time}: ${pt.heartRate} BPM`}
                 />
-                <span style={{ fontSize: 9, color: '#6B7280', font: "9px 'Geist Mono', monospace" }}>{pt.time}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{pt.time}</span>
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: '#4B5563' }}>
-            <span>Avg HR: <strong>{avgHR} BPM</strong></span>
-            <span>Avg HRV: <strong>{avgHRV} ms</strong></span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+            <span>Avg HR: <strong style={{ color: 'var(--text-primary)' }}>{avgHR} BPM</strong></span>
+            <span>Avg HRV: <strong style={{ color: 'var(--text-primary)' }}>{avgHRV} ms</strong></span>
           </div>
         </article>
 
         {/* Body Temperature History Card */}
         <article className="panel" style={{ padding: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, margin: '0 0 12px', color: '#171717' }}>Body Temperature Variance</h3>
-          <div style={{ height: 150, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid #E5E7EB' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Body Temperature Variance</h3>
+          <div style={{ height: 140, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--border-subtle)' }}>
             {history.map((pt, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div
                   style={{
                     width: '100%',
-                    background: pt.bodyTemp > 37.2 ? 'var(--main-red)' : 'var(--yellow)',
-                    height: `${Math.max(14, (pt.bodyTemp - 35.8) * 40)}px`,
-                    borderRadius: 4,
+                    background: pt.bodyTemp > 37.2 ? 'var(--risk-critical)' : 'var(--yellow)',
+                    height: `${Math.max(12, (pt.bodyTemp - 35.8) * 35)}px`,
+                    borderRadius: 3,
                   }}
                   title={`${pt.time}: ${pt.bodyTemp}°C`}
                 />
-                <span style={{ fontSize: 9, color: '#6B7280', font: "9px 'Geist Mono', monospace" }}>{pt.time}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{pt.time}</span>
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: '#4B5563' }}>
-            <span>Min: <strong>{minTemp}°C</strong></span>
-            <span>Max: <strong>{maxTemp}°C</strong></span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+            <span>Min: <strong style={{ color: 'var(--text-primary)' }}>{minTemp}°C</strong></span>
+            <span>Max: <strong style={{ color: 'var(--text-primary)' }}>{maxTemp}°C</strong></span>
           </div>
         </article>
       </div>
 
       {/* Historical Data Log */}
       <article className="panel" style={{ padding: 18 }}>
-        <h3 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 14px', color: '#171717' }}>Longitudinal Data Archive ({timeframe.toUpperCase()})</h3>
+        <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>Longitudinal Data Archive ({timeframe.toUpperCase()})</h3>
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table style={{ width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 12 }}>
+          <table style={{ width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #E5E7EB', color: '#6B7280', textAlign: 'left' }}>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', textAlign: 'left' }}>
                 <th style={{ padding: '10px 8px' }}>Time</th>
-                <th style={{ padding: '10px 8px' }}>HR</th>
+                <th style={{ padding: '10px 8px' }}>Heart Rate</th>
                 <th style={{ padding: '10px 8px' }}>HRV</th>
-                <th style={{ padding: '10px 8px' }}>Temp</th>
+                <th style={{ padding: '10px 8px' }}>Body Temp</th>
                 <th style={{ padding: '10px 8px' }}>Heat Risk</th>
                 <th style={{ padding: '10px 8px' }}>Overall Score</th>
               </tr>
             </thead>
             <tbody>
               {history.map((row, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB', color: '#171717' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{row.time}</td>
+                <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                  <td style={{ padding: '10px 8px', color: 'var(--text-secondary)' }}>{row.time}</td>
                   <td style={{ padding: '10px 8px' }}>{row.heartRate} BPM</td>
                   <td style={{ padding: '10px 8px' }}>{row.hrv} ms</td>
                   <td style={{ padding: '10px 8px' }}>{row.bodyTemp}°C</td>
                   <td style={{ padding: '10px 8px' }}>{row.heatRisk} / 100</td>
                   <td style={{ padding: '10px 8px' }}>
-                    <span className={`badge ${row.overallRisk > 50 ? 'high' : 'medium'}`}>{row.overallRisk} / 100</span>
+                    <RiskBadge level={row.overallRisk > 50 ? 'CRITICAL' : 'SAFE'} score={row.overallRisk} size="sm" />
                   </td>
                 </tr>
               ))}

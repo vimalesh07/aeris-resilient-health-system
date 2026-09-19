@@ -17,6 +17,7 @@ export class ArduinoParser {
       connected: false,
       timestamp: Date.now(),
       lastRawLine: '',
+      sosEvent: null,
     }
   }
 
@@ -27,6 +28,17 @@ export class ArduinoParser {
 
     this.state.lastRawLine = line
     this.state.timestamp = Date.now()
+
+    // 0. Explicit Physical SOS Button Trigger Detection (Excludes startup logs like "SOS BUTTON READY")
+    if (/(?:^|\s)SOS STARTED(?:$|\s)|(?:^|\s)SOS_TRIGGERED(?:$|\s)|(?:^|\s)SOS CONFIRMED(?:$|\s)/i.test(line) && !/READY/i.test(line)) {
+      this.state.sosEvent = {
+        type: 'SOS_TRIGGERED',
+        source: 'PHYSICAL_BUTTON',
+        device: 'AERIS_HEALTH_WATCH',
+        timestamp: Date.now(),
+      }
+      this.state.connected = true
+    }
 
     // 1. Explicit Status Checks
     if (/STATUS\s*:\s*MEASURING|MEASURING/i.test(line) && !/NO\s*FINGER/i.test(line)) {
@@ -143,7 +155,21 @@ export class ArduinoParser {
     }
   }
 
+  /**
+   * Returns the current sosEvent and immediately clears it so it is
+   * only consumed once. This prevents stale SOS events from being
+   * re-broadcast on every subsequent health_update frame.
+   */
+  consumeSosEvent() {
+    const event = this.state.sosEvent
+    this.state.sosEvent = null
+    return event
+  }
+
   getState() {
-    return { ...this.state }
+    // Never include sosEvent in health_update snapshots — SOS is
+    // delivered as a separate one-shot message via consumeSosEvent().
+    const { sosEvent, ...cleanState } = this.state
+    return { ...cleanState }
   }
 }

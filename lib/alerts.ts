@@ -106,5 +106,86 @@ export function evaluateAlerts(telemetry: TelemetryData, risks: RiskScores, exis
     })
   }
 
+  // Disaster 1: Extreme Heatwave & Hyperthermia Alert
+  if (telemetry.ambientTemp >= 42.0 || risks.heat >= 75) {
+    addAlert({
+      id: 'alert_disaster_heatwave',
+      severity: 'Critical',
+      title: '🔥 Extreme Heatwave & Hyperthermia Alert',
+      trigger: `Ambient heat at ${telemetry.ambientTemp}°C with ${telemetry.humidity}% humidity causing critical physiological strain (PSI ${risks.psi}/9).`,
+      supportingSignals: [
+        `Ambient Temp: ${telemetry.ambientTemp}°C`,
+        `Wet-Bulb Globe Temp: ${risks.wbgt}°C`,
+        `Body Temp: ${telemetry.bodyTemp}°C`,
+        `Heart Rate: ${telemetry.heartRate} BPM`,
+      ],
+      recommendedAction: 'IMMEDIATE ACTION REQUIRED: Move to an AC cooling shelter, consume ORS fluids, and rest immediately to prevent heatstroke.',
+    })
+  }
+
+  // Disaster 2: Cyclonic Surge & Flood Safe Zone Alert
+  if (telemetry.pressure <= 988 || (telemetry.rain && telemetry.precipitation >= 30)) {
+    addAlert({
+      id: 'alert_disaster_flood',
+      severity: 'Critical',
+      title: '🌊 Cyclonic Surge & Flood Warning',
+      trigger: `Barometric pressure dropped to ${telemetry.pressure} hPa with torrential precipitation (${telemetry.precipitation} mm).`,
+      supportingSignals: [
+        `Barometric Pressure: ${telemetry.pressure} hPa (Cyclonic Low)`,
+        `Precipitation Rate: ${telemetry.precipitation} mm`,
+        `Gait Stability: ${telemetry.gaitSymmetry}%`,
+      ],
+      recommendedAction: 'FLOOD ADVISORY: Evacuate low-lying areas. Move to high-ground cyclone shelters and avoid submerged roads.',
+    })
+  }
+
+  // Disaster 3: Hazardous AQI & Respiratory Desaturation Alert
+  if (telemetry.externalAqi >= 300 || telemetry.spo2 <= 92) {
+    addAlert({
+      id: 'alert_disaster_aqi_spike',
+      severity: 'Critical',
+      title: '🌫️ Hazardous Air Quality (AQI 395) & SpO₂ Drop',
+      trigger: `Severe air quality spike (AQI ${telemetry.externalAqi}, PM2.5 ${telemetry.pm25 || 250} µg/m³) accompanied by blood oxygen desaturation (${telemetry.spo2}%).`,
+      supportingSignals: [
+        `External AQI: ${telemetry.externalAqi} (Hazardous)`,
+        `PM2.5: ${telemetry.pm25 || 250} µg/m³`,
+        `Blood Oxygen SpO₂: ${telemetry.spo2}%`,
+      ],
+      recommendedAction: 'RESPIRATORY ALERT: Wear N95 respirator mask immediately. Stay indoors with air filtration and access emergency oxygen if needed.',
+    })
+  }
+
+  // Disaster 4: Impact Fall & Emergency SOS Alert
+  if (telemetry.gaitSymmetry <= 40 || telemetry.weatherCondition.includes('Fall SOS')) {
+    addAlert({
+      id: 'alert_disaster_fall_sos',
+      severity: 'Critical',
+      title: '🚨 Impact Fall & Emergency SOS Active',
+      trigger: `Sudden gait impact vector detected (Symmetry ${telemetry.gaitSymmetry}%) with acute tachycardia (${telemetry.heartRate} BPM).`,
+      supportingSignals: [
+        `Gait Symmetry: ${telemetry.gaitSymmetry}% (Impact Arrest)`,
+        `Heart Rate: ${telemetry.heartRate} BPM (Panic Tachycardia)`,
+        `Movement Activity: ${telemetry.activity}`,
+      ],
+      recommendedAction: 'EMERGENCY SOS: Dispatching location coordinates to 24/7 Trauma ICU & Emergency Contact Helpline (+91 112 / +91 108).',
+    })
+  }
+
+  // Critical Tachycardia & HR Limit Alert
+  if (telemetry.heartRate >= 115) {
+    addAlert({
+      id: 'alert_tachycardia',
+      severity: 'Critical',
+      title: '🚨 Critical Tachycardia & HR Limit Exceeded',
+      trigger: `Live heart rate (${telemetry.heartRate} BPM) exceeded maximum safe baseline threshold (115 BPM).`,
+      supportingSignals: [
+        `Heart Rate: ${telemetry.heartRate} BPM (Limit 115 BPM)`,
+        `SpO₂ Level: ${telemetry.spo2}%`,
+        `Activity State: ${telemetry.activity}`,
+      ],
+      recommendedAction: 'Automated 3-second SOS override executed. Rest immediately in a seated position.',
+    })
+  }
+
   return activeAlerts.filter((a) => !a.dismissed)
 }

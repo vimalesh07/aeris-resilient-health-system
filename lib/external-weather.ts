@@ -6,6 +6,10 @@ export interface ExternalWeatherData {
   rain: boolean
   precipitation: number // mm
   externalAqi: number // AQI
+  pm25: number | null
+  pm10: number | null
+  o3: number | null
+  no2: number | null
   uvIndex: number
   weatherCondition: string
   source: string
@@ -63,12 +67,20 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
       if (wRes.ok) {
         const wData = await wRes.json()
         let externalAqi = 45
+        let pm25 = 12
+        let pm10 = 25
+        let o3 = 35
+        let no2 = 18
 
         if (aqiRes.ok) {
           const aqiData = await aqiRes.json()
           const rawAqi = aqiData.list?.[0]?.main?.aqi || 2
-          // Convert 1-5 scale to standard AQI range
+          const comp = aqiData.list?.[0]?.components || {}
           externalAqi = rawAqi === 1 ? 25 : rawAqi === 2 ? 45 : rawAqi === 3 ? 85 : rawAqi === 4 ? 130 : 180
+          pm25 = Math.round(comp.pm2_5 || 12)
+          pm10 = Math.round(comp.pm10 || 25)
+          o3 = Math.round(comp.o3 || 35)
+          no2 = Math.round(comp.no2 || 18)
         }
 
         const isRain = Boolean(wData.rain || wData.weather?.[0]?.main?.toLowerCase().includes('rain'))
@@ -81,6 +93,10 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
           rain: isRain,
           precipitation: isRain ? 2.5 : 0,
           externalAqi,
+          pm25,
+          pm10,
+          o3,
+          no2,
           uvIndex: 4,
           weatherCondition: wData.weather?.[0]?.main || 'Clear',
           source: 'OpenWeatherMap API',
@@ -95,7 +111,7 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
   // 2. Open-Meteo Fallback (100% Free, Zero Key Required)
   try {
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,surface_pressure,precipitation,rain,weather_code`
-    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,uv_index`
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,uv_index`
 
     const [wRes, aqiRes] = await Promise.all([fetch(weatherUrl), fetch(aqiUrl)])
 
@@ -104,12 +120,20 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
       const currentW = wData.current || {}
 
       let externalAqi = 42
+      let pm25: number | null = 12
+      let pm10: number | null = 24
+      let o3: number | null = 30
+      let no2: number | null = 15
       let uvIndex = 3
 
       if (aqiRes.ok) {
         const aqiData = await aqiRes.json()
         if (aqiData.current) {
           externalAqi = Math.round(aqiData.current.us_aqi || 42)
+          pm25 = aqiData.current.pm2_5 != null ? Math.round(aqiData.current.pm2_5) : null
+          pm10 = aqiData.current.pm10 != null ? Math.round(aqiData.current.pm10) : null
+          o3 = aqiData.current.ozone != null ? Math.round(aqiData.current.ozone) : null
+          no2 = aqiData.current.nitrogen_dioxide != null ? Math.round(aqiData.current.nitrogen_dioxide) : null
           uvIndex = Math.round(aqiData.current.uv_index || 3)
         }
       }
@@ -134,6 +158,10 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
         rain: isRaining,
         precipitation: Number((currentW.precipitation || 0).toFixed(1)),
         externalAqi,
+        pm25,
+        pm10,
+        o3,
+        no2,
         uvIndex,
         weatherCondition,
         source: 'Open-Meteo Climate Feed',
@@ -152,6 +180,10 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
     rain: false,
     precipitation: 0,
     externalAqi: 45,
+    pm25: 12,
+    pm10: 25,
+    o3: 32,
+    no2: 14,
     uvIndex: 4,
     weatherCondition: 'Clear',
     source: 'Default Climate Baseline',

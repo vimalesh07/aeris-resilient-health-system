@@ -6,8 +6,27 @@ import { evaluateAlerts } from '@/lib/alerts'
 import { ExternalWeatherData, fetchRealWeather } from '@/lib/external-weather'
 import { calculateRiskScores } from '@/lib/risk-engine'
 import { CORE_SENSORS } from '@/lib/sensors'
-import { DEFAULT_BASELINE, generateHistoryPoints, getScenarioTarget, tickTelemetry } from '@/lib/telemetry'
-import { AlertItem, HardwareSensor, HistoricalPoint, PersonalBaseline, RiskScores, Scenario, TelemetryData } from '@/types/aeris'
+import {
+  calculateDailyAnalysis,
+  calculateDemographicReferenceHRRange,
+  DEFAULT_BASELINE,
+  DEFAULT_USER_PROFILE,
+  generateHistoryPoints,
+  getScenarioTarget,
+  tickTelemetry,
+  updateBaselineWithSample,
+} from '@/lib/telemetry'
+import {
+  AlertItem,
+  DailyAnalysis,
+  HardwareSensor,
+  HistoricalPoint,
+  PersonalBaseline,
+  RiskScores,
+  Scenario,
+  TelemetryData,
+  UserProfile,
+} from '@/types/aeris'
 
 export interface RealHistoryPoint {
   time: string
@@ -15,9 +34,14 @@ export interface RealHistoryPoint {
   spo2: number
   bodyTemp: number
   stress: number
+  ambientTemp: number
+  humidity: number
+  aqi: number
 }
 
 interface TelemetryContextType {
+  userProfile: UserProfile
+  updateUserProfile: (updates: Partial<UserProfile>) => void
   scenario: Scenario
   setScenario: (s: Scenario) => void
   isSimulationRunning: boolean
@@ -34,6 +58,8 @@ interface TelemetryContextType {
   baseline: PersonalBaseline
   updateBaseline: (updates: Partial<PersonalBaseline>) => void
   risks: RiskScores
+  dailyAnalysis: DailyAnalysis
+  dailyHistory: TelemetryData[]
   alerts: AlertItem[]
   acknowledgeAlert: (id: string) => void
   dismissAlert: (id: string) => void
@@ -45,71 +71,238 @@ interface TelemetryContextType {
   activeView: string
   setActiveView: (v: string) => void
 
+  // Canonical SOS System Pipeline
+  isSosActive: boolean
+  sosSource: 'WEB' | 'PHYSICAL_BUTTON' | null
+  triggerSos: (source?: 'WEB' | 'PHYSICAL_BUTTON') => void
+  dismissSos: () => void
+
   // Arduino Live Serial Telemetry
   arduinoData: ArduinoHealthData | null
   wsConnected: boolean
   arduinoConnected: boolean
+  isHardwareConnected: boolean
+  isFingerDetected: boolean
   rawLogs: string[]
 }
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined)
 
-export function TelemetryProvider({ children }: { children: React.ReactNode }) {
-  const { data: arduinoData, wsConnected, arduinoConnected, rawLogs } = useHealthData()
+const LOCAL_STORAGE_KEY = 'aeris_telemetry_store_v1'
+const LOCAL_PROFILE_KEY = 'aeris_user_profile_v1'
 
+export function TelemetryProvider({ children }: { children: React.ReactNode }) {
+  const {
+    data: arduinoData,
+    wsConnected,
+    arduinoConnected,
+    isHardwareConnected,
+    isFingerDetected,
+    stableBpm,
+    stableSpo2,
+    rawBpm,
+    rawSpo2,
+    rawLogs,
+    lastSosEvent,
+  } = useHealthData()
+
+  const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE)
   const [scenario, setScenarioState] = useState<Scenario>('Normal')
-  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(false)
+  // Default to simulation running when offline / hardware disconnected
+  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(true)
   const [isOffline, setIsOffline] = useState<boolean>(true)
-  const [useRealWeather, setUseRealWeather] = useState<boolean>(false)
+  const [useRealWeather, setUseRealWeather] = useState<boolean>(true)
   const [realWeatherData, setRealWeatherData] = useState<ExternalWeatherData | null>(null)
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false)
   const [activeView, setActiveView] = useState<string>('Dashboard')
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d'>('24h')
 
-  const [baseline, setBaseline] = useState<PersonalBaseline>(DEFAULT_BASELINE)
-  const notifiedIdsRef = useRef<Set<string>>(new Set())
+  // Canonical SOS System State
+  const [isSosActive, setIsSosActive] = useState<boolean>(false)
+  const [sosSource, setSosSource] = useState<'WEB' | 'PHYSICAL_BUTTON' | null>(null)
+  const lastProcessedSosTimestampRef = useRef<number>(0)
+  const dismissedCooldownRef = useRef<number>(0)
 
+  const [baseline, setBaseline] = useState<PersonalBaseline>(DEFAULT_BASELINE)
   const [telemetry, setTelemetry] = useState<TelemetryData>(() => getScenarioTarget('Normal'))
-  const [alerts, setAlerts] = useState<AlertItem[]>([])
+  const [dailyHistory, setDailyHistory] = useState<TelemetryData[]>([])
   const [realHistory, setRealHistory] = useState<RealHistoryPoint[]>([])
+  const [alerts, setAlerts] = useState<AlertItem[]>([])
+
+  // Canonical Single SOS Trigger Function (Used by both WEB SOS button & PHYSICAL Arduino Button)
+  const triggerSos = (source: 'WEB' | 'PHYSICAL_BUTTON' = 'WEB') => {
+    if (isSosActive) {
+      console.log(`[AERIS SOS System] Duplicate protection active: SOS already running (source: ${sosSource}). Ignoring redundant trigger.`)
+      return
+    }
+    if (Date.now() < dismissedCooldownRef.current && source === 'PHYSICAL_BUTTON') {
+      console.log('[AERIS SOS System] Cooldown active after manual user dismissal. Ignoring hardware event.')
+      return
+    }
+    console.log(`🚨 [AERIS SOS System] CANONICAL SOS ACTIVATED! Trigger Source: ${source}`)
+    setIsSosActive(true)
+    setSosSource(source)
+    setScenarioState('disaster_fall_sos')
+
+    setTelemetry((prev) => {
+      const activeBpm = isHardwareConnected && arduinoData ? (stableBpm || rawBpm || prev.heartRate) : prev.heartRate
+      const activeSpo2 = isHardwareConnected && arduinoData ? (stableSpo2 || rawSpo2 || prev.spo2) : prev.spo2
+      return {
+        ...prev,
+        heartRate: activeBpm,
+        spo2: activeSpo2,
+        weatherCondition: 'Impact Fall & Emergency SOS Active',
+      }
+    })
+  }
+
+  const dismissSos = () => {
+    console.log('[AERIS SOS System] Canonical SOS Alarm dismissed.')
+    dismissedCooldownRef.current = Date.now() + 5000 // 5 second cooldown for hardware re-triggers
+    setIsSosActive(false)
+    setSosSource(null)
+    setScenarioState('Normal')
+    setTelemetry(getScenarioTarget('Normal'))
+  }
+
+  // Automatic Bridge: Trigger Canonical SOS when hardware emits SOS_TRIGGERED / SOS STARTED
+  useEffect(() => {
+    if (!lastSosEvent) return
+    if (lastSosEvent.timestamp <= lastProcessedSosTimestampRef.current) return
+
+    lastProcessedSosTimestampRef.current = lastSosEvent.timestamp
+    console.log(`🚨 [AERIS Hardware Bridge] Physical SOS button sequence confirmed! Invoking canonical web SOS handler... (Source: ${lastSosEvent.source})`)
+    triggerSos('PHYSICAL_BUTTON')
+  }, [lastSosEvent])
+
+  const notifiedIdsRef = useRef<Set<string>>(new Set())
+  const lastLoggedBpmRef = useRef<number | null>(null)
+  const lastLoggedSpo2Ref = useRef<number | null>(null)
+  const lastSyncedBpmRef = useRef<number | null>(null)
+  const lastSyncedSpo2Ref = useRef<number | null>(null)
+
+  // AUTO-TOGGLE SIMULATION LOOP BASED ON HARDWARE CONNECTION STATE
+  useEffect(() => {
+    if (isHardwareConnected) {
+      setIsSimulationRunning(false)
+      console.log('[AERIS Telemetry] Hardware connected on COM bridge. Auto-pausing synthetic simulation loop.')
+    } else {
+      setIsSimulationRunning(true)
+      console.log('[AERIS Telemetry] Hardware bridge offline. Auto-enabling synthetic simulation loop.')
+    }
+  }, [isHardwareConnected])
+
+  // Load persistent user profile & telemetry state from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const savedProfile = localStorage.getItem(LOCAL_PROFILE_KEY)
+      if (savedProfile) {
+        setUserProfile(JSON.parse(savedProfile))
+      }
+
+      const savedTelemetry = localStorage.getItem(LOCAL_STORAGE_KEY)
+      if (savedTelemetry) {
+        const parsed = JSON.parse(savedTelemetry)
+        if (parsed.telemetry) setTelemetry(parsed.telemetry)
+        if (parsed.baseline) setBaseline(parsed.baseline)
+        if (parsed.dailyHistory && Array.isArray(parsed.dailyHistory)) setDailyHistory(parsed.dailyHistory)
+      }
+    } catch (e) {
+      console.warn('Failed to load local store:', e)
+    }
+  }, [])
+
+  // Auto-save persistent telemetry state to localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const payload = {
+        telemetry,
+        baseline,
+        dailyHistory: dailyHistory.slice(-100),
+      }
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(payload))
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }, [telemetry, baseline, dailyHistory])
+
+  // Save profile state to localStorage
+  const updateUserProfile = (updates: Partial<UserProfile>) => {
+    setUserProfile((prev) => {
+      const updated = { ...prev, ...updates }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(updated))
+      }
+      // Re-evaluate demographic reference range on profile update
+      const newRefRange = calculateDemographicReferenceHRRange(updated)
+      setBaseline((b) => ({
+        ...b,
+        refRestingHRRange: newRefRange,
+      }))
+      return updated
+    })
+  }
 
   const updateBaseline = (updates: Partial<PersonalBaseline>) => {
     setBaseline((prev) => ({
       ...prev,
       ...updates,
       restingHRRange: updates.restingHR !== undefined ? { min: updates.restingHR - 8, max: updates.restingHR + 8 } : updates.restingHRRange || prev.restingHRRange,
-      hrvRange: updates.hrvBaseline !== undefined ? { min: Math.max(20, updates.hrvBaseline - 15), max: updates.hrvBaseline + 20 } : updates.hrvRange || prev.hrvRange,
       tempRange: updates.tempBaseline !== undefined ? { min: Number((updates.tempBaseline - 0.4).toFixed(1)), max: Number((updates.tempBaseline + 0.5).toFixed(1)) } : updates.tempRange || prev.tempRange,
     }))
   }
 
-  // Memoize risk scores so reference only changes when telemetry changes
-  const risks = useMemo(() => calculateRiskScores(telemetry, baseline), [telemetry, baseline])
+  // Calculate current multi-modal risk scores using Late Fusion & Report Formulas
+  const risks = useMemo(() => calculateRiskScores(telemetry, baseline, userProfile), [telemetry, baseline, userProfile])
 
-  const lastLoggedBpmRef = useRef<number | null>(null)
-  const lastLoggedSpo2Ref = useRef<number | null>(null)
+  // Calculate daily aggregates & insights
+  const dailyAnalysis = useMemo(
+    () => calculateDailyAnalysis(dailyHistory, baseline, risks),
+    [dailyHistory, baseline, risks]
+  )
 
-  // Live Sync MAX30102 Real Hardware Data over Telemetry when connected
+  // Auto-fetch real live weather & AQI on mount
   useEffect(() => {
-    if (!arduinoConnected || !arduinoData) return
+    fetchLiveWeather()
+  }, [])
+
+  // Live Sync MAX30102 Real Hardware Data over Telemetry when connected (100% Priority)
+  useEffect(() => {
+    if (!isHardwareConnected || !arduinoData) return
+
+    const activeBpm = stableBpm || rawBpm
+    const activeSpo2 = stableSpo2 || rawSpo2
+
+    if (activeBpm === null && activeSpo2 === null) return
+
+    // Guard: Prevent re-triggering state updates if reading values have not changed
+    if (activeBpm === lastSyncedBpmRef.current && activeSpo2 === lastSyncedSpo2Ref.current) {
+      return
+    }
+
+    lastSyncedBpmRef.current = activeBpm
+    lastSyncedSpo2Ref.current = activeSpo2
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
     setTelemetry((prev) => {
-      const activeBpm = arduinoData.stableBpm || arduinoData.bpm
-      const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
-
-      return {
+      const next: TelemetryData = {
         ...prev,
         heartRate: activeBpm !== null ? activeBpm : prev.heartRate,
         spo2: activeSpo2 !== null ? activeSpo2 : prev.spo2,
+        timestamp,
       }
+      return next
     })
-  }, [arduinoConnected, arduinoData])
+  }, [isHardwareConnected, arduinoData, stableBpm, stableSpo2, rawBpm, rawSpo2])
 
-  // Append real sensor readings to realHistory when valid data arrives
+  // Append real sensor readings to realHistory timeline when valid data arrives
   useEffect(() => {
-    if (!arduinoConnected || !arduinoData) return
-    const activeBpm = arduinoData.stableBpm || arduinoData.bpm
-    const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+    if (!isHardwareConnected || !arduinoData) return
+    const activeBpm = stableBpm || rawBpm
+    const activeSpo2 = stableSpo2 || rawSpo2
 
     if (activeBpm !== null && activeSpo2 !== null) {
       if (activeBpm !== lastLoggedBpmRef.current || activeSpo2 !== lastLoggedSpo2Ref.current) {
@@ -118,27 +311,30 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
         const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         setRealHistory((prev) => [
-          ...prev.slice(-19),
+          ...prev.slice(-24),
           {
             time: timeLabel,
             heartRate: activeBpm,
             spo2: activeSpo2,
             bodyTemp: telemetry.bodyTemp,
             stress: risks.stress,
+            ambientTemp: telemetry.ambientTemp,
+            humidity: telemetry.humidity,
+            aqi: telemetry.externalAqi,
           },
         ])
       }
     }
-  }, [arduinoConnected, arduinoData, telemetry.bodyTemp, risks.stress])
+  }, [isHardwareConnected, arduinoData, stableBpm, stableSpo2, telemetry.bodyTemp, telemetry.ambientTemp, telemetry.humidity, telemetry.externalAqi, risks.stress])
 
   // Dynamically reflect Arduino MAX30102 status inside sensor array
   const sensors = useMemo<HardwareSensor[]>(() => {
     return CORE_SENSORS.map((s) => {
       if (s.id === 'max30102') {
-        const isConn = Boolean(arduinoData?.connected && wsConnected)
-        const hasFinger = Boolean(arduinoData?.fingerDetected)
-        const activeBpm = arduinoData?.stableBpm || arduinoData?.bpm
-        const activeSpo2 = arduinoData?.stableSpo2 || arduinoData?.spo2
+        const isConn = Boolean(isHardwareConnected && wsConnected)
+        const hasFinger = Boolean(isFingerDetected)
+        const activeBpm = stableBpm || rawBpm
+        const activeSpo2 = stableSpo2 || rawSpo2
 
         let signalsText = '🔴 DISCONNECTED'
         let quality = 0
@@ -166,7 +362,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       }
       return s
     })
-  }, [arduinoData, wsConnected])
+  }, [arduinoData, wsConnected, isHardwareConnected, isFingerDetected, stableBpm, stableSpo2, rawBpm, rawSpo2])
 
   // Check if browser notifications already granted
   useEffect(() => {
@@ -205,7 +401,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         setNotificationsEnabled(true)
         dispatchDesktopNotification(
           'AERIS Health Companion',
-          'Chrome notifications active! Demo scenario alerts will pop up on your screen.',
+          'Chrome notifications active! Real-time threshold alerts will pop up on your screen.',
           'welcome_notification'
         )
         return true
@@ -229,12 +425,16 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       target.pressure = realWeatherData.pressure
       target.rain = realWeatherData.rain
       target.externalAqi = realWeatherData.externalAqi
+      if (realWeatherData.pm25 !== undefined) target.pm25 = realWeatherData.pm25
+      if (realWeatherData.pm10 !== undefined) target.pm10 = realWeatherData.pm10
+      if (realWeatherData.o3 !== undefined) target.o3 = realWeatherData.o3
+      if (realWeatherData.no2 !== undefined) target.no2 = realWeatherData.no2
     }
 
     // Preserve real MAX30102 readings if Arduino is connected
-    if (arduinoConnected && arduinoData) {
-      const activeBpm = arduinoData.stableBpm || arduinoData.bpm
-      const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
+    if (isHardwareConnected && arduinoData) {
+      const activeBpm = stableBpm || rawBpm
+      const activeSpo2 = stableSpo2 || rawSpo2
       if (activeBpm !== null) target.heartRate = activeBpm
       if (activeSpo2 !== null) target.spo2 = activeSpo2
     }
@@ -244,7 +444,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     if (notificationsEnabled) {
       setTimeout(() => {
-        const scenarioRisks = calculateRiskScores(target, baseline)
+        const scenarioRisks = calculateRiskScores(target, baseline, userProfile)
         dispatchDesktopNotification(
           `AERIS Scenario: ${newScenario}`,
           `Activated ${newScenario} scenario telemetry. Target Risk Score: ${scenarioRisks.overall}/100 (${scenarioRisks.statusLabel}).`,
@@ -283,6 +483,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       pressure: data.pressure,
       rain: data.rain,
       externalAqi: data.externalAqi,
+      pm25: data.pm25 !== undefined ? data.pm25 : prev.pm25,
+      pm10: data.pm10 !== undefined ? data.pm10 : prev.pm10,
+      o3: data.o3 !== undefined ? data.o3 : prev.o3,
+      no2: data.no2 !== undefined ? data.no2 : prev.no2,
     }))
   }
 
@@ -292,35 +496,30 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     }
   }, [useRealWeather])
 
-  // Update telemetry continuously every 1.5s when simulation running
+  // Simulation tick loop: Runs ONLY when isSimulationRunning === true AND isHardwareConnected === false
   useEffect(() => {
-    if (!isSimulationRunning) return
+    if (!isSimulationRunning || isHardwareConnected) return
 
     const interval = setInterval(() => {
       setTelemetry((prev) => {
         const next = tickTelemetry(prev, scenario)
-
-        // Real Arduino MAX30102 values ALWAYS override fake tick values
-        if (arduinoConnected && arduinoData) {
-          const activeBpm = arduinoData.stableBpm || arduinoData.bpm
-          const activeSpo2 = arduinoData.stableSpo2 || arduinoData.spo2
-          if (activeBpm !== null) next.heartRate = activeBpm
-          if (activeSpo2 !== null) next.spo2 = activeSpo2
-        }
-
         if (useRealWeather && realWeatherData) {
           next.ambientTemp = realWeatherData.ambientTemp
           next.humidity = realWeatherData.humidity
           next.pressure = realWeatherData.pressure
           next.rain = realWeatherData.rain
           next.externalAqi = realWeatherData.externalAqi
+          if (realWeatherData.pm25 !== undefined) next.pm25 = realWeatherData.pm25
+          if (realWeatherData.pm10 !== undefined) next.pm10 = realWeatherData.pm10
+          if (realWeatherData.o3 !== undefined) next.o3 = realWeatherData.o3
+          if (realWeatherData.no2 !== undefined) next.no2 = realWeatherData.no2
         }
         return next
       })
     }, 1500)
 
     return () => clearInterval(interval)
-  }, [isSimulationRunning, scenario, useRealWeather, realWeatherData, arduinoConnected, arduinoData])
+  }, [isSimulationRunning, isHardwareConnected, scenario, useRealWeather, realWeatherData])
 
   // Evaluate alerts cleanly when telemetry or risks change
   useEffect(() => {
@@ -337,15 +536,37 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       updated.forEach((a) => {
         if (!a.acknowledged && !notifiedIdsRef.current.has(a.id)) {
           notifiedIdsRef.current.add(a.id)
+
+          // 1. Desktop Browser Push Notification
           dispatchDesktopNotification(
             `AERIS Alert: ${a.title}`,
             `${a.trigger}\nRecommended Action: ${a.recommendedAction}`,
             a.id
           )
+
+          // 2. Mobile Phone Twilio SMS Push Notification (+91 7092796084)
+          if (a.severity === 'Critical' || a.severity === 'High') {
+            fetch('/api/notify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: a.title,
+                trigger: a.trigger,
+                severity: a.severity,
+                recommendedAction: a.recommendedAction,
+                phone: userProfile.emergencyContactPhone || '7092796084',
+                vitals: {
+                  heartRate: telemetry.heartRate,
+                  spo2: telemetry.spo2,
+                  bodyTemp: telemetry.bodyTemp,
+                },
+              }),
+            }).catch((err) => console.warn('Mobile notify push failed:', err))
+          }
         }
       })
     }
-  }, [telemetry, risks, notificationsEnabled])
+  }, [telemetry, risks, notificationsEnabled, userProfile])
 
   const acknowledgeAlert = (id: string) => {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, acknowledged: true } : a)))
@@ -360,6 +581,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   return (
     <TelemetryContext.Provider
       value={{
+        userProfile,
+        updateUserProfile,
         scenario,
         setScenario,
         isSimulationRunning,
@@ -376,6 +599,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         baseline,
         updateBaseline,
         risks,
+        dailyAnalysis,
+        dailyHistory,
         alerts,
         acknowledgeAlert,
         dismissAlert,
@@ -386,9 +611,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         sensors,
         activeView,
         setActiveView,
+        isSosActive,
+        sosSource,
+        triggerSos,
+        dismissSos,
         arduinoData,
         wsConnected,
         arduinoConnected,
+        isHardwareConnected,
+        isFingerDetected,
         rawLogs,
       }}
     >

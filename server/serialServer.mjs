@@ -113,6 +113,24 @@ function connectSerial() {
       lastReceivedTime = Date.now()
       const updatedState = parser.parseLine(line)
       broadcastState(updatedState)
+
+      // Consume the one-shot SOS event (if any) — consumeSosEvent() returns the
+      // event and immediately clears it so it is never re-broadcast.
+      const sosEvent = parser.consumeSosEvent()
+      if (sosEvent) {
+        console.log('🚨 [AERIS Hardware Bridge] HARDWARE SOS TRIGGERED! Broadcasting SOS_TRIGGERED event to Web UI.')
+        const sosPayload = JSON.stringify({
+          type: 'SOS_TRIGGERED',
+          source: sosEvent.source || 'PHYSICAL_BUTTON',
+          device: sosEvent.device || 'AERIS_HEALTH_WATCH',
+          timestamp: sosEvent.timestamp || Date.now(),
+        })
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            client.send(sosPayload)
+          }
+        })
+      }
     })
 
     serialPort.on('error', (err) => {

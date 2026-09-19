@@ -1,15 +1,16 @@
 'use client'
 
 import React from 'react'
-import { Activity as ActivityIcon, HeartPulse, ShieldAlert, Thermometer, Waves } from 'lucide-react'
+import { Activity as ActivityIcon, HeartPulse, Thermometer, Waves } from 'lucide-react'
+import { HumanRiskVisualization } from '@/components/HumanRiskVisualization'
 import { useTelemetry } from '@/hooks/useTelemetry'
+import { TelemetryValue } from '@/components/ui/TelemetryValue'
 
 export function VitalsView() {
-  const { telemetry, baseline, history, realHistory, arduinoData, arduinoConnected } = useTelemetry()
+  const { risks, telemetry, baseline, dailyAnalysis, history, realHistory, arduinoData, arduinoConnected } = useTelemetry()
 
   const isArduinoActive = Boolean(arduinoConnected && arduinoData?.connected)
   const isFingerPlaced = Boolean(arduinoData?.fingerDetected)
-  const isMeasuring = Boolean(isArduinoActive && isFingerPlaced && arduinoData?.status === 'MEASURING')
   const isStabilizing = Boolean(isArduinoActive && arduinoData?.status === 'STABILIZING')
 
   const realBpm = arduinoData?.stableBpm ?? arduinoData?.bpm ?? null
@@ -21,174 +22,184 @@ export function VitalsView() {
     <div style={{ paddingTop: 16 }}>
       <div style={{ marginBottom: 20 }}>
         <p className="eyebrow">Biometric Signal Monitoring</p>
-        <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>Vital Signals</h1>
+        <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Live Vitals Dashboard</h1>
         <p className="subhead">
           {isArduinoActive
-            ? 'Live physiological telemetry streaming directly from Arduino UNO (COM3) MAX30102.'
-            : 'Continuous physiological telemetry captured locally via MAX30102 pulse oximeter & MAX30205 temperature sensor.'}
+            ? '● Real-time physiological telemetry streaming directly from MAX30102 via Arduino UNO (COM3).'
+            : '○ Continuous physiological telemetry captured locally via physical sensors & edge AI modules.'}
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
-        {/* CARD 1: Heart Rate Card (MAX30102 Real Data) */}
+      <article className="panel" style={{ padding: 16, marginBottom: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 10px', color: 'var(--text-primary)' }}>Holographic Digital Twin Status</h3>
+        <HumanRiskVisualization
+          risks={risks}
+          compact
+          currentBpm={isArduinoActive ? (realBpm !== null ? realBpm : telemetry.heartRate) : telemetry.heartRate}
+          currentTemp={telemetry.bodyTemp}
+          currentSpo2={isArduinoActive ? (realSpo2 !== null ? realSpo2 : telemetry.spo2) : telemetry.spo2}
+          baselineHR={baseline.restingHR}
+          baselineTemp={baseline.tempBaseline}
+        />
+      </article>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+        {/* CARD 1: Heart Rate */}
         <article className="panel" style={{ padding: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span className="icon-box red">
-              <HeartPulse size={20} />
+              <HeartPulse size={18} />
             </span>
-            <span className={`status-pill ${isArduinoActive ? (realBpm !== null ? 'green' : 'yellow') : 'red'}`}>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: isArduinoActive ? (realBpm !== null ? 'var(--risk-safe)' : 'var(--yellow)') : 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
               {isArduinoActive
                 ? realBpm !== null
-                  ? 'MAX30102 (COM3 LIVE)'
+                  ? 'COM3 LIVE'
                   : isStabilizing
                   ? 'STABILIZING'
-                  : 'NO FINGER DETECTED'
-                : 'MAX30102 (DEMO)'}
-            </span>
-          </div>
-          <p className="eyebrow">Heart Rate</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '4px 0 6px' }}>
-            <span style={{ fontSize: 36, fontWeight: 900, color: '#171717', lineHeight: 1 }}>
-              {isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate}
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>BPM</span>
-          </div>
-          <div style={{ fontSize: 12, color: '#4B5563', margin: '6px 0' }}>
-            Baseline: <strong>{baseline.restingHRRange.min}–{baseline.restingHRRange.max} BPM</strong>
-          </div>
-          <div style={{ fontSize: 11, color: isArduinoActive ? (realBpm !== null ? '#059669' : 'var(--main-red)') : (telemetry.heartRate > baseline.restingHRRange.max ? 'var(--main-red)' : '#059669'), fontWeight: 700 }}>
-            {isArduinoActive
-              ? realBpm !== null
-                ? `Status: Live pulse ${realBpm} BPM`
-                : isStabilizing
-                ? 'Status: STABILIZING'
-                : 'Status: NO FINGER DETECTED'
-              : telemetry.heartRate > baseline.restingHRRange.max
-              ? `Deviation: +${telemetry.heartRate - baseline.restingHR} BPM above baseline`
-              : 'Status: Within normal resting range'}
-          </div>
-        </article>
-
-        {/* CARD 2: Blood Oxygen (SpO2) Card (MAX30102 Real Data) */}
-        <article className="panel" style={{ padding: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span className="icon-box yellow">
-              <ActivityIcon size={20} />
-            </span>
-            <span className={`status-pill ${isArduinoActive ? (realSpo2 !== null ? 'green' : 'yellow') : 'yellow'}`}>
-              {isArduinoActive
-                ? realSpo2 !== null
-                  ? 'MAX30102 (COM3 LIVE)'
-                  : isStabilizing
-                  ? 'STABILIZING'
-                  : 'NO FINGER DETECTED'
+                  : 'NO FINGER'
                 : 'MAX30102'}
             </span>
           </div>
-          <p className="eyebrow">Blood Oxygen (SpO₂)</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '4px 0 6px' }}>
-            <span style={{ fontSize: 36, fontWeight: 900, color: '#171717', lineHeight: 1 }}>
-              {isArduinoActive ? (realSpo2 !== null ? realSpo2 : '--') : telemetry.spo2}
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>%</span>
-          </div>
-          <div style={{ fontSize: 12, color: '#4B5563', margin: '6px 0' }}>
-            Expected Range: <strong>95–100%</strong>
-          </div>
-          <div style={{ fontSize: 11, color: isArduinoActive ? (realSpo2 !== null ? (realSpo2 >= 95 ? '#059669' : 'var(--main-red)') : 'var(--main-red)') : (telemetry.spo2 >= 95 ? '#059669' : 'var(--main-red)'), fontWeight: 700 }}>
-            {isArduinoActive
-              ? realSpo2 !== null
-                ? realSpo2 >= 95
-                  ? 'Status: Optimal oxygenation'
-                  : 'Status: Needs Attention'
-                : isStabilizing
-                ? 'Status: STABILIZING'
-                : 'Status: NO FINGER DETECTED'
-              : telemetry.spo2 >= 95
-              ? 'Status: Oxygenation optimal'
-              : 'Status: Slight oxygenation drop monitored'}
+          <TelemetryValue
+            label="Heart Rate"
+            value={isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate}
+            unit="BPM"
+            status={isArduinoActive ? (realBpm !== null ? 'live' : isStabilizing ? 'stabilizing' : 'stale') : 'live'}
+          />
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
+            Circadian Baseline: <strong>{baseline.restingHRRange.min}–{baseline.restingHRRange.max} BPM</strong>
           </div>
         </article>
 
-        {/* CARD 3: Body Temperature Card */}
-        <article className="panel" style={{ padding: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span className="icon-box red">
-              <Thermometer size={20} />
-            </span>
-            <span className="status-pill red">MAX30205</span>
-          </div>
-          <p className="eyebrow">Body / Skin Temperature</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '4px 0 6px' }}>
-            <span style={{ fontSize: 36, fontWeight: 900, color: '#171717', lineHeight: 1 }}>{telemetry.bodyTemp.toFixed(1)}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>°C</span>
-          </div>
-          <div style={{ fontSize: 12, color: '#4B5563', margin: '6px 0' }}>
-            Baseline Target: <strong>{baseline.tempRange.min}–{baseline.tempRange.max}°C</strong>
-          </div>
-          <div style={{ fontSize: 11, color: telemetry.bodyTemp > baseline.tempRange.max ? 'var(--main-red)' : '#059669', fontWeight: 700 }}>
-            {telemetry.bodyTemp > baseline.tempRange.max
-              ? `Temperature anomaly: +${(telemetry.bodyTemp - baseline.tempBaseline).toFixed(1)}°C variance`
-              : 'Status: Thermoregulation stable'}
-          </div>
-        </article>
-
-        {/* CARD 4: Heart Rate Variability (HRV) Card */}
+        {/* CARD 2: Blood Oxygen (SpO2) */}
         <article className="panel" style={{ padding: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span className="icon-box yellow">
-              <Waves size={20} />
+              <ActivityIcon size={18} />
             </span>
-            <span className="status-pill yellow">SIMULATED</span>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: isArduinoActive ? (realSpo2 !== null ? 'var(--risk-safe)' : 'var(--yellow)') : 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
+              {isArduinoActive
+                ? realSpo2 !== null
+                  ? 'COM3 LIVE'
+                  : isStabilizing
+                  ? 'STABILIZING'
+                  : 'NO FINGER'
+                : 'MAX30102'}
+            </span>
           </div>
-          <p className="eyebrow">Heart Rate Variability (HRV)</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '4px 0 6px' }}>
-            <span style={{ fontSize: 36, fontWeight: 900, color: '#171717', lineHeight: 1 }}>{telemetry.hrv}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>ms</span>
+          <TelemetryValue
+            label="Blood Oxygen (SpO₂)"
+            value={isArduinoActive ? (realSpo2 !== null ? realSpo2 : '--') : telemetry.spo2}
+            unit="%"
+            status={isArduinoActive ? (realSpo2 !== null ? 'live' : isStabilizing ? 'stabilizing' : 'stale') : 'live'}
+          />
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
+            Expected Target: <strong>95–100%</strong>
           </div>
-          <div style={{ fontSize: 12, color: '#4B5563', margin: '6px 0' }}>
-            Baseline Target: <strong>{baseline.hrvRange.min}–{baseline.hrvRange.max} ms</strong>
+        </article>
+
+        {/* CARD 3: Body Temperature */}
+        <article className="panel" style={{ padding: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span className="icon-box red">
+              <Thermometer size={18} />
+            </span>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--risk-safe)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
+              MAX30205
+            </span>
           </div>
-          <div style={{ fontSize: 11, color: telemetry.hrv < baseline.hrvRange.min ? 'var(--main-red)' : '#059669', fontWeight: 700 }}>
-            {telemetry.hrv < baseline.hrvRange.min ? 'Physiological stress pattern detected' : 'Optimal parasympathetic tone'}
+          <TelemetryValue
+            label="Body Temperature"
+            value={telemetry.bodyTemp.toFixed(1)}
+            unit="°C"
+          />
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
+            Target: <strong>{baseline.tempRange.min}–{baseline.tempRange.max}°C</strong>
+          </div>
+        </article>
+
+        {/* CARD 4: Heart Rate Variability */}
+        <article className="panel" style={{ padding: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span className="icon-box yellow">
+              <Waves size={18} />
+            </span>
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
+              rMSSD
+            </span>
+          </div>
+          <TelemetryValue
+            label="Heart Rate Variability"
+            value={telemetry.hrv !== null ? telemetry.hrv : '--'}
+            unit="ms"
+          />
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
+            Target: <strong>{baseline.hrvRange.min}–{baseline.hrvRange.max} ms</strong>
           </div>
         </article>
       </div>
 
-      {/* 24-Hour Telemetry History Table */}
-      <article className="panel" style={{ marginTop: 20, padding: 18 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 800, margin: 0, color: '#171717' }}>24-Hour Telemetry History</h3>
-          {isArduinoActive && (
-            <span className="status-pill green">
-              COM3 LIVE STREAM ({realHistory.length} readings)
-            </span>
-          )}
+      {/* TODAY'S VITAL TREND SUMMARY */}
+      <article className="panel" style={{ padding: 20, margin: '20px 0' }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>DAILY VITAL TREND SUMMARY</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Avg HR</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--text-primary)' }}>{dailyAnalysis.avgHR} <small style={{ fontSize: 11, color: 'var(--text-muted)' }}>BPM</small></h4>
+          </div>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Peak HR</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--risk-critical)' }}>{dailyAnalysis.maxHR} <small style={{ fontSize: 11, color: 'var(--text-muted)' }}>BPM</small></h4>
+          </div>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Avg SpO₂</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--risk-safe)' }}>{dailyAnalysis.avgSpo2} <small style={{ fontSize: 11, color: 'var(--text-muted)' }}>%</small></h4>
+          </div>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Lowest SpO₂</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: dailyAnalysis.minSpo2 < 95 ? 'var(--risk-critical)' : 'var(--text-primary)' }}>{dailyAnalysis.minSpo2} <small style={{ fontSize: 11, color: 'var(--text-muted)' }}>%</small></h4>
+          </div>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Avg Temp</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--text-primary)' }}>{dailyAnalysis.avgBodyTemp} <small style={{ fontSize: 11, color: 'var(--text-muted)' }}>°C</small></h4>
+          </div>
+          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Temp Anomalies</span>
+            <h4 style={{ margin: '4px 0 0', fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 800, color: dailyAnalysis.tempAnomalyCount > 0 ? 'var(--risk-critical)' : 'var(--risk-safe)' }}>{dailyAnalysis.tempAnomalyCount}</h4>
+          </div>
         </div>
+      </article>
 
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table style={{ width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 12, textAlign: 'left' }}>
+      {/* 24-Hour Telemetry History Table */}
+      <article className="panel" style={{ padding: 20 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>
+          {isArduinoActive ? '24-Hour Telemetry History (COM3 Physical Stream)' : '24-Hour Telemetry History'}
+        </h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #E5E7EB', color: '#6B7280' }}>
-                <th style={{ padding: '10px 8px' }}>Timestamp</th>
-                <th style={{ padding: '10px 8px' }}>Heart Rate</th>
-                <th style={{ padding: '10px 8px' }}>Blood Oxygen (SpO₂)</th>
-                <th style={{ padding: '10px 8px' }}>Body Temp</th>
-                <th style={{ padding: '10px 8px' }}>Status / Stress</th>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', textAlign: 'left' }}>
+                <th style={{ padding: '10px 12px' }}>Timestamp</th>
+                <th style={{ padding: '10px 12px' }}>Heart Rate</th>
+                <th style={{ padding: '10px 12px' }}>SpO₂</th>
+                <th style={{ padding: '10px 12px' }}>Body Temp</th>
+                <th style={{ padding: '10px 12px' }}>Stress Index</th>
               </tr>
             </thead>
             <tbody>
-              {activeHistory.slice(-8).map((point: any, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB', color: '#171717' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 600 }}>{point.time}</td>
-                  <td style={{ padding: '10px 8px', fontWeight: 700 }}>{point.heartRate} BPM</td>
-                  <td style={{ padding: '10px 8px', fontWeight: 700, color: point.spo2 < 95 ? 'var(--main-red)' : '#059669' }}>
-                    {point.spo2 !== undefined ? `${point.spo2}%` : `${telemetry.spo2}%`}
+              {activeHistory.slice(-10).map((pt, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                  <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{pt.time}</td>
+                  <td style={{ padding: '10px 12px', color: pt.heartRate > baseline.restingHRRange.max ? 'var(--risk-critical)' : 'var(--text-primary)', fontWeight: 700 }}>
+                    {pt.heartRate} BPM
                   </td>
-                  <td style={{ padding: '10px 8px' }}>{point.bodyTemp}°C</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <span className={`badge ${point.stress > 60 ? 'high' : 'medium'}`}>
-                      {isArduinoActive && realHistory.length > 0 ? 'REAL MAX30102' : `${point.stress} / 100`}
+                  <td style={{ padding: '10px 12px', color: pt.spo2 < 95 ? 'var(--risk-critical)' : 'var(--risk-safe)', fontWeight: 700 }}>
+                    {pt.spo2}%
+                  </td>
+                  <td style={{ padding: '10px 12px' }}>{pt.bodyTemp}°C</td>
+                  <td style={{ padding: '10px 12px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: pt.stress > 60 ? 'rgba(198,40,40,0.2)' : 'rgba(16,185,129,0.15)', color: pt.stress > 60 ? 'var(--risk-critical)' : 'var(--risk-safe)' }}>
+                      {pt.stress} / 100
                     </span>
                   </td>
                 </tr>

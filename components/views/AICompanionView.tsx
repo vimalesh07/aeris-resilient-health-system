@@ -100,17 +100,17 @@ export function AICompanionView() {
   return (
     <div style={{ paddingTop: 16 }}>
       <div style={{ marginBottom: 20 }}>
-        <p className="eyebrow">Transparent AI Intelligence Verification</p>
-        <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 800, margin: '4px 0 6px', color: '#FFF' }}>AERIS AI Companion</h1>
+        <p className="eyebrow">AERIS AI Clinical Assistant</p>
+        <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>AI Companion</h1>
         <p className="subhead">
-          Live AI Assistant showing exact response provenance: <strong>Gemini 3.6 Flash API</strong> vs. <strong>Local Rule Engine</strong>.
+          Contextual AI Assistant with live provenance tags: <strong>Gemini 3.6 Flash API</strong> vs. <strong>Local Rule Engine</strong>.
         </p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
         {/* Chat Window */}
         <article className="panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', height: 'clamp(460px, 60vh, 580px)' }}>
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingRight: 4 }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingRight: 4 }}>
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -123,11 +123,12 @@ export function AICompanionView() {
               >
                 <span
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
-                    background: msg.sender === 'user' ? '#171717' : 'var(--yellow)',
-                    color: msg.sender === 'user' ? '#FFF' : '#171717',
+                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : 'rgba(255,193,7,0.15)',
+                    border: '1px solid var(--border-subtle)',
+                    color: msg.sender === 'user' ? 'var(--text-primary)' : 'var(--yellow)',
                     display: 'grid',
                     placeItems: 'center',
                     fontWeight: 800,
@@ -135,72 +136,76 @@ export function AICompanionView() {
                     flexShrink: 0,
                   }}
                 >
-                  {msg.sender === 'user' ? <User size={16} /> : <Bot size={18} />}
+                  {msg.sender === 'user' ? <User size={15} /> : <Bot size={16} />}
                 </span>
 
                 <div
                   style={{
                     maxWidth: '85%',
-                    background: msg.sender === 'user' ? '#171717' : '#F3F4F6',
-                    color: msg.sender === 'user' ? '#FFF' : '#171717',
-                    padding: '12px 14px',
-                    borderRadius: 14,
+                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : 'var(--panel-bg)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-primary)',
+                    padding: '10px 14px',
+                    borderRadius: 10,
                     fontSize: 13,
                     lineHeight: 1.5,
                   }}
                 >
                   <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{msg.text}</p>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, paddingTop: 4 }}>
                     {msg.sender === 'aeris' && msg.source && (
                       <span
                         style={{
                           fontSize: 10,
-                          fontWeight: 800,
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 700,
                           padding: '2px 6px',
                           borderRadius: 4,
-                          background: msg.source === 'Gemini 3.6 Flash' ? '#FEF3C7' : '#E5E7EB',
-                          color: msg.source === 'Gemini 3.6 Flash' ? '#78350F' : '#374151',
+                          background: 'var(--panel-elevated)',
+                          border: '1px solid var(--border-subtle)',
+                          color: msg.source === 'Gemini 3.6 Flash' ? 'var(--yellow)' : 'var(--text-secondary)',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 3,
                         }}
                       >
-                        {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={11} /> : <Zap size={11} />}
-                        {msg.source === 'Gemini 3.6 Flash' ? '✨ Gemini' : '⚡ Local'}
+                        {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={10} /> : <Zap size={10} />}
+                        {msg.source === 'Gemini 3.6 Flash' ? 'Gemini 3.6 Flash' : 'Local Engine'}
                       </span>
                     )}
 
-                    <small style={{ opacity: 0.6, fontSize: 10, marginLeft: 'auto' }}>{msg.timestamp}</small>
+                    <small style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>{msg.timestamp}</small>
                   </div>
                 </div>
               </div>
             ))}
 
             {isLoading && (
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#6B7280', fontSize: 12 }}>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Evaluating telemetry...</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+                <Loader2 size={15} className="animate-spin" />
+                <span>Evaluating telemetry context...</span>
               </div>
             )}
             <div ref={chatBottomRef} />
           </div>
 
           {/* Touch-Friendly Prompt Shortcuts */}
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', margin: '12px 0 10px', paddingBottom: 4 }}>
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', margin: '10px 0', paddingBottom: 4 }}>
             {presets.map((preset) => (
               <button
                 key={preset}
                 disabled={isLoading}
                 onClick={() => handleSend(preset)}
                 style={{
-                  border: '1px solid #E5E7EB',
-                  background: '#F9FAFB',
-                  color: '#374151',
-                  padding: '6px 12px',
-                  minHeight: 38,
-                  borderRadius: 20,
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--panel-elevated)',
+                  color: 'var(--text-secondary)',
+                  padding: '5px 10px',
+                  minHeight: 34,
+                  borderRadius: 6,
                   fontSize: 11,
+                  fontFamily: 'var(--font-mono)',
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
@@ -212,7 +217,7 @@ export function AICompanionView() {
             ))}
           </div>
 
-          {/* Input Box with Min 44px Touch Standard */}
+          {/* Input Box */}
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               type="text"
@@ -220,13 +225,15 @@ export function AICompanionView() {
               disabled={isLoading}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about your health signals or weather..."
+              placeholder="Ask about your vitals, heat risk, or weather..."
               style={{
                 flex: 1,
-                padding: '10px 14px',
-                minHeight: 44,
-                borderRadius: 10,
-                border: '1px solid #E5E7EB',
+                padding: '8px 12px',
+                minHeight: 40,
+                borderRadius: 8,
+                background: 'var(--panel-elevated)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 outline: 'none',
               }}
@@ -236,12 +243,13 @@ export function AICompanionView() {
               onClick={() => handleSend()}
               style={{
                 background: 'var(--yellow)',
-                color: '#171717',
+                color: '#080B10',
                 border: 0,
-                padding: '0 16px',
-                minHeight: 44,
-                borderRadius: 10,
+                padding: '0 14px',
+                minHeight: 40,
+                borderRadius: 8,
                 fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -249,36 +257,51 @@ export function AICompanionView() {
                 cursor: 'pointer',
               }}
             >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
               <span>Send</span>
             </button>
           </div>
         </article>
 
         {/* Right System Provenance Audit Card */}
-        <article className="panel" style={{ padding: 20, background: '#3B0000', color: '#FFF', borderColor: 'var(--yellow)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, color: 'var(--yellow)' }}>
-            <Sparkles size={18} />
-            <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Data Source Audit</h3>
+        <article className="panel" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: 'var(--yellow)' }}>
+            <Sparkles size={16} />
+            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Live Telemetry Context Bar</h3>
           </div>
 
-          <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ background: 'rgba(255,193,7,0.15)', padding: 10, borderRadius: 8, border: '1px solid var(--yellow)' }}>
-              <span style={{ display: 'block', color: 'var(--yellow)', fontWeight: 800 }}>
-                {isOffline ? '⚡ Offline Engine Active' : '✨ Gemini 3.6 Flash Active'}
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', display: 'flex', flexDirection: 'column', gap: 8, color: 'var(--text-secondary)' }}>
+            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
+              <span style={{ display: 'block', color: 'var(--yellow)', fontWeight: 700, marginBottom: 2 }}>
+                {isOffline ? '⚡ Local Rule Engine Active' : '✨ Gemini 3.6 Flash Active'}
               </span>
-              <small style={{ color: '#FFF', fontSize: 10 }}>
+              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>
                 {isOffline
-                  ? 'Responses generated locally on-device using rule engine.'
-                  : 'Live responses generated via Google Gemini 3.6 Flash API.'}
+                  ? 'Responses generated locally on-device.'
+                  : 'Live responses generated via Gemini API.'}
               </small>
             </div>
 
-            <div>Current HR: <strong>{telemetry.heartRate} BPM</strong></div>
-            <div>Current HRV: <strong>{telemetry.hrv} ms</strong></div>
-            <div>Body Temp: <strong>{telemetry.bodyTemp}°C</strong></div>
-            <div>Ambient Temp: <strong>{telemetry.ambientTemp}°C</strong></div>
-            <div>Overall Risk: <strong>{risks.overall} / 100</strong></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
+              <span>Heart Rate:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.heartRate} BPM</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
+              <span>Blood Oxygen:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.spo2}%</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
+              <span>Body Temp:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.bodyTemp}°C</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
+              <span>Ambient Temp:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.ambientTemp}°C</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
+              <span>Composite Risk Index:</span>
+              <strong style={{ color: 'var(--yellow)' }}>{risks.overall} / 100</strong>
+            </div>
           </div>
         </article>
       </div>

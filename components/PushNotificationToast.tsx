@@ -73,7 +73,7 @@ export function PushNotificationToast() {
   const rawStatus = currentNotification.smsStatus || 'Delivered'
   const isSuccess = rawStatus.toLowerCase().includes('sent') || rawStatus.toLowerCase().includes('delivered')
   const statusLabel = isSuccess
-    ? 'Delivered to Telegram Bot (@hacksporabot)'
+    ? 'Delivered to Telegram Bot'
     : 'Dispatched to Emergency Dispatch Queue'
 
   const accentGradient = isSos
@@ -166,14 +166,9 @@ export function PushNotificationToast() {
               <Radio className="w-3.5 h-3.5 text-blue-600" />
               <span>Telegram Bot Pipeline:</span>
             </div>
-            <a
-              href="https://t.me/hacksporabot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono font-bold text-blue-700 hover:text-blue-900 bg-blue-50/80 px-2 py-0.5 rounded border border-blue-200 text-xs transition-colors"
-            >
-              @hacksporabot
-            </a>
+            <span className="font-mono font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded border border-blue-200 text-xs">
+              Emergency Channel Active
+            </span>
           </div>
 
           <div className="mt-2 flex items-center justify-between text-[11px]">

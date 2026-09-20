@@ -71,7 +71,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
   // Trigger automated Telegram Bot Push
   const triggerSosPush = async () => {
     setIsDispatched(true)
-    setDispatchStatus('Dispatching automated Telegram SOS to @hacksporabot...')
+    setDispatchStatus('Dispatching automated Telegram SOS...')
 
     try {
       const res = await fetch('/api/notify', {
@@ -93,7 +93,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
 
       const data = await res.json()
       if (data.success && (data.telegramDelivered || (data.smsStatus && data.smsStatus.startsWith('sent')))) {
-        setDispatchStatus(`✅ EMERGENCY ALERT DISPATCHED: ${data.smsStatus || 'Delivered to Telegram @hacksporabot'}`)
+        setDispatchStatus(`✅ EMERGENCY ALERT DISPATCHED: ${data.smsStatus || 'Delivered to Telegram Bot'}`)
       } else if (data.smsStatus) {
         setDispatchStatus(`⚠️ ${data.smsStatus}`)
       } else {
@@ -213,7 +213,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
             </div>
 
             <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', margin: 0, fontWeight: 700 }}>
-              Auto-pushing Telegram SOS to @hacksporabot in {secondsLeft}s...
+              Auto-pushing Telegram SOS in {secondsLeft}s...
             </p>
           </div>
         ) : (

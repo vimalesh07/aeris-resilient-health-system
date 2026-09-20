@@ -133,7 +133,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
             TELEGRAM BOT PUSH DISPATCHED
           </span>
-          <span style={{ fontWeight: 800 }}>@hacksporabot</span>
+          <span style={{ fontWeight: 800 }}>ACTIVE RESPONSE BOT</span>
         </div>
 
         {/* User Location & Telemetry Snapshot Card */}

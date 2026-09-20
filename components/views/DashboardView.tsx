@@ -108,7 +108,7 @@ export function DashboardView() {
       setObstacleSent(true)
       setPushNotificationStatus(
         data?.success
-          ? '✓ Obstacle push dispatched via Telegram to emergency bot (@hacksporabot)!'
+          ? '✓ Obstacle push dispatched via Telegram!'
           : data?.smsStatus || 'Obstacle push active.'
       )
       setTimeout(() => setObstacleSent(false), 4000)
@@ -138,7 +138,7 @@ export function DashboardView() {
       setFoodSent(true)
       setPushNotificationStatus(
         data?.success
-          ? '✓ Food requirement alert dispatched via Telegram to relief bot (@hacksporabot)!'
+          ? '✓ Food requirement alert dispatched via Telegram!'
           : data?.smsStatus || 'Food requirement push active.'
       )
       setTimeout(() => setFoodSent(false), 4000)
@@ -203,7 +203,7 @@ export function DashboardView() {
           <button
             onClick={handleObstaclePush}
             disabled={obstacleLoading}
-            title="Push field obstacle notice via Telegram to emergency bot (@hacksporabot)"
+            title="Push field obstacle notice via Telegram to emergency responders"
             className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs tracking-wide shadow-md shadow-amber-500/25 border border-amber-400 hover:from-amber-400 hover:to-orange-400 hover:shadow-amber-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
           >
             {obstacleLoading ? (
@@ -220,7 +220,7 @@ export function DashboardView() {
           <button
             onClick={handleFoodRequirementPush}
             disabled={foodLoading}
-            title="Push emergency food and ration requirement via Telegram (@hacksporabot)"
+            title="Push emergency food and ration requirement via Telegram"
             className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs tracking-wide shadow-md shadow-emerald-500/25 border border-emerald-400 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
           >
             {foodLoading ? (

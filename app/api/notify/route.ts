@@ -49,14 +49,15 @@ Live Location: ${mapsUrl}`
     }
 
     // Environment API Keys for Automated Telegram & SMS Dispatch
-    const telegramToken = process.env.TELEGRAM_BOT_TOKEN || '8813634516:AAEwsWYyV3OkvVi4AnXDP3CDx_leBODecqM'
-    const telegramChatId = process.env.TELEGRAM_CHAT_ID || '8827470925'
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN
+    const telegramChatId = process.env.TELEGRAM_CHAT_ID
+    const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'Telegram Emergency Bot'
     const fast2smsKey = process.env.FAST2SMS_API_KEY
 
     let dispatchStatus = 'simulated'
     let telegramDelivered = false
 
-    // Primary Automated Channel: Telegram Bot (@hacksporabot)
+    // Primary Automated Channel: Telegram Bot
     if (telegramToken && telegramChatId) {
       try {
         const tgRes = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
@@ -73,7 +74,7 @@ Live Location: ${mapsUrl}`
         const tgData = await tgRes.json()
         if (tgData.ok) {
           telegramDelivered = true
-          dispatchStatus = 'sent (Telegram Bot @hacksporabot)'
+          dispatchStatus = `sent (${botUsername})`
         } else {
           console.warn('Telegram Bot API Response:', tgData)
           // Fallback to plain text if formatting error
@@ -88,9 +89,9 @@ Live Location: ${mapsUrl}`
           const retryData = await retryRes.json()
           if (retryData.ok) {
             telegramDelivered = true
-            dispatchStatus = 'sent (Telegram Bot @hacksporabot)'
+            dispatchStatus = `sent (${botUsername})`
           } else {
-            dispatchStatus = `failed (Telegram: ${retryData.description || 'Check /start on @hacksporabot'})`
+            dispatchStatus = `failed (Telegram: ${retryData.description || 'Check /start on bot'})`
           }
         }
       } catch (tgErr: any) {
@@ -125,8 +126,8 @@ Live Location: ${mapsUrl}`
 
     if (dispatchStatus === 'simulated') {
       console.log('----------------------------------------------------')
-      console.log('🤖 AERIS TELEGRAM BOT DISPATCH (@hacksporabot)')
-      console.log('🔹 TARGET CHAT ID:', telegramChatId)
+      console.log('🤖 AERIS TELEGRAM BOT DISPATCH')
+      console.log('🔹 TARGET CHAT ID:', telegramChatId ? '[CONFIGURED]' : '[MISSING]')
       console.log('🔹 STATUS:', dispatchStatus)
       console.log('🔹 MESSAGE:\n' + messageText)
       console.log('----------------------------------------------------')
@@ -135,7 +136,7 @@ Live Location: ${mapsUrl}`
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      targetRecipient: `@hacksporabot (Chat ID: ${telegramChatId})`,
+      targetRecipient: telegramChatId ? `${botUsername} (Chat ID configured)` : 'Unconfigured',
       targetPhone: fullPlusPhone,
       smsStatus: dispatchStatus,
       dispatchStatus,

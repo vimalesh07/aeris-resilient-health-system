@@ -176,7 +176,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       body: params.body,
       timestamp,
       targetPhone: phone,
-      smsStatus: 'Dispatching via Telegram Bot (@hacksporabot)...',
+      smsStatus: 'Dispatching via Telegram Bot...',
       vitals: activeVitals,
       location: activeLocation,
     })
@@ -193,7 +193,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         }
         if (permission === 'granted') {
           new Notification(params.title, {
-            body: `${params.body}\nTarget: @hacksporabot (Chat ID: 8827470925) | Vitals: ${activeVitals.heartRate} BPM, ${activeVitals.spo2}% SpO2`,
+            body: `${params.body}\nTarget: Telegram Emergency Bot | Vitals: ${activeVitals.heartRate} BPM, ${activeVitals.spo2}% SpO2`,
             icon: '/icon.svg',
             tag: `push_${params.type}_${Date.now()}`,
             requireInteraction: true,
@@ -212,7 +212,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       trigger: params.body,
       supportingSignals: [
-        `Telegram Bot: @hacksporabot (Chat: 8827470925)`,
+        `Telegram Bot: Active Emergency Channel`,
         `Biometrics: HR ${activeVitals.heartRate} BPM, SpO2 ${activeVitals.spo2}%`,
         `Channel: Automated Telegram Broadcast`,
       ],

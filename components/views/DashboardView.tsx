@@ -198,22 +198,22 @@ export function DashboardView() {
         </div>
 
         {/* Action Buttons Cluster: Obstacle, Food, SOS */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="w-full sm:w-auto grid grid-cols-1 sm:grid-cols-3 md:flex md:items-center gap-2.5">
           {/* Obstacle Push Button */}
           <button
             onClick={handleObstaclePush}
             disabled={obstacleLoading}
             title="Push field obstacle notice via Telegram to emergency responders"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs tracking-wide shadow-md shadow-amber-500/25 border border-amber-400 hover:from-amber-400 hover:to-orange-400 hover:shadow-amber-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
+            className="h-10 px-4 w-full md:w-auto md:min-w-[155px] inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs tracking-wide shadow-md shadow-amber-500/25 border border-amber-400 hover:from-amber-400 hover:to-orange-400 hover:shadow-amber-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer whitespace-nowrap"
           >
             {obstacleLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-white" />
+              <Loader2 className="w-4 h-4 animate-spin text-white shrink-0" />
             ) : obstacleSent ? (
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
             ) : (
-              <Construction className="w-4 h-4 text-white" />
+              <Construction className="w-4 h-4 text-white shrink-0" />
             )}
-            <span className="text-white">{obstacleLoading ? 'Pushing...' : obstacleSent ? 'Sent to Telegram' : 'Obstacle Push'}</span>
+            <span className="text-white truncate">{obstacleLoading ? 'Pushing...' : obstacleSent ? 'Sent to Telegram' : 'Obstacle Push'}</span>
           </button>
 
           {/* Food Requirement Button */}
@@ -221,22 +221,22 @@ export function DashboardView() {
             onClick={handleFoodRequirementPush}
             disabled={foodLoading}
             title="Push emergency food and ration requirement via Telegram"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs tracking-wide shadow-md shadow-emerald-500/25 border border-emerald-400 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
+            className="h-10 px-4 w-full md:w-auto md:min-w-[155px] inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs tracking-wide shadow-md shadow-emerald-500/25 border border-emerald-400 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer whitespace-nowrap"
           >
             {foodLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-white" />
+              <Loader2 className="w-4 h-4 animate-spin text-white shrink-0" />
             ) : foodSent ? (
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
             ) : (
-              <Utensils className="w-4 h-4 text-white" />
+              <Utensils className="w-4 h-4 text-white shrink-0" />
             )}
-            <span className="text-white">{foodLoading ? 'Pushing...' : foodSent ? 'Sent to Telegram' : 'Food Requirement'}</span>
+            <span className="text-white truncate">{foodLoading ? 'Pushing...' : foodSent ? 'Sent to Telegram' : 'Food Requirement'}</span>
           </button>
 
           {/* Emergency SOS Action */}
           <button
             onClick={() => triggerSos('WEB')}
-            className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold tracking-wider text-sm shadow-[0_0_25px_rgba(239,68,68,0.5)] border border-red-500/80 hover:shadow-[0_0_35px_rgba(239,68,68,0.8)] hover:from-red-500 hover:to-rose-600 active:scale-95 transition-all duration-200 cursor-pointer"
+            className="relative h-10 px-4 w-full md:w-auto md:min-w-[155px] inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold tracking-wide text-xs shadow-[0_0_25px_rgba(239,68,68,0.5)] border border-red-500/80 hover:shadow-[0_0_35px_rgba(239,68,68,0.8)] hover:from-red-500 hover:to-rose-600 active:scale-95 transition-all duration-200 cursor-pointer whitespace-nowrap"
           >
             {/* Live Pulsing Dot */}
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -244,8 +244,8 @@ export function DashboardView() {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </span>
 
-            <AlertOctagon className="w-4 h-4 text-white animate-pulse" />
-            EMERGENCY SOS
+            <AlertOctagon className="w-4 h-4 text-white animate-pulse shrink-0" />
+            <span className="truncate">EMERGENCY SOS</span>
           </button>
         </div>
       </div>

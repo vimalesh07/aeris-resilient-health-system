@@ -891,6 +891,8 @@ nav {
   -webkit-backdrop-filter: blur(6px);
   z-index: 90;
   animation: fadeIn 0.2s ease-out;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .mobile-drawer {
@@ -909,6 +911,7 @@ nav {
   animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  overscroll-behavior: contain;
 }
 
 @keyframes slideInLeft {
@@ -927,6 +930,8 @@ nav {
 .mobile-drawer-body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 14px 12px 24px;
   display: flex;
   flex-direction: column;
@@ -1058,6 +1063,12 @@ nav {
   }
   .top-status .live-text {
     font-size: 10px;
+  }
+  .content-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 12px 0 16px;
   }
 }
 

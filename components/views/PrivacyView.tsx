@@ -97,8 +97,8 @@ export function PrivacyView() {
           <button
             onClick={() => setIsOffline(!isOffline)}
             style={{
-              background: 'var(--yellow)',
-              color: '#080B10',
+              background: 'var(--main-red)',
+              color: '#FFFFFF',
               border: 0,
               padding: '8px 16px',
               fontSize: 12,
@@ -107,6 +107,7 @@ export function PrivacyView() {
               borderRadius: 8,
               minHeight: 40,
               cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
             }}
           >
             {isOffline ? 'Offline Mode Active' : 'Enable Offline Mode'}

@@ -1,5 +1,7 @@
 export interface ExternalWeatherData {
   locationName: string
+  latitude?: number
+  longitude?: number
   ambientTemp: number // °C
   humidity: number // %
   pressure: number // hPa
@@ -87,6 +89,8 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
 
         return {
           locationName: `${wData.name || locationName}`,
+          latitude: lat,
+          longitude: lon,
           ambientTemp: Number((wData.main?.temp || 28).toFixed(1)),
           humidity: Math.round(wData.main?.humidity || 50),
           pressure: Math.round(wData.main?.pressure || 1012),
@@ -152,6 +156,8 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
 
       return {
         locationName,
+        latitude: lat,
+        longitude: lon,
         ambientTemp: Number((currentW.temperature_2m || 28).toFixed(1)),
         humidity: Math.round(currentW.relative_humidity_2m || 50),
         pressure: Math.round(currentW.surface_pressure || 1012),
@@ -174,6 +180,8 @@ export async function fetchRealWeather(latitude?: number, longitude?: number, is
 
   return {
     locationName: 'Local Region',
+    latitude: lat,
+    longitude: lon,
     ambientTemp: 28.5,
     humidity: 55,
     pressure: 1012,

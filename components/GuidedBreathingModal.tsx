@@ -83,7 +83,7 @@ export function GuidedBreathingModal({ onClose, currentHR = 76, currentHRV = 55,
         position: 'fixed',
         inset: 0,
         zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.85)',
+        background: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(8px)',
         display: 'grid',
         placeItems: 'center',
@@ -102,7 +102,7 @@ export function GuidedBreathingModal({ onClose, currentHR = 76, currentHRV = 55,
           color: 'var(--text-primary)',
           textAlign: 'center',
           position: 'relative',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
         }}
       >
         <button
@@ -151,9 +151,9 @@ export function GuidedBreathingModal({ onClose, currentHR = 76, currentHRV = 55,
                   fontSize: 12,
                   fontWeight: 800,
                   fontFamily: 'var(--font-mono)',
-                  border: '1px solid var(--yellow)',
-                  background: sessionMinutes === mins ? 'var(--yellow)' : 'transparent',
-                  color: sessionMinutes === mins ? '#080B10' : 'var(--yellow)',
+                  border: '1px solid var(--main-red)',
+                  background: sessionMinutes === mins ? 'var(--main-red)' : 'transparent',
+                  color: sessionMinutes === mins ? '#FFFFFF' : 'var(--main-red)',
                   cursor: 'pointer',
                 }}
               >
@@ -172,15 +172,15 @@ export function GuidedBreathingModal({ onClose, currentHR = 76, currentHRV = 55,
                   width: 130,
                   height: 130,
                   borderRadius: '50%',
-                  background: phase === 'Inhale' ? 'var(--yellow)' : phase === 'Hold' ? 'var(--bright-yellow)' : phase === 'Exhale' ? 'var(--main-red)' : '#10B981',
-                  color: phase === 'Exhale' ? '#FFF' : '#080B10',
+                  background: phase === 'Inhale' ? '#EF4444' : phase === 'Hold' ? '#DC2626' : phase === 'Exhale' ? '#B91C1C' : '#10B981',
+                  color: '#FFFFFF',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transform: `scale(${circleScale})`,
                   transition: `transform ${phase === 'Inhale' ? '4s' : phase === 'Hold' ? '0.3s' : phase === 'Exhale' ? '4s' : '2s'} ease-in-out, background 0.5s ease`,
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  boxShadow: '0 10px 30px rgba(220, 38, 38, 0.25)',
                 }}
               >
                 <span style={{ fontSize: 16, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{phase}</span>
@@ -199,7 +199,7 @@ export function GuidedBreathingModal({ onClose, currentHR = 76, currentHRV = 55,
               <button
                 className="top-pill-button"
                 onClick={() => setIsRunning(!isRunning)}
-                style={{ background: 'var(--yellow)', color: '#080B10', border: 0, flex: 1, minHeight: 44, justifyContent: 'center', fontSize: 13, fontWeight: 800 }}
+                style={{ background: 'var(--main-red)', color: '#FFFFFF', border: 0, flex: 1, minHeight: 44, justifyContent: 'center', fontSize: 13, fontWeight: 800, boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)' }}
               >
                 {isRunning ? <Pause size={16} /> : <Play size={16} />}
                 <span>{isRunning ? 'Pause' : 'Resume'}</span>

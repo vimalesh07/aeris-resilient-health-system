@@ -7,7 +7,7 @@ import { useTelemetry } from '@/hooks/useTelemetry'
 import { TelemetryValue } from '@/components/ui/TelemetryValue'
 
 export function VitalsView() {
-  const { risks, telemetry, baseline, dailyAnalysis, history, realHistory, arduinoData, arduinoConnected } = useTelemetry()
+  const { risks, telemetry, baseline, dailyAnalysis, history, realHistory, arduinoData, arduinoConnected, transport } = useTelemetry()
 
   const isArduinoActive = Boolean(arduinoConnected && arduinoData?.connected)
   const isFingerPlaced = Boolean(arduinoData?.fingerDetected)
@@ -25,7 +25,7 @@ export function VitalsView() {
         <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Live Vitals Dashboard</h1>
         <p className="subhead">
           {isArduinoActive
-            ? '● Real-time physiological telemetry streaming directly from MAX30102 via Arduino UNO (COM3).'
+            ? `● Real-time physiological telemetry streaming directly via ${transport} hardware bridge.`
             : '○ Continuous physiological telemetry captured locally via physical sensors & edge AI modules.'}
         </p>
       </div>
@@ -53,7 +53,7 @@ export function VitalsView() {
             <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: isArduinoActive ? (realBpm !== null ? 'var(--risk-safe)' : 'var(--yellow)') : 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
               {isArduinoActive
                 ? realBpm !== null
-                  ? 'COM3 LIVE'
+                  ? transport.includes('WiFi') ? 'WIFI LIVE' : 'LIVE'
                   : isStabilizing
                   ? 'STABILIZING'
                   : 'NO FINGER'
@@ -80,7 +80,7 @@ export function VitalsView() {
             <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: isArduinoActive ? (realSpo2 !== null ? 'var(--risk-safe)' : 'var(--yellow)') : 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
               {isArduinoActive
                 ? realSpo2 !== null
-                  ? 'COM3 LIVE'
+                  ? transport.includes('WiFi') ? 'WIFI LIVE' : 'LIVE'
                   : isStabilizing
                   ? 'STABILIZING'
                   : 'NO FINGER'
@@ -173,7 +173,7 @@ export function VitalsView() {
       {/* 24-Hour Telemetry History Table */}
       <article className="panel" style={{ padding: 20 }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>
-          {isArduinoActive ? '24-Hour Telemetry History (COM3 Physical Stream)' : '24-Hour Telemetry History'}
+          {isArduinoActive ? `24-Hour Telemetry History (${transport} Stream)` : '24-Hour Telemetry History'}
         </h3>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>

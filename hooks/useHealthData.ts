@@ -13,6 +13,7 @@ export interface ArduinoHealthData {
   fingerDetected: boolean
   connected: boolean
   timestamp: number
+  source?: string
   lastRawLine?: string
 }
 
@@ -27,24 +28,85 @@ export interface UseHealthDataReturn {
   rawBpm: number | null
   rawSpo2: number | null
   rawLogs: string[]
+  transport: 'WiFi (ESP8266)' | 'Serial (COM3)' | 'Offline'
   lastSosEvent: { type: string; source: string; timestamp: number } | null
 }
 
 export function useHealthData(): UseHealthDataReturn {
   const [data, setData] = useState<ArduinoHealthData | null>(null)
   const [wsConnected, setWsConnected] = useState<boolean>(false)
+  const [apiConnected, setApiConnected] = useState<boolean>(false)
   const [isStale, setIsStale] = useState<boolean>(false)
   const [rawLogs, setRawLogs] = useState<string[]>([])
+  const [transport, setTransport] = useState<'WiFi (ESP8266)' | 'Serial (COM3)' | 'Offline'>('Offline')
   const [lastSosEvent, setLastSosEvent] = useState<{ type: string; source: string; timestamp: number } | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastPacketTimeRef = useRef<number>(0)
+  const lastSosTimestampRef = useRef<number>(0)
 
+  // 1. ESP8266 WiFi Telemetry Polling Engine (Fetches from /api/telemetry)
   useEffect(() => {
     let isMounted = true
 
-    const connect = () => {
+    const fetchApiTelemetry = async () => {
+      try {
+        const res = await fetch('/api/telemetry', { cache: 'no-store' })
+        if (!res.ok) return
+        const json = await res.json()
+
+        if (!isMounted) return
+
+        if (json.success && json.connected && json.data) {
+          const apiData: ArduinoHealthData = json.data
+          setData(apiData)
+          setApiConnected(true)
+          setTransport('WiFi (ESP8266)')
+          lastPacketTimeRef.current = Date.now()
+          setIsStale(false)
+
+          if (json.rawLogs && Array.isArray(json.rawLogs) && json.rawLogs.length > 0) {
+            setRawLogs(json.rawLogs)
+          } else if (apiData.lastRawLine) {
+            setRawLogs((prev) => [apiData.lastRawLine!, ...prev.slice(0, 14)])
+          }
+
+          // Handle incoming SOS from ESP8266
+          if (json.lastSosEvent && json.lastSosEvent.timestamp > lastSosTimestampRef.current) {
+            lastSosTimestampRef.current = json.lastSosEvent.timestamp
+            console.log('🚨 [AERIS WiFi Bridge] Hardware SOS received from ESP8266:', json.lastSosEvent)
+            setLastSosEvent(json.lastSosEvent)
+          }
+        } else if (json.success && !json.connected) {
+          // If WebSocket is not connected either, mark API disconnected
+          if (!wsConnected) {
+            setApiConnected(false)
+            if (transport === 'WiFi (ESP8266)') {
+              setTransport('Offline')
+            }
+          }
+        }
+      } catch {
+        // Next.js server might be initializing or busy
+      }
+    }
+
+    // High-frequency real-time check (every 200ms)
+    fetchApiTelemetry()
+    const apiInterval = setInterval(fetchApiTelemetry, 200)
+
+    return () => {
+      isMounted = false
+      clearInterval(apiInterval)
+    }
+  }, [wsConnected, transport])
+
+  // 2. Legacy SerialPort WebSocket Listener (ws://localhost:3001) as Fallback
+  useEffect(() => {
+    let isMounted = true
+
+    const connectWs = () => {
       const port = process.env.NEXT_PUBLIC_WEBSOCKET_PORT || '3001'
       const wsUrl = `ws://localhost:${port}`
 
@@ -54,8 +116,9 @@ export function useHealthData(): UseHealthDataReturn {
 
         socket.onopen = () => {
           if (!isMounted) return
-          console.log('[AERIS Hardware Listener] WebSocket connected to Arduino Serial Bridge.')
+          console.log('[AERIS Hardware Listener] WebSocket connected to Serial Bridge.')
           setWsConnected(true)
+          setTransport('Serial (COM3)')
           setIsStale(false)
         }
 
@@ -73,6 +136,7 @@ export function useHealthData(): UseHealthDataReturn {
             } else if (message.type === 'health_update' && message.data) {
               const updatedData: ArduinoHealthData = message.data
               setData(updatedData)
+              setTransport('Serial (COM3)')
               lastPacketTimeRef.current = Date.now()
               setIsStale(false)
 
@@ -85,35 +149,29 @@ export function useHealthData(): UseHealthDataReturn {
           }
         }
 
-        socket.onerror = (error) => {
+        socket.onerror = () => {
           if (!isMounted) return
-          console.warn('[AERIS Hardware Listener] WebSocket connection error:', error)
           setWsConnected(false)
         }
 
         socket.onclose = () => {
           if (!isMounted) return
-          console.log('[AERIS Hardware Listener] WebSocket disconnected. Retrying in 3s...')
           setWsConnected(false)
-          setData(null)
-          reconnectTimerRef.current = setTimeout(connect, 3000)
+          reconnectTimerRef.current = setTimeout(connectWs, 4000)
         }
-      } catch (e) {
+      } catch {
         if (!isMounted) return
-        console.error('[AERIS Hardware Listener] Error initializing WebSocket:', e)
         setWsConnected(false)
-        setData(null)
-        reconnectTimerRef.current = setTimeout(connect, 3000)
+        reconnectTimerRef.current = setTimeout(connectWs, 4000)
       }
     }
 
-    connect()
+    connectWs()
 
-    // 4-second stale packet detector (marks connection inactive if hardware stops sending bytes)
+    // 4-second stale packet detector
     const staleInterval = setInterval(() => {
       if (lastPacketTimeRef.current > 0 && Date.now() - lastPacketTimeRef.current > 4000) {
         if (!isStale) {
-          console.warn('[AERIS Hardware Listener] Stale data timeout (>4s). Marking hardware disconnected.')
           setIsStale(true)
         }
       }
@@ -127,22 +185,23 @@ export function useHealthData(): UseHealthDataReturn {
         wsRef.current.close()
       }
     }
-  }, [])
+  }, [isStale])
 
-  const arduinoConnected = Boolean(wsConnected && data?.connected && !isStale)
-  const isFingerDetected = Boolean(arduinoConnected && data?.fingerDetected)
+  const isHardwareConnected = Boolean((apiConnected || wsConnected) && data?.connected && !isStale)
+  const isFingerDetected = Boolean(isHardwareConnected && data?.fingerDetected)
 
   return {
     data,
-    wsConnected,
-    arduinoConnected,
-    isHardwareConnected: arduinoConnected,
+    wsConnected: Boolean(wsConnected || apiConnected),
+    arduinoConnected: isHardwareConnected,
+    isHardwareConnected,
     isFingerDetected,
     stableBpm: data?.stableBpm ?? null,
     stableSpo2: data?.stableSpo2 ?? null,
     rawBpm: data?.bpm ?? null,
     rawSpo2: data?.spo2 ?? null,
     rawLogs,
+    transport: isHardwareConnected ? transport : 'Offline',
     lastSosEvent,
   }
 }

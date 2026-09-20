@@ -12,25 +12,31 @@ interface RiskBadgeProps {
 
 export function RiskBadge({ level, score, size = 'md' }: RiskBadgeProps) {
   const norm = String(level).toUpperCase()
-  let bg = 'rgba(16, 185, 129, 0.12)'
-  let color = 'var(--risk-safe)'
-  let border = 'rgba(16, 185, 129, 0.3)'
+  let bg = '#ECFDF5'
+  let color = '#059669'
+  let border = '#A7F3D0'
+  let insetSheen = '0 1px 2px rgba(0, 0, 0, 0.04)'
+  let isCritical = false
   let label = level
 
   if (norm.includes('CRITICAL') || norm.includes('HIGH')) {
-    bg = 'rgba(198, 40, 40, 0.18)'
-    color = 'var(--risk-critical)'
-    border = 'rgba(198, 40, 40, 0.4)'
+    bg = '#FEF2F2'
+    color = '#DC2626'
+    border = '#FECACA'
+    insetSheen = '0 1px 2px rgba(220, 38, 38, 0.08)'
+    isCritical = true
     label = 'CRITICAL'
   } else if (norm.includes('WARN')) {
-    bg = 'rgba(249, 115, 22, 0.18)'
-    color = 'var(--risk-warning)'
-    border = 'rgba(249, 115, 22, 0.4)'
+    bg = '#FFF7ED'
+    color = '#EA580C'
+    border = '#FED7AA'
+    insetSheen = '0 1px 2px rgba(234, 88, 12, 0.08)'
     label = 'WARNING'
   } else if (norm.includes('MONITOR')) {
-    bg = 'rgba(255, 193, 7, 0.15)'
-    color = 'var(--risk-monitor)'
-    border = 'rgba(255, 193, 7, 0.35)'
+    bg = '#FFFBEB'
+    color = '#D97706'
+    border = '#FDE68A'
+    insetSheen = '0 1px 2px rgba(217, 119, 6, 0.08)'
     label = 'MONITOR'
   } else {
     label = 'SAFE'
@@ -54,6 +60,7 @@ export function RiskBadge({ level, score, size = 'md' }: RiskBadgeProps) {
         background: bg,
         color,
         border: `1px solid ${border}`,
+        boxShadow: insetSheen,
         whiteSpace: 'nowrap',
       }}
     >
@@ -63,6 +70,7 @@ export function RiskBadge({ level, score, size = 'md' }: RiskBadgeProps) {
           height: 6,
           borderRadius: '50%',
           background: color,
+          animation: isCritical ? 'tacticalPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : undefined,
         }}
       />
       {label} {score !== undefined ? `(${score})` : ''}

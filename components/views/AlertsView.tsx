@@ -71,7 +71,7 @@ export function AlertsView() {
               ))}
             </ul>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8, fontSize: 12, color: 'var(--yellow)', fontWeight: 600, marginBottom: 16, lineHeight: 1.4 }}>
+            <div style={{ background: '#FEF2F2', border: '1px solid rgba(220, 38, 38, 0.25)', padding: 10, borderRadius: 8, fontSize: 12, color: 'var(--main-red)', fontWeight: 600, marginBottom: 16, lineHeight: 1.4 }}>
               Recommended Action: {selectedAlert.recommendedAction}
             </div>
 
@@ -82,8 +82,8 @@ export function AlertsView() {
                   setSelectedAlert(null)
                 }}
                 style={{
-                  background: 'var(--yellow)',
-                  color: '#080B10',
+                  background: 'var(--main-red)',
+                  color: '#FFFFFF',
                   border: 0,
                   minHeight: 38,
                   padding: '0 16px',
@@ -96,6 +96,7 @@ export function AlertsView() {
                   justifyContent: 'center',
                   gap: 6,
                   cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
                 }}
               >
                 <CheckCircle size={15} /> Acknowledge Advisory
@@ -126,9 +127,9 @@ export function AlertsView() {
             fontSize: 11,
             fontFamily: 'var(--font-mono)',
             fontWeight: 700,
-            border: notificationsEnabled ? '1px solid var(--yellow)' : '1px solid var(--border-subtle)',
-            background: notificationsEnabled ? 'rgba(255,193,7,0.12)' : 'var(--panel-elevated)',
-            color: notificationsEnabled ? 'var(--yellow)' : 'var(--text-secondary)',
+            border: notificationsEnabled ? '1px solid var(--main-red)' : '1px solid var(--border-subtle)',
+            background: notificationsEnabled ? '#FEF2F2' : 'var(--panel-elevated)',
+            color: notificationsEnabled ? 'var(--main-red)' : 'var(--text-secondary)',
             cursor: 'pointer',
           }}
         >
@@ -151,7 +152,7 @@ export function AlertsView() {
               key={alert.id}
               style={{
                 padding: 16,
-                borderLeft: `4px solid ${alert.severity === 'Critical' ? 'var(--risk-critical)' : alert.severity === 'High' ? 'var(--risk-warning)' : 'var(--yellow)'}`,
+                borderLeft: `4px solid ${alert.severity === 'Critical' ? 'var(--risk-critical)' : alert.severity === 'High' ? 'var(--risk-warning)' : 'var(--main-red)'}`,
                 opacity: alert.acknowledged ? 0.65 : 1,
               }}
             >
@@ -194,14 +195,15 @@ export function AlertsView() {
                         alignItems: 'center',
                         gap: 6,
                         padding: '5px 10px',
-                        background: 'var(--yellow)',
-                        color: '#080B10',
+                        background: 'var(--main-red)',
+                        color: '#FFFFFF',
                         border: 0,
                         borderRadius: 6,
                         fontSize: 11,
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 800,
                         cursor: 'pointer',
+                        boxShadow: '0 1px 4px rgba(220, 38, 38, 0.25)',
                       }}
                     >
                       <CheckCircle size={13} /> Acknowledge
@@ -222,7 +224,7 @@ export function AlertsView() {
               <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '8px 0 8px', lineHeight: 1.5 }}>{alert.trigger}</p>
 
               <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                <strong style={{ color: 'var(--yellow)' }}>Recommended Action:</strong> {alert.recommendedAction}
+                <strong style={{ color: 'var(--main-red)' }}>Recommended Action:</strong> {alert.recommendedAction}
               </div>
             </article>
           ))

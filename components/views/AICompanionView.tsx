@@ -98,18 +98,27 @@ export function AICompanionView() {
   ]
 
   return (
-    <div style={{ paddingTop: 16 }}>
-      <div style={{ marginBottom: 20 }}>
-        <p className="eyebrow">AERIS AI Clinical Assistant</p>
-        <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>AI Companion</h1>
-        <p className="subhead">
+    <div style={{ paddingTop: 6 }}>
+      <div style={{ marginBottom: 10 }}>
+        <p className="eyebrow" style={{ margin: 0, fontSize: 10 }}>AERIS AI Clinical Assistant</p>
+        <h1 style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 800, margin: '2px 0 4px', color: 'var(--text-primary)' }}>AI Companion</h1>
+        <p className="subhead" style={{ margin: 0, fontSize: 12 }}>
           Contextual AI Assistant with live provenance tags: <strong>Gemini 3.6 Flash API</strong> vs. <strong>Local Rule Engine</strong>.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-        {/* Chat Window */}
-        <article className="panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', height: 'clamp(460px, 60vh, 580px)' }}>
+      <div style={{ width: '100%' }}>
+        {/* Expanded Full-Width Chat Window */}
+        <article
+          className="panel"
+          style={{
+            padding: '14px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'clamp(580px, 78vh, 780px)',
+            width: '100%',
+          }}
+        >
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingRight: 4 }}>
             {messages.map((msg) => (
               <div
@@ -126,9 +135,9 @@ export function AICompanionView() {
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : 'rgba(255,193,7,0.15)',
-                    border: '1px solid var(--border-subtle)',
-                    color: msg.sender === 'user' ? 'var(--text-primary)' : 'var(--yellow)',
+                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : '#FEF2F2',
+                    border: msg.sender === 'user' ? '1px solid var(--border-subtle)' : '1px solid rgba(220, 38, 38, 0.25)',
+                    color: msg.sender === 'user' ? 'var(--text-primary)' : 'var(--main-red)',
                     display: 'grid',
                     placeItems: 'center',
                     fontWeight: 800,
@@ -242,8 +251,8 @@ export function AICompanionView() {
               disabled={isLoading}
               onClick={() => handleSend()}
               style={{
-                background: 'var(--yellow)',
-                color: '#080B10',
+                background: 'var(--main-red)',
+                color: '#FFFFFF',
                 border: 0,
                 padding: '0 14px',
                 minHeight: 40,
@@ -255,53 +264,12 @@ export function AICompanionView() {
                 justifyContent: 'center',
                 gap: 6,
                 cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
               }}
             >
               {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
               <span>Send</span>
             </button>
-          </div>
-        </article>
-
-        {/* Right System Provenance Audit Card */}
-        <article className="panel" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: 'var(--yellow)' }}>
-            <Sparkles size={16} />
-            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Live Telemetry Context Bar</h3>
-          </div>
-
-          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', display: 'flex', flexDirection: 'column', gap: 8, color: 'var(--text-secondary)' }}>
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
-              <span style={{ display: 'block', color: 'var(--yellow)', fontWeight: 700, marginBottom: 2 }}>
-                {isOffline ? '⚡ Local Rule Engine Active' : '✨ Gemini 3.6 Flash Active'}
-              </span>
-              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>
-                {isOffline
-                  ? 'Responses generated locally on-device.'
-                  : 'Live responses generated via Gemini API.'}
-              </small>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
-              <span>Heart Rate:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.heartRate} BPM</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
-              <span>Blood Oxygen:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.spo2}%</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
-              <span>Body Temp:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.bodyTemp}°C</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
-              <span>Ambient Temp:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{telemetry.ambientTemp}°C</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 4 }}>
-              <span>Composite Risk Index:</span>
-              <strong style={{ color: 'var(--yellow)' }}>{risks.overall} / 100</strong>
-            </div>
           </div>
         </article>
       </div>

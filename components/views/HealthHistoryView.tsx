@@ -5,8 +5,9 @@ import { useTelemetry } from '@/hooks/useTelemetry'
 import { RiskBadge } from '@/components/ui/RiskBadge'
 
 export function HealthHistoryView() {
-  const { history, timeframe, setTimeframe } = useTelemetry()
+  const { history, realHistory, baseline, timeframe, setTimeframe } = useTelemetry()
 
+  const activePoints = realHistory.length > 0 ? realHistory : history
   const avgHR = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.heartRate, 0) / history.length) : 70
   const validHrvs = history.map((h) => h.hrv).filter((v): v is number => v !== null)
   const avgHRV = validHrvs.length ? Math.round(validHrvs.reduce((sum, v) => sum + v, 0) / validHrvs.length) : 65
@@ -17,10 +18,10 @@ export function HealthHistoryView() {
     <div style={{ paddingTop: 16 }}>
       <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <p className="eyebrow">Longitudinal Signal Intelligence</p>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Health History</h1>
+          <p className="eyebrow">Longitudinal Signal Intelligence & Analytics</p>
+          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Health Analytics</h1>
           <p className="subhead">
-            Tracking biometrics, stress patterns, and climate resilience over time.
+            Tracking biometrics, multi-signal heat trends, and climate resilience over time.
           </p>
         </div>
 
@@ -32,8 +33,8 @@ export function HealthHistoryView() {
               onClick={() => setTimeframe(tf)}
               style={{
                 flex: 1,
-                background: timeframe === tf ? 'var(--yellow)' : 'transparent',
-                color: timeframe === tf ? '#080B10' : 'var(--text-secondary)',
+                background: timeframe === tf ? 'var(--main-red)' : 'transparent',
+                color: timeframe === tf ? '#FFFFFF' : 'var(--text-secondary)',
                 border: 0,
                 padding: '6px 12px',
                 minHeight: 36,
@@ -42,6 +43,7 @@ export function HealthHistoryView() {
                 fontFamily: 'var(--font-mono)',
                 fontWeight: 800,
                 cursor: 'pointer',
+                boxShadow: timeframe === tf ? '0 1px 4px rgba(220, 38, 38, 0.25)' : 'none',
               }}
             >
               {tf === '24h' ? '24 Hours' : tf === '7d' ? '7 Days' : '30 Days'}
@@ -86,7 +88,7 @@ export function HealthHistoryView() {
                 <div
                   style={{
                     width: '100%',
-                    background: pt.bodyTemp > 37.2 ? 'var(--risk-critical)' : 'var(--yellow)',
+                    background: pt.bodyTemp > 37.2 ? 'var(--risk-critical)' : '#3B82F6',
                     height: `${Math.max(12, (pt.bodyTemp - 35.8) * 35)}px`,
                     borderRadius: 3,
                   }}
@@ -102,6 +104,61 @@ export function HealthHistoryView() {
           </div>
         </article>
       </div>
+
+      {/* HEAT TREND GRAPH / MULTI-FACTOR CORRELATION */}
+      <article className="panel" style={{ padding: 20, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+              📈 HEAT TREND: Environmental Ambient vs Body Temp vs Heart Rate
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
+              Correlating live environmental heat exposure against physiological body temperature and cardiac load.
+            </p>
+          </div>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', padding: '3px 8px', borderRadius: 6, background: '#FEF2F2', color: 'var(--main-red)', border: '1px solid rgba(220, 38, 38, 0.2)', fontWeight: 700 }}>
+            LIVE THERMAL TELEMETRY
+          </span>
+        </div>
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', minWidth: 580, borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', textAlign: 'left' }}>
+                <th style={{ padding: '10px 12px' }}>⏱️ Timestamp</th>
+                <th style={{ padding: '10px 12px' }}>🌡️ Ambient Temp (°C)</th>
+                <th style={{ padding: '10px 12px' }}>🩺 Body Temp (°C)</th>
+                <th style={{ padding: '10px 12px' }}>❤️ Heart Rate (BPM)</th>
+                <th style={{ padding: '10px 12px' }}>⚡ Thermal Strain (PSI)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activePoints.slice(-10).map((pt, idx) => {
+                const samplePsi = Number(
+                  (
+                    5 * Math.max(0, (pt.bodyTemp - baseline.tempBaseline) / 3.0) +
+                    5 * Math.max(0, (pt.heartRate - baseline.restingHR) / 112)
+                  ).toFixed(1)
+                )
+                return (
+                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{pt.time}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 700 }}>{pt.ambientTemp}°C</td>
+                    <td style={{ padding: '10px 12px', color: pt.bodyTemp > baseline.tempBaseline + 0.6 ? 'var(--risk-critical)' : 'var(--text-primary)', fontWeight: 700 }}>
+                      {pt.bodyTemp}°C
+                    </td>
+                    <td style={{ padding: '10px 12px', color: pt.heartRate > baseline.restingHR + 10 ? 'var(--risk-critical)' : 'var(--text-primary)', fontWeight: 700 }}>
+                      {pt.heartRate} BPM
+                    </td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <RiskBadge level={samplePsi >= 7 ? 'CRITICAL' : samplePsi >= 4 ? 'WARNING' : 'SAFE'} score={samplePsi} size="sm" />
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </article>
 
       {/* Historical Data Log */}
       <article className="panel" style={{ padding: 18 }}>

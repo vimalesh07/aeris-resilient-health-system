@@ -69,7 +69,7 @@ export function RiskIntelligenceView() {
       {/* Sensor Data Flow Diagram */}
       <article className="panel" style={{ padding: 18, marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Layers size={18} style={{ color: 'var(--yellow)' }} />
+          <Layers size={18} style={{ color: 'var(--main-red)' }} />
           <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>On-Device Multi-Modal Fusion Flow</h3>
         </div>
         <div
@@ -93,18 +93,19 @@ export function RiskIntelligenceView() {
             <React.Fragment key={step}>
               <span
                 style={{
-                  background: idx === flowSteps.length - 1 ? 'var(--yellow)' : 'var(--panel-bg)',
-                  color: idx === flowSteps.length - 1 ? '#080B10' : 'var(--text-primary)',
+                  background: idx === flowSteps.length - 1 ? 'var(--main-red)' : 'var(--panel-bg)',
+                  color: idx === flowSteps.length - 1 ? '#FFFFFF' : 'var(--text-primary)',
                   border: '1px solid var(--border-subtle)',
                   padding: '5px 10px',
                   borderRadius: 6,
                   textAlign: 'center',
                   fontWeight: 800,
+                  boxShadow: idx === flowSteps.length - 1 ? '0 2px 6px rgba(220, 38, 38, 0.25)' : 'none',
                 }}
               >
                 {step}
               </span>
-              {idx < flowSteps.length - 1 && <span style={{ color: 'var(--yellow)', fontSize: 12 }}>➔</span>}
+              {idx < flowSteps.length - 1 && <span style={{ color: 'var(--main-red)', fontSize: 12 }}>➔</span>}
             </React.Fragment>
           ))}
         </div>

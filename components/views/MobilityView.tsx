@@ -27,7 +27,7 @@ export function MobilityView() {
           style={{
             margin: '0 0 16px',
             padding: '12px 16px',
-            background: 'rgba(198, 40, 40, 0.2)',
+            background: '#FEF2F2',
             border: '1px solid var(--main-red)',
             borderRadius: 10,
             color: 'var(--text-primary)',
@@ -37,9 +37,9 @@ export function MobilityView() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Zap size={20} style={{ color: 'var(--yellow)' }} />
+            <Zap size={20} style={{ color: 'var(--main-red)' }} />
             <div>
-              <strong style={{ fontSize: 13, color: '#FFF' }}>FALL IMPACT DETECTED</strong>
+              <strong style={{ fontSize: 13, color: '#991B1B' }}>FALL IMPACT DETECTED</strong>
               <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-secondary)' }}>
                 Sudden impact acceleration vector detected on MPU6050. Emergency SOS active.
               </p>

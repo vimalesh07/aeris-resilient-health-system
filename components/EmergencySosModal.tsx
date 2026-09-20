@@ -61,7 +61,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
         zIndex: 100,
         display: 'grid',
         placeItems: 'center',
-        background: 'rgba(8, 11, 16, 0.85)',
+        background: 'rgba(15, 23, 42, 0.6)',
         backdropFilter: 'blur(8px)',
         padding: 16,
         cursor: 'pointer',
@@ -76,7 +76,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
           border: '1px solid var(--main-red)',
           borderRadius: 14,
           padding: 24,
-          boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.15), 0 0 25px rgba(220, 38, 38, 0.15)',
           color: 'var(--text-primary)',
           position: 'relative',
           cursor: 'default',
@@ -108,7 +108,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
               width: 44,
               height: 44,
               borderRadius: 10,
-              background: 'rgba(198, 40, 40, 0.2)',
+              background: '#FEF2F2',
               border: '1px solid var(--main-red)',
               color: 'var(--main-red)',
               display: 'grid',
@@ -121,10 +121,19 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
               EMERGENCY SOS ACTIVE
             </h2>
-            <p style={{ margin: '2px 0 0', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--yellow)', fontWeight: 700 }}>
+            <p style={{ margin: '2px 0 0', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', fontWeight: 700 }}>
               {isDispatched ? '🚨 DISPATCHED TO EMERGENCY SERVICES' : `Auto-dispatching in ${countdown}s...`}
             </p>
           </div>
+        </div>
+
+        {/* Telegram Bot Push Confirmation Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#ECFDF5', border: '1px solid #6EE7B7', borderRadius: 8, color: '#065F46', fontSize: 11, fontFamily: 'var(--font-mono)', marginBottom: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+            TELEGRAM BOT PUSH DISPATCHED
+          </span>
+          <span style={{ fontWeight: 800 }}>@hacksporabot</span>
         </div>
 
         {/* User Location & Telemetry Snapshot Card */}
@@ -138,25 +147,25 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
             fontSize: 12,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--yellow)', marginBottom: 8, fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--main-red)', marginBottom: 8, fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
             <MapPin size={14} />
-            <span>Location: 28.6139° N, 77.2090° E (New Delhi Zone)</span>
+            <span>Location: 10.9030° N, 76.9550° E (Madukkarai, Coimbatore)</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, textAlign: 'center', marginTop: 8 }}>
-            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6 }}>
+            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
               <small style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', display: 'block' }}>Heart Rate</small>
               <strong style={{ color: 'var(--main-red)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{displayBpm}</strong>
             </div>
 
-            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6 }}>
+            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
               <small style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', display: 'block' }}>SpO₂ Level</small>
               <strong style={{ color: 'var(--risk-safe)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{displaySpo2}</strong>
             </div>
 
-            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6 }}>
+            <div style={{ background: 'var(--panel-bg)', padding: '6px 4px', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
               <small style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', display: 'block' }}>Gait Symmetry</small>
-              <strong style={{ color: 'var(--yellow)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{telemetry.gaitSymmetry}%</strong>
+              <strong style={{ color: 'var(--text-primary)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>{telemetry.gaitSymmetry}%</strong>
             </div>
           </div>
         </div>
@@ -178,7 +187,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
               fontSize: 13,
               fontFamily: 'var(--font-mono)',
               textDecoration: 'none',
-              boxShadow: '0 4px 12px rgba(198,40,40,0.4)',
+              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)',
             }}
           >
             <PhoneCall size={16} />
@@ -197,7 +206,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
                 padding: '8px 12px',
                 background: 'var(--panel-elevated)',
                 border: '1px solid var(--border-subtle)',
-                color: 'var(--yellow)',
+                color: 'var(--main-red)',
                 borderRadius: 8,
                 fontWeight: 700,
                 fontSize: 11,
@@ -248,7 +257,7 @@ export function EmergencySosModal({ onClose }: EmergencySosModalProps) {
             <div style={{ display: 'grid', placeItems: 'center', margin: '6px 0' }}>
               <svg width="100" height="100" viewBox="0 0 100 100" fill="var(--text-primary)">
                 <rect width="100" height="100" fill="var(--panel-bg)" />
-                <path d="M10 10h30v30H10zM50 10h40v20H50zM10 50h20v40H10zM40 40h20v20H40zM70 50h20v40H70zM40 70h20v20H40z" fill="var(--yellow)" />
+                <path d="M10 10h30v30H10zM50 10h40v20H50zM10 50h20v40H10zM40 40h20v20H40zM70 50h20v40H70zM40 70h20v20H40z" fill="var(--main-red)" />
               </svg>
             </div>
             <small style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>

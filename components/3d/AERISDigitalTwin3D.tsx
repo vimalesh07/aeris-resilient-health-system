@@ -91,9 +91,9 @@ export default function AERISDigitalTwin3D({
       const width = container.clientWidth || (compact ? 300 : 450)
       const height = container.clientHeight || (compact ? 300 : 450)
 
-      // 1. Scene Setup with Dark Cyber Vignette Environment
+      // 1. Scene Setup with Clean Light Environment
       const scene = new THREE.Scene()
-      scene.fog = new THREE.FogExp2(0x030712, 0.18)
+      scene.fog = new THREE.FogExp2(0xf8fafc, 0.04)
 
       // 2. Camera Setup
       const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100)
@@ -435,15 +435,23 @@ export default function AERISDigitalTwin3D({
         if (!container) return
         const newW = container.clientWidth
         const newH = container.clientHeight
-        camera.aspect = newW / newH
-        camera.updateProjectionMatrix()
-        renderer.setSize(newW, newH)
+        if (newW > 0 && newH > 0) {
+          camera.aspect = newW / newH
+          camera.updateProjectionMatrix()
+          renderer.setSize(newW, newH)
+        }
       }
 
       window.addEventListener('resize', handleResize)
+      let resizeObserver: ResizeObserver | null = null
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => handleResize())
+        resizeObserver.observe(container)
+      }
 
       return () => {
         window.removeEventListener('resize', handleResize)
+        if (resizeObserver) resizeObserver.disconnect()
         cancelAnimationFrame(animationFrameId)
 
         // Thorough Geometry, Material & Renderer Cleanup
@@ -480,7 +488,9 @@ export default function AERISDigitalTwin3D({
       style={{
         position: 'relative',
         width: '100%',
-        height: compact ? 330 : 450,
+        height: compact ? 300 : '100%',
+        minHeight: compact ? 300 : 380,
+        maxHeight: compact ? 320 : 430,
         userSelect: 'none',
         overflow: 'hidden',
         borderRadius: 12,
@@ -509,9 +519,9 @@ export default function AERISDigitalTwin3D({
           position: 'absolute',
           top: 12,
           right: 12,
-          background: 'rgba(17, 22, 29, 0.85)',
-          border: '1px solid var(--border-focus)',
-          color: 'var(--text-primary)',
+          background: 'rgba(255, 255, 255, 0.94)',
+          border: '1px solid #CBD5E1',
+          color: '#0F172A',
           padding: '5px 12px',
           borderRadius: 6,
           fontSize: 10,
@@ -520,16 +530,17 @@ export default function AERISDigitalTwin3D({
           letterSpacing: '0.08em',
           cursor: 'pointer',
           backdropFilter: 'blur(8px)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
           zIndex: 15,
           transition: 'all 0.15s ease',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
-        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(17, 22, 29, 0.85)')}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.94)')}
       >
         RESET VIEW
       </button>
 
-      {/* Futuristic Glassmorphism HUD Callout Badges */}
+      {/* Clean Light Glassmorphism HUD Callout Badges */}
       {!compact && !loading && (
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
           {/* HOTSPOT 1: Head / Temp */}
@@ -543,12 +554,12 @@ export default function AERISDigitalTwin3D({
           >
             <div
               style={{
-                backdropFilter: 'blur(8px)',
-                background: 'rgba(3, 7, 18, 0.85)',
-                border: `1px solid ${isHeadElevated ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.4)'}`,
+                backdropFilter: 'blur(10px)',
+                background: 'rgba(255, 255, 255, 0.94)',
+                border: `1px solid ${isHeadElevated ? 'rgba(220, 38, 38, 0.6)' : '#CBD5E1'}`,
                 borderRadius: 8,
-                padding: '5px 10px',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                padding: '6px 12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -561,7 +572,7 @@ export default function AERISDigitalTwin3D({
                     position: 'absolute',
                     inset: 0,
                     borderRadius: '50%',
-                    background: isHeadElevated ? '#ef4444' : '#10b981',
+                    background: isHeadElevated ? '#dc2626' : '#10b981',
                     opacity: 0.75,
                     animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
                   }}
@@ -572,15 +583,15 @@ export default function AERISDigitalTwin3D({
                     borderRadius: '50%',
                     width: 8,
                     height: 8,
-                    background: isHeadElevated ? '#ef4444' : '#10b981',
+                    background: isHeadElevated ? '#dc2626' : '#10b981',
                   }}
                 />
               </span>
               <div>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#9ca3af' }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#64748B' }}>
                   Head / Temp
                 </div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isHeadElevated ? '#f87171' : '#34d399' }}>
+                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isHeadElevated ? '#dc2626' : '#059669' }}>
                   {currentTemp.toFixed(1)}°C
                 </div>
               </div>
@@ -598,12 +609,12 @@ export default function AERISDigitalTwin3D({
           >
             <div
               style={{
-                backdropFilter: 'blur(8px)',
-                background: 'rgba(3, 7, 18, 0.85)',
-                border: `1px solid ${isChestElevated ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.4)'}`,
+                backdropFilter: 'blur(10px)',
+                background: 'rgba(255, 255, 255, 0.94)',
+                border: `1px solid ${isChestElevated ? 'rgba(220, 38, 38, 0.6)' : '#CBD5E1'}`,
                 borderRadius: 8,
-                padding: '5px 10px',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                padding: '6px 12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -616,7 +627,7 @@ export default function AERISDigitalTwin3D({
                     position: 'absolute',
                     inset: 0,
                     borderRadius: '50%',
-                    background: isChestElevated ? '#ef4444' : '#10b981',
+                    background: isChestElevated ? '#dc2626' : '#10b981',
                     opacity: 0.75,
                     animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
                   }}
@@ -627,15 +638,15 @@ export default function AERISDigitalTwin3D({
                     borderRadius: '50%',
                     width: 8,
                     height: 8,
-                    background: isChestElevated ? '#ef4444' : '#10b981',
+                    background: isChestElevated ? '#dc2626' : '#10b981',
                   }}
                 />
               </span>
               <div>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#9ca3af' }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#64748B' }}>
                   Heart / Pulse
                 </div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isChestElevated ? '#f87171' : '#34d399' }}>
+                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isChestElevated ? '#dc2626' : '#059669' }}>
                   {currentBpm} BPM
                 </div>
               </div>
@@ -653,12 +664,12 @@ export default function AERISDigitalTwin3D({
           >
             <div
               style={{
-                backdropFilter: 'blur(8px)',
-                background: 'rgba(3, 7, 18, 0.85)',
-                border: `1px solid ${currentSpo2 < 95 ? 'rgba(245, 158, 11, 0.6)' : 'rgba(16, 185, 129, 0.4)'}`,
+                backdropFilter: 'blur(10px)',
+                background: 'rgba(255, 255, 255, 0.94)',
+                border: `1px solid ${currentSpo2 < 95 ? 'rgba(220, 38, 38, 0.6)' : '#CBD5E1'}`,
                 borderRadius: 8,
-                padding: '5px 10px',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                padding: '6px 12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -671,7 +682,7 @@ export default function AERISDigitalTwin3D({
                     position: 'absolute',
                     inset: 0,
                     borderRadius: '50%',
-                    background: currentSpo2 < 95 ? '#f59e0b' : '#10b981',
+                    background: currentSpo2 < 95 ? '#ea580c' : '#10b981',
                     opacity: 0.75,
                     animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
                   }}
@@ -682,15 +693,15 @@ export default function AERISDigitalTwin3D({
                     borderRadius: '50%',
                     width: 8,
                     height: 8,
-                    background: currentSpo2 < 95 ? '#f59e0b' : '#10b981',
+                    background: currentSpo2 < 95 ? '#ea580c' : '#10b981',
                   }}
                 />
               </span>
               <div>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#9ca3af' }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#64748B' }}>
                   Lungs / SpO₂
                 </div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: currentSpo2 < 95 ? '#fbbf24' : '#34d399' }}>
+                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: currentSpo2 < 95 ? '#dc2626' : '#059669' }}>
                   {currentSpo2}%
                 </div>
               </div>
@@ -708,12 +719,12 @@ export default function AERISDigitalTwin3D({
           >
             <div
               style={{
-                backdropFilter: 'blur(8px)',
-                background: 'rgba(3, 7, 18, 0.85)',
-                border: `1px solid ${isLegsElevated ? 'rgba(245, 158, 11, 0.6)' : 'rgba(56, 189, 248, 0.4)'}`,
+                backdropFilter: 'blur(10px)',
+                background: 'rgba(255, 255, 255, 0.94)',
+                border: `1px solid ${isLegsElevated ? 'rgba(220, 38, 38, 0.6)' : '#CBD5E1'}`,
                 borderRadius: 8,
-                padding: '5px 10px',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                padding: '6px 12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -726,7 +737,7 @@ export default function AERISDigitalTwin3D({
                     position: 'absolute',
                     inset: 0,
                     borderRadius: '50%',
-                    background: isLegsElevated ? '#f59e0b' : '#38bdf8',
+                    background: isLegsElevated ? '#ea580c' : '#0284c7',
                     opacity: 0.75,
                     animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
                   }}
@@ -737,15 +748,15 @@ export default function AERISDigitalTwin3D({
                     borderRadius: '50%',
                     width: 8,
                     height: 8,
-                    background: isLegsElevated ? '#f59e0b' : '#38bdf8',
+                    background: isLegsElevated ? '#ea580c' : '#0284c7',
                   }}
                 />
               </span>
               <div>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#9ca3af' }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', color: '#64748B' }}>
                   Legs / Mobility
                 </div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isLegsElevated ? '#fbbf24' : '#38bdf8' }}>
+                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono), monospace', fontWeight: 800, color: isLegsElevated ? '#dc2626' : '#0284c7' }}>
                   {mobilityStatus}
                 </div>
               </div>

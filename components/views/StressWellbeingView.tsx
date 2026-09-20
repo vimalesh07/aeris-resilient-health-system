@@ -194,7 +194,7 @@ export function StressWellbeingView() {
                 <strong style={{ color: 'var(--text-primary)' }}>{psychScore} / 100</strong>
               </div>
               <div style={{ background: 'var(--panel-elevated)', height: 5, borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ width: psychScore + "%", height: '100%', background: 'var(--yellow)' }} />
+                <div style={{ width: psychScore + "%", height: '100%', background: 'var(--main-red)' }} />
               </div>
             </div>
 
@@ -226,8 +226,8 @@ export function StressWellbeingView() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                background: 'var(--yellow)',
-                color: '#080B10',
+                background: 'var(--main-red)',
+                color: '#FFFFFF',
                 border: 0,
                 padding: '8px 14px',
                 borderRadius: 8,
@@ -235,6 +235,7 @@ export function StressWellbeingView() {
                 fontFamily: 'var(--font-mono)',
                 fontWeight: 800,
                 cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
               }}
             >
               <Play size={14} />
@@ -461,7 +462,7 @@ export function StressWellbeingView() {
               alignItems: 'center',
               gap: 8,
               background: '#1DB954',
-              color: '#080B10',
+              color: '#FFFFFF',
               padding: '8px 16px',
               borderRadius: 20,
               fontWeight: 800,

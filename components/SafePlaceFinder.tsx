@@ -45,14 +45,14 @@ const SafePlaceMap = dynamic(() => import('@/components/SafePlaceMap'), {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(31, 5, 5, 0.6)',
+        background: 'var(--panel-elevated)',
         borderRadius: 14,
-        border: '1px solid rgba(255, 193, 7, 0.2)',
-        color: '#FFF8F0',
+        border: '1px solid var(--border-subtle)',
+        color: 'var(--text-primary)',
         gap: 10,
       }}
     >
-      <Loader2 size={28} className="animate-spin" style={{ color: 'var(--yellow)' }} />
+      <Loader2 size={28} className="animate-spin" style={{ color: 'var(--main-red)' }} />
       <span style={{ fontSize: 13, fontWeight: 600 }}>Loading OpenStreetMap Leaflet Engine...</span>
     </div>
   ),
@@ -304,7 +304,7 @@ export function SafePlaceFinder({
       <div className="safe-finder-header">
         <div className="header-info">
           <div className="header-eyebrow">
-            <MapPin size={14} style={{ color: 'var(--yellow)' }} />
+            <MapPin size={14} style={{ color: 'var(--main-red)' }} />
             <span>Resilient Geo-Spatial Safety Engine</span>
           </div>
           <h2>Safe Place Finder</h2>
@@ -451,7 +451,7 @@ export function SafePlaceFinder({
       {hasSearched && (
         <div className="hazard-context-strip">
           <span className="hazard-strip-label">
-            <Sparkles size={14} style={{ color: 'var(--yellow)' }} /> Emergency AI Priority:
+            <Sparkles size={14} style={{ color: 'var(--main-red)' }} /> Emergency AI Priority:
           </span>
           {scenario === 'Heat' || risks.heat >= 50 ? (
             <span className="hazard-strip-tag heat">
@@ -518,7 +518,7 @@ export function SafePlaceFinder({
           <div className="safe-map-card">
             <div className="map-card-head">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Compass size={15} style={{ color: 'var(--yellow)' }} />
+                <Compass size={15} style={{ color: 'var(--main-red)' }} />
                 <strong>
                   {userLocation?.shortName
                     ? `Safety Map: ${userLocation.shortName}`
@@ -550,8 +550,8 @@ export function SafePlaceFinder({
 
             {filteredPlaces.length === 0 ? (
               <div className="safe-empty-state">
-                <Info size={32} style={{ opacity: 0.5, color: 'var(--yellow)' }} />
-                <strong style={{ fontSize: 14, color: '#FFF' }}>
+                <Info size={32} style={{ opacity: 0.5, color: 'var(--main-red)' }} />
+                <strong style={{ fontSize: 14, color: 'var(--text-primary)' }}>
                   No verified nearby facilities found for this location.
                 </strong>
                 <p style={{ fontSize: 12, color: '#9CA3AF', margin: '4px 0 12px', maxWidth: 360 }}>

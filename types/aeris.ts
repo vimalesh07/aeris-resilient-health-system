@@ -22,6 +22,8 @@ export interface UserProfile {
   sex: BiologicalSex
   heightCm: number
   weightKg: number
+  bloodPressureSystolic?: number | null
+  bloodPressureDiastolic?: number | null
   activityLevel: UserActivityLevel
   knownRestingHR?: number | null
   knownHrvBaseline?: number | null
@@ -215,4 +217,16 @@ export interface UserLocation {
   displayName?: string
   shortName?: string
   source?: 'gps' | 'search'
+}
+
+export interface PushNotificationEvent {
+  id: string
+  type: 'obstacle' | 'food' | 'sos' | 'threshold'
+  title: string
+  body: string
+  timestamp: string
+  targetPhone: string
+  smsStatus?: string
+  vitals?: { heartRate: number; spo2: number; bodyTemp?: number }
+  location?: { lat: number; lon: number }
 }

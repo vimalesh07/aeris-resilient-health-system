@@ -17,7 +17,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
   const [dispatchStatus, setDispatchStatus] = useState<string>('')
   const [waUrl, setWaUrl] = useState<string>('')
 
-  const targetPhone = userProfile?.emergencyContactPhone || '7092796084'
+  const targetPhone = userProfile?.emergencyContactPhone || '9715042529'
   const isTriggeredRef = useRef<boolean>(false)
   const snoozedUntilRef = useRef<number>(0)
 
@@ -68,10 +68,10 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
     return () => clearInterval(timer)
   }, [isOpen, isCancelled, isDispatched])
 
-  // Trigger automated Twilio SMS Push
+  // Trigger automated Telegram Bot Push
   const triggerSosPush = async () => {
     setIsDispatched(true)
-    setDispatchStatus('Dispatching automated Twilio SMS SOS to +91 ' + targetPhone + '...')
+    setDispatchStatus('Dispatching automated Telegram SOS to @hacksporabot...')
 
     try {
       const res = await fetch('/api/notify', {
@@ -92,10 +92,12 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
       })
 
       const data = await res.json()
-      if (data.success) {
-        setDispatchStatus(`✅ EMERGENCY SMS DISPATCHED TO +91 ${targetPhone}`)
+      if (data.success && (data.telegramDelivered || (data.smsStatus && data.smsStatus.startsWith('sent')))) {
+        setDispatchStatus(`✅ EMERGENCY ALERT DISPATCHED: ${data.smsStatus || 'Delivered to Telegram @hacksporabot'}`)
+      } else if (data.smsStatus) {
+        setDispatchStatus(`⚠️ ${data.smsStatus}`)
       } else {
-        setDispatchStatus(`⚠️ Dispatch notice: ${data.error}`)
+        setDispatchStatus(`⚠️ Dispatch notice: ${data.error || 'Check Telegram Bot credentials'}`)
       }
     } catch (err: any) {
       setDispatchStatus(`⚠️ Network alert dispatch error: ${err?.message}`)
@@ -128,7 +130,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
         zIndex: 200,
         display: 'grid',
         placeItems: 'center',
-        background: 'rgba(8, 11, 16, 0.92)',
+        background: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(12px)',
         padding: 16,
       }}
@@ -138,11 +140,11 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
         style={{
           width: '100%',
           maxWidth: 480,
-          background: '#11161D',
+          background: '#FFFFFF',
           border: '2px solid var(--main-red)',
           borderRadius: 16,
           padding: 24,
-          boxShadow: '0 25px 60px rgba(198, 40, 40, 0.5)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.15), 0 0 30px rgba(220, 38, 38, 0.2)',
           color: 'var(--text-primary)',
           position: 'relative',
           textAlign: 'center',
@@ -177,7 +179,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
           </span>
         </div>
 
-        <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 6px', color: '#FFF' }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 6px', color: 'var(--text-primary)' }}>
           HEART RATE LIMIT EXCEEDED!
         </h2>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.4 }}>
@@ -192,32 +194,32 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
                 width: 110,
                 height: 110,
                 borderRadius: '50%',
-                background: 'rgba(198, 40, 40, 0.15)',
+                background: '#FEF2F2',
                 border: '3px solid var(--main-red)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 30px rgba(198, 40, 40, 0.4)',
+                boxShadow: '0 0 30px rgba(220, 38, 38, 0.25)',
                 marginBottom: 10,
               }}
             >
-              <span style={{ fontSize: 44, fontWeight: 900, fontFamily: 'var(--font-mono)', color: '#FFF', lineHeight: 1 }}>
+              <span style={{ fontSize: 44, fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', lineHeight: 1 }}>
                 {secondsLeft}
               </span>
-              <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--yellow)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--main-red)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
                 SECONDS
               </span>
             </div>
 
-            <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--yellow)', margin: 0, fontWeight: 700 }}>
-              Auto-pushing Twilio SMS to +91 {targetPhone} in {secondsLeft}s...
+            <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', margin: 0, fontWeight: 700 }}>
+              Auto-pushing Telegram SOS to @hacksporabot in {secondsLeft}s...
             </p>
           </div>
         ) : (
           /* Dispatched Status Report */
-          <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 12, padding: 14, margin: '14px 0 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--risk-safe)', fontWeight: 800, fontSize: 14 }}>
+          <div style={{ background: '#ECFDF5', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 12, padding: 14, margin: '14px 0 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--risk-safe-text)', fontWeight: 800, fontSize: 14 }}>
               <CheckCircle2 size={20} />
               {dispatchStatus}
             </div>
@@ -236,7 +238,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
           </div>
           <div>
             <small style={{ display: 'block', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Body Temp</small>
-            <strong style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--yellow)' }}>{telemetry.bodyTemp}°C</strong>
+            <strong style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{telemetry.bodyTemp}°C</strong>
           </div>
         </div>
 
@@ -248,8 +250,8 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
               width: '100%',
               minHeight: 48,
               padding: '12px 16px',
-              background: 'var(--yellow)',
-              color: '#080B10',
+              background: 'var(--main-red)',
+              color: '#FFFFFF',
               border: 0,
               borderRadius: 10,
               fontWeight: 900,
@@ -261,7 +263,7 @@ export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSos
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: '0 4px 20px rgba(255, 193, 7, 0.4)',
+              boxShadow: '0 4px 20px rgba(220, 38, 38, 0.35)',
             }}
           >
             <ShieldAlert size={18} />

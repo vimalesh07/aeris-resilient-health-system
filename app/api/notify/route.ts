@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { title, trigger, severity, recommendedAction, vitals, location, phone = '7092796084' } = body
+    const { title, trigger, severity, recommendedAction, vitals, location, phone = '9715042529', type } = body
 
     // Format Indian mobile number (+91)
     const cleanPhone = String(phone).replace(/\D/g, '')
@@ -12,24 +12,95 @@ export async function POST(req: Request) {
     const fullPlusPhone = `+${formattedPhone}`
 
     const mapsUrl = location && location.lat ? `https://maps.google.com/?q=${location.lat},${location.lon}` : 'N/A'
+    const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    const patientName = body.patientName || 'Emergency Contact / User'
+    const alertStatus = severity ? severity.toUpperCase() : 'CRITICAL'
 
-    const messageText = `🚨 AERIS ${severity ? severity.toUpperCase() : 'HEALTH'} ALERT
-Title: ${title || 'Emergency Threshold Exceeded'}
-Details: ${trigger || 'Physiological vital anomaly detected'}
-Vitals: HR ${vitals?.heartRate || '--'} BPM | SpO2 ${vitals?.spo2 || '--'}% | Temp ${vitals?.bodyTemp || '--'}°C
-Action: ${recommendedAction || 'Monitor vitals and seek medical attention if symptoms persist.'}
-Location: ${mapsUrl}`
+    let messageText = ''
+    if (type === 'obstacle') {
+      messageText = `🚧 EMERGENCY OBSTACLE PUSH: AERIS RESILIENCE
+Reporter: ${patientName}
+Priority: HIGH (${title || 'Field Path Obstruction Reported'})
+Trigger: ${trigger || 'Path obstacle / road blockage reported'}
+- Heart Rate: ${vitals?.heartRate || '--'} BPM
+- Blood Oxygen (SpO2): ${vitals?.spo2 || '--'}%
+- Time: ${currentTime}
+Action: ${recommendedAction || 'Clear path obstruction / dispatch alternate route'}
+Live Location: ${mapsUrl}`
+    } else if (type === 'food') {
+      messageText = `🍲 EMERGENCY RELIEF REQUEST: AERIS RATION SUPPORT
+Reporter: ${patientName}
+Priority: HIGH (${title || 'Food & Nutrition Requirement Reported'})
+Trigger: ${trigger || 'Emergency ration and potable water required'}
+- Heart Rate: ${vitals?.heartRate || '--'} BPM
+- Blood Oxygen (SpO2): ${vitals?.spo2 || '--'}%
+- Time: ${currentTime}
+Action: ${recommendedAction || 'Dispatch relief food pack & hydration supplies'}
+Live Location: ${mapsUrl}`
+    } else {
+      messageText = `🚨 EMERGENCY HEALTH ALERT: AERIS SOS WATCH
+Patient: ${patientName}
+Status: ${alertStatus} (${title || 'Abnormal Vitals / SOS Detected'})
+- Heart Rate: ${vitals?.heartRate || '--'} BPM
+- Blood Oxygen (SpO2): ${vitals?.spo2 || '--'}%
+- Time: ${currentTime}
+Immediate medical assistance requested.
+Live Location: ${mapsUrl}`
+    }
 
-    // Environment API Keys for Automated Background SMS Dispatch
-    const accountSid = process.env.TWILIO_ACCOUNT_SID
-    const authToken = process.env.TWILIO_AUTH_TOKEN
-    const twilioPhone = process.env.TWILIO_PHONE_NUMBER
+    // Environment API Keys for Automated Telegram & SMS Dispatch
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN || '8813634516:AAEwsWYyV3OkvVi4AnXDP3CDx_leBODecqM'
+    const telegramChatId = process.env.TELEGRAM_CHAT_ID || '8827470925'
     const fast2smsKey = process.env.FAST2SMS_API_KEY
 
-    let smsStatus = 'simulated'
+    let dispatchStatus = 'simulated'
+    let telegramDelivered = false
 
-    // Option A: Fast2SMS API (High-speed India +91 Automated SMS)
-    if (fast2smsKey) {
+    // Primary Automated Channel: Telegram Bot (@hacksporabot)
+    if (telegramToken && telegramChatId) {
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: telegramChatId,
+            text: messageText,
+            parse_mode: 'HTML',
+            disable_web_page_preview: false,
+          }),
+        })
+
+        const tgData = await tgRes.json()
+        if (tgData.ok) {
+          telegramDelivered = true
+          dispatchStatus = 'sent (Telegram Bot @hacksporabot)'
+        } else {
+          console.warn('Telegram Bot API Response:', tgData)
+          // Fallback to plain text if formatting error
+          const retryRes = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: telegramChatId,
+              text: messageText,
+            }),
+          })
+          const retryData = await retryRes.json()
+          if (retryData.ok) {
+            telegramDelivered = true
+            dispatchStatus = 'sent (Telegram Bot @hacksporabot)'
+          } else {
+            dispatchStatus = `failed (Telegram: ${retryData.description || 'Check /start on @hacksporabot'})`
+          }
+        }
+      } catch (tgErr: any) {
+        console.warn('Telegram Dispatch Error:', tgErr?.message || tgErr)
+        dispatchStatus = `failed (Telegram Network: ${tgErr?.message})`
+      }
+    }
+
+    // Optional Secondary Channel: Fast2SMS API (India Gateway)
+    if (fast2smsKey && !telegramDelivered) {
       try {
         const smsRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
           method: 'POST',
@@ -46,76 +117,17 @@ Location: ${mapsUrl}`
           }),
         })
         const smsData = await smsRes.json()
-        if (smsData.return) smsStatus = 'sent (Fast2SMS)'
+        if (smsData.return) dispatchStatus = 'sent (Fast2SMS)'
       } catch (e: any) {
         console.warn('Fast2SMS Error:', e?.message)
       }
     }
 
-    // Option B: Twilio REST API (Global Automated SMS)
-    if (accountSid && authToken && smsStatus === 'simulated') {
-      try {
-        const authHeader = 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64')
-        const twilioEndpoint = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
-
-        if (twilioPhone) {
-          const smsParams = new URLSearchParams()
-          smsParams.append('To', fullPlusPhone)
-          smsParams.append('From', twilioPhone)
-          smsParams.append('Body', messageText)
-
-          const smsRes = await fetch(twilioEndpoint, {
-            method: 'POST',
-            headers: {
-              'Authorization': authHeader,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: smsParams.toString(),
-          })
-
-          if (smsRes.ok) {
-            smsStatus = 'sent (Twilio SMS)'
-          } else {
-            const smsErr = await smsRes.json().catch(() => null)
-            // If Twilio Trial account requires predefined template (Error 572006)
-            if (smsErr?.code === 572006) {
-              console.log('Twilio Trial account template required (572006). Retrying with trial template...')
-              const trialParams = new URLSearchParams()
-              trialParams.append('To', fullPlusPhone)
-              trialParams.append('From', twilioPhone)
-              trialParams.append('Body', 'sms_appointment_reminders')
-
-              const trialRes = await fetch(twilioEndpoint, {
-                method: 'POST',
-                headers: {
-                  'Authorization': authHeader,
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: trialParams.toString(),
-              })
-
-              if (trialRes.ok) {
-                smsStatus = 'sent (Twilio Trial Template SMS)'
-              } else {
-                const trialErr = await trialRes.json().catch(() => null)
-                smsStatus = `failed (Twilio SMS ${trialErr?.code || trialRes.status}: ${trialErr?.message || 'HTTP error'})`
-              }
-            } else {
-              smsStatus = `failed (Twilio SMS ${smsErr?.code || smsRes.status}: ${smsErr?.message || 'HTTP error'})`
-              console.warn('Twilio SMS API Error:', smsErr || smsRes.statusText)
-            }
-          }
-        }
-      } catch (twilioErr: any) {
-        console.warn('Twilio REST API Dispatch Warning:', twilioErr?.message || twilioErr)
-      }
-    }
-
-    if (smsStatus === 'simulated') {
+    if (dispatchStatus === 'simulated') {
       console.log('----------------------------------------------------')
-      console.log('📱 AERIS AUTOMATED SMS DISPATCH (+91 ' + tenDigitPhone + ')')
-      console.log('🔹 TARGET PHONE:', fullPlusPhone)
-      console.log('🔹 SMS STATUS:', smsStatus)
+      console.log('🤖 AERIS TELEGRAM BOT DISPATCH (@hacksporabot)')
+      console.log('🔹 TARGET CHAT ID:', telegramChatId)
+      console.log('🔹 STATUS:', dispatchStatus)
       console.log('🔹 MESSAGE:\n' + messageText)
       console.log('----------------------------------------------------')
     }
@@ -123,8 +135,13 @@ Location: ${mapsUrl}`
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
+      targetRecipient: `@hacksporabot (Chat ID: ${telegramChatId})`,
       targetPhone: fullPlusPhone,
-      smsStatus,
+      smsStatus: dispatchStatus,
+      dispatchStatus,
+      telegramDelivered,
+      channel: 'telegram',
+      type: body.type || 'sos',
       messagePreview: messageText,
     })
   } catch (err: any) {

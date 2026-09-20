@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronDown, ChevronUp, Cpu, Terminal } from 'lucide-react'
+import { ChevronDown, ChevronUp, Cpu, Radio, Terminal, Wifi } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
 export function ArduinoDebugPanel() {
-  const { arduinoData, wsConnected, arduinoConnected, rawLogs } = useTelemetry()
+  const { arduinoData, arduinoConnected, transport, rawLogs } = useTelemetry()
   const [isOpen, setIsOpen] = useState<boolean>(false)
+
+  const isWifi = transport === 'WiFi (ESP8266)'
 
   return (
     <div
@@ -37,7 +39,7 @@ export function ArduinoDebugPanel() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Cpu size={16} style={{ color: 'var(--yellow)' }} />
+          <Cpu size={16} style={{ color: 'var(--main-red)' }} />
           <span>Arduino UNO MAX30102 Device Diagnostics (COM3 @ 115200 baud)</span>
           <span
             style={{
@@ -46,12 +48,12 @@ export function ArduinoDebugPanel() {
               fontSize: 10,
               fontFamily: 'var(--font-mono)',
               fontWeight: 800,
-              background: arduinoConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(198, 40, 40, 0.15)',
+              background: arduinoConnected ? 'rgba(16, 185, 129, 0.12)' : 'rgba(220, 38, 38, 0.12)',
               color: arduinoConnected ? 'var(--risk-safe)' : 'var(--risk-critical)',
-              border: `1px solid ${arduinoConnected ? 'rgba(16,185,129,0.3)' : 'rgba(198,40,40,0.3)'}`,
+              border: `1px solid ${arduinoConnected ? 'rgba(16,185,129,0.3)' : 'rgba(220,38,38,0.3)'}`,
             }}
           >
-            {arduinoConnected ? 'COM3 ONLINE' : 'COM3 OFFLINE'}
+            {arduinoConnected ? `${transport.toUpperCase()} ONLINE` : 'COMS OFFLINE'}
           </span>
         </div>
         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -61,70 +63,70 @@ export function ArduinoDebugPanel() {
       {isOpen && (
         <div style={{ padding: 16, color: 'var(--text-primary)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 }}>
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>WebSocket Bridge</div>
-              <strong style={{ fontSize: 12, color: wsConnected ? 'var(--risk-safe)' : 'var(--risk-critical)' }}>
-                {wsConnected ? 'ws://localhost:3001' : 'Disconnected'}
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Active Transport</div>
+              <strong style={{ fontSize: 12, color: arduinoConnected ? 'var(--risk-safe)' : 'var(--risk-critical)' }}>
+                {arduinoConnected ? transport : 'Disconnected'}
               </strong>
             </div>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Serial Port (COM3)</div>
-              <strong style={{ fontSize: 12, color: arduinoData?.connected ? 'var(--risk-safe)' : 'var(--risk-critical)' }}>
-                {arduinoData?.connected ? 'CONNECTED (115200)' : 'UNPLUGGED'}
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Endpoint / Bridge</div>
+              <strong style={{ fontSize: 12, color: '#0F172A' }}>
+                {isWifi ? 'HTTP /api/telemetry' : 'ws://localhost:3001'}
               </strong>
             </div>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>MAX30102 State</div>
-              <strong style={{ fontSize: 12, color: 'var(--yellow)' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Sensor Status</div>
+              <strong style={{ fontSize: 12, color: 'var(--main-red)' }}>
                 {arduinoData?.status || 'UNKNOWN'}
               </strong>
             </div>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 10, borderRadius: 8 }}>
               <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Finger Detection</div>
-              <strong style={{ fontSize: 12, color: arduinoData?.fingerDetected ? 'var(--risk-safe)' : 'var(--yellow)' }}>
+              <strong style={{ fontSize: 12, color: arduinoData?.fingerDetected ? 'var(--risk-safe)' : 'var(--main-red)' }}>
                 {arduinoData?.fingerDetected ? 'Finger Placed' : 'No Finger Detected'}
               </strong>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginBottom: 14 }}>
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
               <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>BPM (Stable)</small>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--yellow)' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A' }}>
                 {arduinoData?.stableBpm || arduinoData?.bpm || '--'}
               </div>
             </div>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
               <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>SpO₂ (Stable)</small>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--yellow)' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A' }}>
                 {arduinoData?.stableSpo2 || arduinoData?.spo2 ? `${arduinoData?.stableSpo2 || arduinoData?.spo2}%` : '--'}
               </div>
             </div>
 
-            <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>IR Intensity</small>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>
-                {arduinoData?.ir ?? '--'}
+            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
+              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>Source Device</small>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>
+                {arduinoData?.source || 'Hardware Watch'}
               </div>
             </div>
 
             <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 8, borderRadius: 6, textAlign: 'center' }}>
-              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>R-Ratio</small>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>
-                {arduinoData?.r !== null && arduinoData?.r !== undefined ? arduinoData.r.toFixed(3) : '--'}
+              <small style={{ color: 'var(--text-muted)', fontSize: 10 }}>Last Packet</small>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {arduinoData?.timestamp ? new Date(arduinoData.timestamp).toLocaleTimeString() : '--'}
               </div>
             </div>
           </div>
 
-          {/* Raw Serial Log Console */}
+          {/* Raw Stream Log Console */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, color: 'var(--text-muted)', fontSize: 11 }}>
               <Terminal size={14} />
-              <span>Raw Arduino COM3 Serial Stream Feed</span>
+              <span>Raw Hardware Stream Feed ({transport})</span>
             </div>
             <div
               style={{
@@ -140,7 +142,7 @@ export function ArduinoDebugPanel() {
               }}
             >
               {rawLogs.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)' }}>Waiting for serial input on COM3...</div>
+                <div style={{ color: 'var(--text-muted)' }}>Waiting for telemetry from ESP8266 or COM port...</div>
               ) : (
                 rawLogs.map((log, i) => (
                   <div key={i} style={{ marginBottom: 2, whiteSpace: 'nowrap' }}>

@@ -3,46 +3,32 @@
 import React from 'react'
 import {
   Activity,
-  AlertTriangle,
-  BrainCircuit,
   CloudSun,
-  Cpu,
-  HeartPulse,
   History,
   LayoutDashboard,
   MapPin,
   MessageSquareText,
   MoreHorizontal,
-  Navigation,
   Settings2,
-  ShieldCheck,
   Waves,
-  X,
 } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
 export const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Vitals', icon: HeartPulse },
-  { label: 'Risk Intelligence', icon: BrainCircuit },
   { label: 'Stress & Well-being', icon: Waves },
-  { label: 'Mobility', icon: Navigation },
   { label: 'Climate Health', icon: CloudSun },
-  { label: 'Alerts', icon: AlertTriangle, hasAlerts: true },
   { label: 'Safe Places', icon: MapPin },
 ]
 
 export const SYSTEM_ITEMS = [
   { label: 'AI Companion', icon: MessageSquareText },
-  { label: 'Health History', icon: History },
-  { label: 'Privacy & Data', icon: ShieldCheck },
+  { label: 'Analytics', icon: History },
   { label: 'Settings', icon: Settings2 },
-  { label: 'Device Diagnostics', icon: Cpu },
 ]
 
 export function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const { activeView, setActiveView, alerts, isOffline } = useTelemetry()
-  const unackCount = alerts.filter((a) => !a.acknowledged).length
+  const { activeView, setActiveView, isOffline } = useTelemetry()
 
   const handleNav = (label: string) => {
     setActiveView(label)
@@ -56,14 +42,11 @@ export function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v: boolean
           <Activity size={18} />
         </span>
         <span>AERIS</span>
-        <button className="icon-button mobile-close" onClick={() => setOpen(false)} aria-label="Close navigation">
-          <X size={18} />
-        </button>
       </div>
 
       <p className="sidebar-label">Intelligence</p>
       <nav>
-        {NAV_ITEMS.map(({ label, icon: Icon, hasAlerts }) => (
+        {NAV_ITEMS.map(({ label, icon: Icon }) => (
           <button
             key={label}
             className={`nav-item ${activeView === label ? 'active' : ''}`}
@@ -71,23 +54,31 @@ export function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v: boolean
           >
             <Icon size={16} />
             <span>{label}</span>
-            {hasAlerts && unackCount > 0 && <b>{unackCount}</b>}
           </button>
         ))}
       </nav>
 
       <p className="sidebar-label secondary-label">System</p>
       <nav>
-        {SYSTEM_ITEMS.map(({ label, icon: Icon }) => (
-          <button
-            key={label}
-            className={`nav-item ${activeView === label ? 'active' : ''}`}
-            onClick={() => handleNav(label)}
-          >
-            <Icon size={16} />
-            <span>{label}</span>
-          </button>
-        ))}
+        {SYSTEM_ITEMS.map(({ label, icon: Icon }) => {
+          const isActive =
+            activeView === label ||
+            (label === 'Analytics' &&
+              (activeView === 'Health History' ||
+                activeView === 'History' ||
+                activeView === 'Health Analytics' ||
+                activeView === 'Analytics'))
+          return (
+            <button
+              key={label}
+              className={`nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => handleNav(label)}
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+            </button>
+          )
+        })}
       </nav>
 
       <div className="sidebar-bottom">

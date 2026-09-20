@@ -1,20 +1,19 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Activity,
   AlertOctagon,
-  AlertTriangle,
-  ArrowUpRight,
   CheckCircle2,
   CloudSun,
+  Construction,
   HeartPulse,
-  Info,
-  Radio,
   ShieldAlert,
   Thermometer,
   User,
+  Utensils,
   Zap,
+  Loader2,
 } from 'lucide-react'
 import { EmergencySosModal } from '@/components/EmergencySosModal'
 import { HumanRiskVisualization } from '@/components/HumanRiskVisualization'
@@ -35,21 +34,25 @@ export function DashboardView() {
     telemetry,
     baseline,
     risks,
-    alerts,
-    sensors,
     scenario,
     setScenario,
     setActiveView,
     arduinoData,
     isHardwareConnected,
+    transport,
     isSosActive,
     triggerSos,
     dismissSos,
+    triggerNotificationPush,
   } = useTelemetry()
 
   const [scenarioTab, setScenarioTab] = useState<'everyday' | 'disaster'>('everyday')
+  const [obstacleLoading, setObstacleLoading] = useState<boolean>(false)
+  const [obstacleSent, setObstacleSent] = useState<boolean>(false)
+  const [foodLoading, setFoodLoading] = useState<boolean>(false)
+  const [foodSent, setFoodSent] = useState<boolean>(false)
+  const [pushNotificationStatus, setPushNotificationStatus] = useState<string>('')
 
-  const connectedCount = sensors.filter((s) => s.connected).length
   const isArduinoActive = Boolean(isHardwareConnected && arduinoData?.connected)
 
   // Direct Live Values from Arduino COM3 (Null if no finger / stabilizing)
@@ -84,6 +87,66 @@ export function DashboardView() {
     setScenario(s)
     if (s === 'disaster_fall_sos') {
       triggerSos('WEB')
+    }
+  }
+
+  const handleObstaclePush = async () => {
+    try {
+      setObstacleLoading(true)
+      setPushNotificationStatus('Dispatching Obstacle Push Notification & Telegram Alert...')
+      const data = await triggerNotificationPush({
+        type: 'obstacle',
+        title: '🚧 Field Obstacle & Path Blockage Reported',
+        body: 'Field path obstacle / road obstruction detected. Tactical detour & clearance unit alerted.',
+        vitals: {
+          heartRate: currentHR,
+          spo2: isArduinoActive ? (realSpo2 ?? telemetry.spo2) : telemetry.spo2,
+          bodyTemp: telemetry.bodyTemp,
+        },
+        location: { lat: 10.903, lon: 76.955 },
+      })
+      setObstacleSent(true)
+      setPushNotificationStatus(
+        data?.success
+          ? '✓ Obstacle push dispatched via Telegram to emergency bot (@hacksporabot)!'
+          : data?.smsStatus || 'Obstacle push active.'
+      )
+      setTimeout(() => setObstacleSent(false), 4000)
+    } catch (e) {
+      setPushNotificationStatus('Failed to send obstacle push: ' + String(e))
+    } finally {
+      setObstacleLoading(false)
+      setTimeout(() => setPushNotificationStatus(''), 6000)
+    }
+  }
+
+  const handleFoodRequirementPush = async () => {
+    try {
+      setFoodLoading(true)
+      setPushNotificationStatus('Dispatching Food Requirement Notification & Telegram Alert...')
+      const data = await triggerNotificationPush({
+        type: 'food',
+        title: '🍲 Emergency Ration & Food Requirement Reported',
+        body: 'Emergency meal ration and potable water required. Relief team notified with live coordinates.',
+        vitals: {
+          heartRate: currentHR,
+          spo2: isArduinoActive ? (realSpo2 ?? telemetry.spo2) : telemetry.spo2,
+          bodyTemp: telemetry.bodyTemp,
+        },
+        location: { lat: 10.903, lon: 76.955 },
+      })
+      setFoodSent(true)
+      setPushNotificationStatus(
+        data?.success
+          ? '✓ Food requirement alert dispatched via Telegram to relief bot (@hacksporabot)!'
+          : data?.smsStatus || 'Food requirement push active.'
+      )
+      setTimeout(() => setFoodSent(false), 4000)
+    } catch (e) {
+      setPushNotificationStatus('Failed to send food requirement: ' + String(e))
+    } finally {
+      setFoodLoading(false)
+      setTimeout(() => setPushNotificationStatus(''), 6000)
     }
   }
 
@@ -129,36 +192,81 @@ export function DashboardView() {
           <h1 style={{ margin: '4px 0' }}>{getGreeting()}, {userProfile.name}.</h1>
           <p className="subhead">
             {isArduinoActive
-              ? `● LIVE HARDWARE (COM3) ACTIVE • MAX30102 connected. Live BPM: ${realBpm ?? '--'}, SpO₂: ${realSpo2 ?? '--'}%`
+              ? `● LIVE HARDWARE (${transport.includes('WiFi') ? 'ESP8266 WIFI' : 'STREAM'}) ACTIVE • MAX30102 connected. Live BPM: ${realBpm ?? '--'}, SpO₂: ${realSpo2 ?? '--'}%`
               : '○ SIMULATION / DEMO MODE (HARDWARE OFFLINE) • All 5 risk modules active locally.'}
           </p>
         </div>
 
-        {/* Emergency SOS Action */}
-        <button
-          onClick={() => triggerSos('WEB')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 16px',
-            background: 'var(--main-red)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            color: '#FFF',
-            borderRadius: 8,
-            fontSize: 12,
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 800,
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(198,40,40,0.4)',
-          }}
-        >
-          <AlertOctagon size={16} />
-          EMERGENCY SOS
-        </button>
+        {/* Action Buttons Cluster: Obstacle, Food, SOS */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Obstacle Push Button */}
+          <button
+            onClick={handleObstaclePush}
+            disabled={obstacleLoading}
+            title="Push field obstacle notice via Telegram to emergency bot (@hacksporabot)"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs tracking-wide shadow-md shadow-amber-500/25 border border-amber-400 hover:from-amber-400 hover:to-orange-400 hover:shadow-amber-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
+          >
+            {obstacleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+            ) : obstacleSent ? (
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            ) : (
+              <Construction className="w-4 h-4 text-white" />
+            )}
+            <span className="text-white">{obstacleLoading ? 'Pushing...' : obstacleSent ? 'Sent to Telegram' : 'Obstacle Push'}</span>
+          </button>
+
+          {/* Food Requirement Button */}
+          <button
+            onClick={handleFoodRequirementPush}
+            disabled={foodLoading}
+            title="Push emergency food and ration requirement via Telegram (@hacksporabot)"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs tracking-wide shadow-md shadow-emerald-500/25 border border-emerald-400 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/40 active:scale-95 transition-all duration-150 disabled:opacity-60 cursor-pointer"
+          >
+            {foodLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+            ) : foodSent ? (
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            ) : (
+              <Utensils className="w-4 h-4 text-white" />
+            )}
+            <span className="text-white">{foodLoading ? 'Pushing...' : foodSent ? 'Sent to Telegram' : 'Food Requirement'}</span>
+          </button>
+
+          {/* Emergency SOS Action */}
+          <button
+            onClick={() => triggerSos('WEB')}
+            className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold tracking-wider text-sm shadow-[0_0_25px_rgba(239,68,68,0.5)] border border-red-500/80 hover:shadow-[0_0_35px_rgba(239,68,68,0.8)] hover:from-red-500 hover:to-rose-600 active:scale-95 transition-all duration-200 cursor-pointer"
+          >
+            {/* Live Pulsing Dot */}
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+
+            <AlertOctagon className="w-4 h-4 text-white animate-pulse" />
+            EMERGENCY SOS
+          </button>
+        </div>
       </div>
 
-      {/* DUAL-MODE SCENARIO CONTROLLER STRIP */}
+      {/* Twilio Push Notification Status Toast / Banner */}
+      {pushNotificationStatus && (
+        <div className="mb-4 p-3 rounded-xl bg-slate-900 text-white text-xs font-mono flex items-center justify-between gap-3 border border-slate-700 shadow-md">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>{pushNotificationStatus}</span>
+          </div>
+          <button
+            onClick={() => setPushNotificationStatus('')}
+            className="text-slate-400 hover:text-white text-xs px-2 py-0.5 rounded border border-slate-700 cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {false && (
       <section className="scenario-strip">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', width: '100%', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -232,6 +340,7 @@ export function DashboardView() {
               ))}
         </div>
       </section>
+      )}
 
       {/* Single-Domain Critical Override Banner */}
       {risks.criticalOverride && (
@@ -264,120 +373,125 @@ export function DashboardView() {
       )}
 
       {/* Primary Vitals Grid */}
-      <section className="metrics-grid">
+      <section className="metrics-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         {/* CARD 1: HEART RATE */}
-        <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
-          <div className="metric-top">
-            <span className="icon-box red">
-              <HeartPulse size={16} />
-            </span>
-            <span className="delta">
-              {hrDev === 0 ? (
-                <span style={{ color: 'var(--risk-safe)' }}>Baseline</span>
-              ) : hrDev > 0 ? (
-                <span style={{ color: 'var(--main-red)' }}>+{hrDev} BPM ({hrDevPct}%)</span>
-              ) : (
-                <span style={{ color: 'var(--risk-safe)' }}>{hrDev} BPM ({hrDevPct}%)</span>
-              )}
-            </span>
+        <article className="panel metric-card scroll-reveal scroll-reveal-delay-1 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between metric-top">
+              <span className="icon-box red">
+                <HeartPulse size={16} />
+              </span>
+              <span className="delta">
+                {hrDev === 0 ? (
+                  <span style={{ color: 'var(--risk-safe-text)' }}>Baseline</span>
+                ) : hrDev > 0 ? (
+                  <span style={{ color: 'var(--risk-critical-text)' }}>+{hrDev} BPM ({hrDevPct}%)</span>
+                ) : (
+                  <span style={{ color: 'var(--risk-safe-text)' }}>{hrDev} BPM ({hrDevPct}%)</span>
+                )}
+              </span>
+            </div>
+            <p className="eyebrow">Heart Rate {isArduinoActive ? `(${transport.includes('WiFi') ? 'WIFI LIVE' : 'LIVE'})` : ''}</p>
+            <div className="flex items-baseline gap-1.5 mt-2 metric-value">
+              <span>{isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate}</span>
+              <small className="text-xs text-slate-500 font-semibold">BPM</small>
+            </div>
           </div>
-          <p className="eyebrow">Heart Rate {isArduinoActive ? '(COM3 LIVE)' : ''}</p>
-          <div className="metric-value">
-            {isArduinoActive ? (realBpm !== null ? realBpm : '--') : telemetry.heartRate}
-            <small>BPM</small>
-          </div>
-          <small style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-            Personal baseline: <strong>{baseline.restingHR} BPM</strong> (Target: {baseline.refRestingHRRange.min}–{baseline.refRestingHRRange.max})
+          <small className="mt-3 block" style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+            Personal baseline: <strong className="text-slate-900">{baseline.restingHR} BPM</strong> (Target: {baseline.refRestingHRRange.min}–{baseline.refRestingHRRange.max})
           </small>
         </article>
 
         {/* CARD 2: BLOOD OXYGEN */}
-        <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
-          <div className="metric-top">
-            <span className="icon-box yellow">
-              <Activity size={16} />
-            </span>
-            <span className="delta">
-              {isArduinoActive ? (
-                realSpo2 !== null ? (
-                  realSpo2 >= 95 ? (
-                    <span style={{ color: 'var(--risk-safe)' }}>Optimal</span>
+        <article className="panel metric-card scroll-reveal scroll-reveal-delay-2 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between metric-top">
+              <span className="icon-box red">
+                <Activity size={16} />
+              </span>
+              <span className="delta">
+                {isArduinoActive ? (
+                  realSpo2 !== null ? (
+                    realSpo2 >= 95 ? (
+                      <span style={{ color: 'var(--risk-safe-text)' }}>Optimal</span>
+                    ) : (
+                      <span style={{ color: 'var(--risk-critical-text)' }}>Attention</span>
+                    )
+                  ) : isStabilizing ? (
+                    <span style={{ color: 'var(--main-red)' }}>Stabilizing</span>
                   ) : (
-                    <span style={{ color: 'var(--main-red)' }}>Attention</span>
+                    <span style={{ color: 'var(--main-red)' }}>No Finger</span>
                   )
-                ) : isStabilizing ? (
-                  <span style={{ color: 'var(--yellow)' }}>Stabilizing</span>
                 ) : (
-                  <span style={{ color: 'var(--yellow)' }}>No Finger</span>
-                )
-              ) : (
-                <span style={{ color: telemetry.spo2 >= 95 ? 'var(--risk-safe)' : 'var(--main-red)' }}>
-                  {telemetry.spo2 >= 95 ? 'Optimal' : 'Monitored'}
-                </span>
-              )}
-            </span>
+                  <span style={{ color: telemetry.spo2 >= 95 ? 'var(--risk-safe-text)' : 'var(--risk-critical-text)' }}>
+                    {telemetry.spo2 >= 95 ? 'Optimal' : 'Monitored'}
+                  </span>
+                )}
+              </span>
+            </div>
+            <p className="eyebrow">Blood Oxygen {isArduinoActive ? `(${transport.includes('WiFi') ? 'WIFI LIVE' : 'LIVE'})` : ''}</p>
+            <div className="flex items-baseline gap-1.5 mt-2 metric-value">
+              <span>{isArduinoActive ? (realSpo2 !== null ? realSpo2 : '--') : telemetry.spo2}</span>
+              <small className="text-xs text-slate-500 font-semibold">%</small>
+            </div>
           </div>
-          <p className="eyebrow">Blood Oxygen {isArduinoActive ? '(COM3 LIVE)' : ''}</p>
-          <div className="metric-value">
-            {isArduinoActive ? (realSpo2 !== null ? realSpo2 : '--') : telemetry.spo2}
-            <small>%</small>
-          </div>
-          <small style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>Personal baseline: 98% (Target: 95–100%)</small>
+          <small className="mt-3 block" style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>Personal baseline: <strong className="text-slate-900">98%</strong> (Target: 95–100%)</small>
         </article>
 
         {/* CARD 3: BODY TEMPERATURE */}
-        <article className="panel metric-card" onClick={() => setActiveView('Vitals')} style={{ cursor: 'pointer' }}>
-          <div className="metric-top">
-            <span className="icon-box red">
-              <Thermometer size={16} />
-            </span>
-            <span className="delta">
-              {tempDev > 0 ? (
-                <span style={{ color: tempDev > 0.5 ? 'var(--main-red)' : 'var(--yellow)' }}>+{tempDev.toFixed(1)}°C</span>
-              ) : (
-                <span style={{ color: 'var(--risk-safe)' }}>Optimal</span>
-              )}
-            </span>
+        <article className="panel metric-card scroll-reveal scroll-reveal-delay-3 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between metric-top">
+              <span className="icon-box red">
+                <Thermometer size={16} />
+              </span>
+              <span className="delta">
+                {tempDev > 0 ? (
+                  <span style={{ color: tempDev > 0.5 ? 'var(--risk-critical-text)' : 'var(--main-red)' }}>+{tempDev.toFixed(1)}°C</span>
+                ) : (
+                  <span style={{ color: 'var(--risk-safe-text)' }}>Optimal</span>
+                )}
+              </span>
+            </div>
+            <p className="eyebrow">Body Temperature</p>
+            <div className="flex items-baseline gap-1.5 mt-2 metric-value">
+              <span>{telemetry.bodyTemp.toFixed(1)}</span>
+              <small className="text-xs text-slate-500 font-semibold">°C</small>
+            </div>
           </div>
-          <p className="eyebrow">Body Temperature</p>
-          <div className="metric-value">
-            {telemetry.bodyTemp.toFixed(1)}
-            <small>°C</small>
-          </div>
-          <small style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-            Personal baseline: <strong>{baseline.tempBaseline}°C</strong> ({risks.tempAnomaly.detected ? 'Anomaly' : 'Stable'})
+          <small className="mt-3 block" style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+            Personal baseline: <strong className="text-slate-900">{baseline.tempBaseline}°C</strong> ({risks.tempAnomaly.detected ? 'Anomaly' : 'Stable'})
           </small>
         </article>
 
         {/* CARD 4: ENVIRONMENT */}
-        <article className="panel metric-card" onClick={() => setActiveView('Climate Health')} style={{ cursor: 'pointer' }}>
-          <div className="metric-top">
-            <span className="icon-box dark">
-              <CloudSun size={16} />
-            </span>
-            <span className="delta" style={{ color: 'var(--text-secondary)' }}>{telemetry.rain ? 'Rain Active' : 'Dry'}</span>
+        <article className="panel metric-card scroll-reveal scroll-reveal-delay-4 flex flex-col justify-between h-full" onClick={() => setActiveView('Climate Health')} style={{ cursor: 'pointer' }}>
+          <div>
+            <div className="flex items-center justify-between metric-top">
+              <span className="icon-box red">
+                <CloudSun size={16} />
+              </span>
+              <span className="delta" style={{ color: 'var(--text-secondary)' }}>{telemetry.rain ? 'Rain Active' : 'Dry'}</span>
+            </div>
+            <p className="eyebrow">Ambient Weather</p>
+            <div className="flex items-baseline gap-1.5 mt-2 metric-value">
+              <span>{telemetry.ambientTemp.toFixed(1)}</span>
+              <small className="text-xs text-slate-500 font-semibold">°C / {telemetry.humidity}%</small>
+            </div>
           </div>
-          <p className="eyebrow">Ambient Weather</p>
-          <div className="metric-value">
-            {telemetry.ambientTemp.toFixed(1)}
-            <small>°C / {telemetry.humidity}%</small>
-          </div>
-          <small style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>External AQI: {telemetry.externalAqi}</small>
+          <small className="mt-3 block" style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>External AQI: <strong className="text-slate-900">{telemetry.externalAqi}</strong></small>
         </article>
       </section>
 
       {/* Main Intelligence Grid */}
-      <section className="dashboard-grid">
+      <section className="dashboard-grid w-full">
         {/* Risk Overview Panel */}
-        <article className="panel risk-panel">
+        <article className="panel risk-panel scroll-reveal w-full">
           <div className="panel-heading">
             <div>
               <p className="eyebrow">AERIS Fusion Engine</p>
               <h2>Composite Risk Index (CRI)</h2>
             </div>
-            <button className="text-button" onClick={() => setActiveView('Risk Intelligence')}>
-              Full Analysis <ArrowUpRight size={14} />
-            </button>
           </div>
 
           {/* User Profile Context Badge */}
@@ -432,7 +546,7 @@ export function DashboardView() {
           </HumanRiskVisualization>
         </article>
 
-        {/* Hardware Sensors Panel */}
+        {/*
         <article className="panel sensor-panel">
           <div className="panel-heading">
             <div>
@@ -444,37 +558,11 @@ export function DashboardView() {
             </span>
           </div>
 
-          <div className="sensor-list">
-            {sensors.map((sensor) => (
-              <div className="sensor-row" key={sensor.id}>
-                <span className={`sensor-icon ${sensor.connected ? 'green' : 'dark'}`}>
-                  <Radio size={15} />
-                </span>
-                <div className="sensor-name">
-                  <strong>{sensor.name} ({sensor.chip})</strong>
-                  <small>{sensor.signals}</small>
-                </div>
-                <div className="sensor-bar">
-                  <i
-                    style={{ width: `${sensor.signalQuality}%` }}
-                    className={sensor.connected ? '' : 'red'}
-                  />
-                </div>
-                <b>{sensor.signalQuality}%</b>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-muted)' }}>
-            <span>External AQI Feed: <b>US AQI {telemetry.externalAqi}</b></span>
-            <button className="text-button" onClick={() => setActiveView('Device Diagnostics')}>
-              COM3 Console <ArrowUpRight size={14} />
-            </button>
-          </div>
         </article>
+        */}
       </section>
 
-      {/* Lower Grid: Top Risk Factors & Personalized Baseline */}
+      {/*
       <section className="lower-grid">
         <article className="panel alerts-panel">
           <div className="panel-heading">
@@ -482,9 +570,6 @@ export function DashboardView() {
               <p className="eyebrow">Risk Rationale</p>
               <h2>Top Contributing Factors</h2>
             </div>
-            <button className="text-button" onClick={() => setActiveView('Alerts')}>
-              Alert Queue ({alerts.length}) <ArrowUpRight size={14} />
-            </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '14px 0' }}>
@@ -554,6 +639,7 @@ export function DashboardView() {
           </div>
         </article>
       </section>
+      */}
 
       {/* Non-Clinical Prototype Disclaimer */}
       <footer style={{ marginTop: 24, textAlign: 'center', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', padding: '12px 0' }}>

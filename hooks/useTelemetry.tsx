@@ -17,6 +17,7 @@ import {
   updateBaselineWithSample,
 } from '@/lib/telemetry'
 import { playPushNotificationSound } from '@/lib/notifications'
+import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import {
   AlertItem,
   DailyAnalysis,
@@ -147,6 +148,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [dailyHistory, setDailyHistory] = useState<TelemetryData[]>([])
   const [realHistory, setRealHistory] = useState<RealHistoryPoint[]>([])
   const [alerts, setAlerts] = useState<AlertItem[]>([])
+  const supabaseUserIdRef = useRef<string | null>(null)
+  const supabaseLoadedRef = useRef(false)
 
   // Universal Push Notification Trigger (Used by Obstacle Push, Food Requirement & SOS)
   const triggerNotificationPush = async (params: {
@@ -323,6 +326,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const lastLoggedSpo2Ref = useRef<number | null>(null)
   const lastSyncedBpmRef = useRef<number | null>(null)
   const lastSyncedSpo2Ref = useRef<number | null>(null)
+  const lastPersistedTelemetryAtRef = useRef<number>(0)
 
   // AUTO-TOGGLE SIMULATION LOOP BASED ON HARDWARE CONNECTION STATE
   useEffect(() => {
@@ -361,6 +365,54 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Supabase is the authenticated account store. Browser local storage remains a
+  // resilience cache for the existing edge/offline experience.
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return
+    let active = true
+    const loadAccountData = async () => {
+      try {
+        const supabase = createBrowserSupabaseClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !active) return
+        supabaseUserIdRef.current = user.id
+        const [{ data: health }, { data: savedBaseline }] = await Promise.all([
+          supabase.from('user_health_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+          supabase.from('health_baselines').select('baseline').eq('user_id', user.id).maybeSingle(),
+        ])
+        if (!active) return
+        if (health) {
+          setUserProfile((current) => ({
+            ...current,
+            age: health.age ?? current.age,
+            sex: health.sex ?? current.sex,
+            heightCm: Number(health.height_cm ?? current.heightCm),
+            weightKg: Number(health.weight_kg ?? current.weightKg),
+            bloodPressureSystolic: health.blood_pressure_systolic ?? current.bloodPressureSystolic,
+            bloodPressureDiastolic: health.blood_pressure_diastolic ?? current.bloodPressureDiastolic,
+            activityLevel: health.activity_level ?? current.activityLevel,
+            knownRestingHR: health.known_resting_hr ?? current.knownRestingHR,
+            knownHrvBaseline: health.known_hrv_baseline ? Number(health.known_hrv_baseline) : current.knownHrvBaseline,
+            healthNotes: health.health_notes ?? current.healthNotes,
+            units: health.units ?? current.units,
+            emergencyContactPhone: health.emergency_contact_phone ?? current.emergencyContactPhone,
+            enableSmsAlerts: health.enable_sms_alerts,
+            enableWhatsappAlerts: health.enable_whatsapp_alerts,
+          }))
+        }
+        if (savedBaseline?.baseline && typeof savedBaseline.baseline === 'object') {
+          setBaseline((current) => ({ ...current, ...(savedBaseline.baseline as Partial<PersonalBaseline>) }))
+        }
+      } catch (error) {
+        console.warn('Supabase account data could not be loaded:', error)
+      } finally {
+        if (active) supabaseLoadedRef.current = true
+      }
+    }
+    void loadAccountData()
+    return () => { active = false }
+  }, [])
+
   // Auto-save persistent telemetry state to localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -375,6 +427,30 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       // Ignore storage errors
     }
   }, [telemetry, baseline, dailyHistory])
+
+  useEffect(() => {
+    const userId = supabaseUserIdRef.current
+    if (!supabaseLoadedRef.current || !userId) return
+    const persistAccountData = async () => {
+      try {
+        const supabase = createBrowserSupabaseClient()
+        await Promise.all([
+          supabase.from('profiles').update({ full_name: userProfile.name, phone: userProfile.emergencyContactPhone || null }).eq('id', userId),
+          supabase.from('user_health_profiles').upsert({
+            user_id: userId, age: userProfile.age, sex: userProfile.sex, height_cm: userProfile.heightCm, weight_kg: userProfile.weightKg,
+            blood_pressure_systolic: userProfile.bloodPressureSystolic ?? null, blood_pressure_diastolic: userProfile.bloodPressureDiastolic ?? null,
+            activity_level: userProfile.activityLevel, known_resting_hr: userProfile.knownRestingHR ?? null, known_hrv_baseline: userProfile.knownHrvBaseline ?? null,
+            health_notes: userProfile.healthNotes ?? null, units: userProfile.units, emergency_contact_phone: userProfile.emergencyContactPhone ?? null,
+            enable_sms_alerts: Boolean(userProfile.enableSmsAlerts), enable_whatsapp_alerts: Boolean(userProfile.enableWhatsappAlerts),
+          }),
+          supabase.from('health_baselines').upsert({ user_id: userId, baseline }),
+        ])
+      } catch (error) {
+        console.warn('Supabase account data could not be saved:', error)
+      }
+    }
+    void persistAccountData()
+  }, [userProfile, baseline])
 
   // Save profile state to localStorage
   const updateUserProfile = (updates: Partial<UserProfile>) => {
@@ -661,6 +737,23 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           if (realWeatherData.pm10 !== undefined) next.pm10 = realWeatherData.pm10
           if (realWeatherData.o3 !== undefined) next.o3 = realWeatherData.o3
           if (realWeatherData.no2 !== undefined) next.no2 = realWeatherData.no2
+        }
+        const now = Date.now()
+        if (now - lastPersistedTelemetryAtRef.current >= 30_000) {
+          lastPersistedTelemetryAtRef.current = now
+          void fetch('/api/telemetry/persist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(next),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                console.warn(`[AERIS Telemetry] Failed to persist reading (HTTP ${response.status})`)
+              }
+            })
+            .catch((error) => {
+              console.warn('[AERIS Telemetry] Failed to persist reading:', error)
+            })
         }
         return next
       })

@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server'
+import { getAuthContext } from '@/lib/auth'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export async function POST(req: Request) {
   try {
+    const context = await getAuthContext()
+    if (!context) return NextResponse.json({ success: false, error: 'Authentication is required.' }, { status: 401 })
+
     const body = await req.json()
-    const { title, trigger, severity, recommendedAction, vitals, location, phone = '9715042529', type } = body
+    const { title, trigger, severity, recommendedAction, vitals, location, type } = body
+
+    if (!['sos', 'food', 'obstacle', 'threshold'].includes(type || 'sos')) {
+      return NextResponse.json({ success: false, error: 'Invalid emergency request type.' }, { status: 400 })
+    }
+
+    const supabase = await createServerSupabaseClient()
+    const { data: healthProfile } = await supabase
+      .from('user_health_profiles')
+      .select('emergency_contact_phone')
+      .eq('user_id', context.user.id)
+      .maybeSingle()
+    const phone = healthProfile?.emergency_contact_phone || context.profile.phone
+    if (!phone) {
+      return NextResponse.json({ success: false, error: 'Add an emergency contact phone number in Settings before dispatching an alert.' }, { status: 400 })
+    }
 
     // Format Indian mobile number (+91)
     const cleanPhone = String(phone).replace(/\D/g, '')
@@ -13,8 +33,23 @@ export async function POST(req: Request) {
 
     const mapsUrl = location && location.lat ? `https://maps.google.com/?q=${location.lat},${location.lon}` : 'N/A'
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-    const patientName = body.patientName || 'Emergency Contact / User'
+    const patientName = context.profile.full_name || 'AERIS user'
     const alertStatus = severity ? severity.toUpperCase() : 'CRITICAL'
+
+    const requestType = (type || 'sos') as 'sos' | 'food' | 'obstacle' | 'threshold'
+    const normalizedSeverity = ['Low', 'Medium', 'High', 'Critical'].includes(severity) ? severity.toLowerCase() : 'high'
+    const { error: requestError } = await supabase.from('emergency_requests').insert({
+      user_id: context.user.id,
+      request_type: requestType,
+      severity: normalizedSeverity,
+      title: String(title || 'AERIS emergency request').slice(0, 500),
+      details: String(trigger || '').slice(0, 4000),
+      recommended_action: String(recommendedAction || '').slice(0, 4000),
+      location_lat: typeof location?.lat === 'number' ? location.lat : null,
+      location_lon: typeof location?.lon === 'number' ? location.lon : null,
+      vitals: vitals && typeof vitals === 'object' ? vitals : {},
+    })
+    if (requestError) return NextResponse.json({ success: false, error: 'Unable to record the emergency request.' }, { status: 500 })
 
     let messageText = ''
     if (type === 'obstacle') {

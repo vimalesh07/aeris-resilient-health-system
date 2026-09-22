@@ -3,6 +3,7 @@
 import React from 'react'
 import { Activity, Cpu, Menu, Play, Pause, Wifi, WifiOff } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
+import { SessionControls } from '@/components/SessionControls'
 
 export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) {
   const {
@@ -13,6 +14,7 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
     transport,
     isSimulationRunning,
     setIsSimulationRunning,
+    userProfile,
   } = useTelemetry()
 
   return (
@@ -91,6 +93,7 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
 
       {/* Right: Actions */}
       <div className="top-actions flex items-center gap-2 sm:gap-2.5 z-10">
+        <span className="desktop-only" style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--main-red)' }}>USER</span>
         {/* Simulation Toggle Button when Offline */}
         {!isHardwareConnected && (
           <button
@@ -132,6 +135,7 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
         >
           VM
         </button>
+        <span className="desktop-only"><SessionControls name={userProfile.name} role="user" /></span>
       </div>
     </header>
   )

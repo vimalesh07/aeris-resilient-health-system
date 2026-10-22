@@ -7,6 +7,8 @@ interface TelemetryPayload {
   source?: string
   bpm?: number
   spo2?: number
+  sqi?: number
+  anomaly?: string
   status?: string
   sos?: boolean | number
   raw?: string
@@ -21,6 +23,8 @@ interface HardwareTelemetryState {
   stableBpm: number | null
   stableSpo2: number | null
   r: number | null
+  sqi: number | null
+  anomaly: string | null
   fingerDetected: boolean
   connected: boolean
   timestamp: number
@@ -37,6 +41,8 @@ let latestTelemetry: HardwareTelemetryState = {
   stableBpm: null,
   stableSpo2: null,
   r: null,
+  sqi: null,
+  anomaly: null,
   fingerDetected: false,
   connected: false,
   timestamp: 0,
@@ -59,6 +65,8 @@ export async function POST(req: Request) {
 
     const rawBpm = typeof body.bpm === 'number' && body.bpm > 0 ? body.bpm : null
     const rawSpo2 = typeof body.spo2 === 'number' && body.spo2 > 0 ? body.spo2 : null
+    const rawSqi = typeof body.sqi === 'number' && body.sqi >= 0 ? body.sqi : null
+    const rawAnomaly = typeof body.anomaly === 'string' && body.anomaly ? body.anomaly : 'NORMAL'
     const rawStatus = (body.status || 'OK').toUpperCase()
     const isSos = Boolean(body.sos === true || body.sos === 1)
 
@@ -86,7 +94,7 @@ export async function POST(req: Request) {
     const stableBpm = rawBpm && rawBpm >= 40 && rawBpm <= 220 ? rawBpm : null
     const stableSpo2 = rawSpo2 && rawSpo2 >= 70 && rawSpo2 <= 100 ? rawSpo2 : null
 
-    const rawLine = body.raw || `BPM:${rawBpm ?? 0},SpO2:${rawSpo2 ?? 0},Status:${rawStatus},SOS:${isSos ? 1 : 0}`
+    const rawLine = body.raw || `BPM:${rawBpm ?? 0},SpO2:${rawSpo2 ?? 0},SQI:${rawSqi ?? 0}%,Anomaly:${rawAnomaly},Status:${rawStatus},SOS:${isSos ? 1 : 0}`
 
     // Update state
     latestTelemetry = {
@@ -97,6 +105,8 @@ export async function POST(req: Request) {
       stableBpm,
       stableSpo2,
       r: null,
+      sqi: rawSqi,
+      anomaly: rawAnomaly,
       fingerDetected,
       connected: true,
       timestamp: now,

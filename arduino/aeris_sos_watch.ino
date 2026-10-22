@@ -89,6 +89,41 @@ unsigned long lastDisplay = 0;
 bool sosTriggered = false;
 
 // =====================================================
+// TINYML EDGE AI: SIGNAL QUALITY (SQI) & ANOMALY
+// =====================================================
+int liveSQI = 0;               // 0-100% Signal Quality Index
+String liveAnomaly = "NORMAL"; // NORMAL | TACHYCARDIA | BRADYCARDIA | HYPOXIA | MOTION_NOISE
+
+int computeTinyML_SQI(float ac, float dc, unsigned long beatDelta)
+{
+  if (dc <= 100 || ac <= 0) return 0;
+  
+  // 1. Perfusion Index (PI): ideal AC/DC between 0.4% and 7.0%
+  float pi = (ac / dc) * 100.0;
+  int piScore = 0;
+  if (pi >= 0.4 && pi <= 7.0) piScore = 50;
+  else if (pi >= 0.15 && pi <= 12.0) piScore = 30;
+  else piScore = 10;
+  
+  // 2. Beat Interval Regularity (physiological delta: 450ms - 1100ms)
+  int rhythmScore = 0;
+  if (beatDelta >= 450 && beatDelta <= 1100) rhythmScore = 50;
+  else if (beatDelta >= 350 && beatDelta <= 1400) rhythmScore = 30;
+  else rhythmScore = 10;
+  
+  return (piScore + rhythmScore);
+}
+
+String classifyTinyMLAnomaly(int bpm, int spo2, int sqi)
+{
+  if (sqi < 40) return "MOTION_NOISE";
+  if (spo2 > 0 && spo2 < 92) return "HYPOXIA";
+  if (bpm > 105) return "TACHYCARDIA";
+  if (bpm > 0 && bpm < 50) return "BRADYCARDIA";
+  return "NORMAL";
+}
+
+// =====================================================
 // NEW: SOS BUZZER SEQUENCE
 // =====================================================
 void triggerSOS()
@@ -123,6 +158,7 @@ void triggerSOS()
   Serial.println(F("=============================="));
   Serial.println(F(" SOS STARTED"));
   Serial.println(F("=============================="));
+  Serial.println(F("AERIS:SOS_TRIGGERED,0,0,100,SOS"));
 }
 
 // =====================================================
@@ -483,7 +519,11 @@ void updateOLED()
   }
   else
   {
-    display.print(F("STATUS: MEASURING"));
+    display.print(F("AI:"));
+    display.print(liveAnomaly);
+    display.print(F(" "));
+    display.print(liveSQI);
+    display.print(F("%"));
   }
 
   // ---------------------------------------------------
@@ -773,6 +813,17 @@ void loop()
   {
     lastDisplay = millis();
 
+    if (fingerDetected && measuring)
+    {
+      liveSQI = computeTinyML_SQI(irAC, irDC, (lastBeat > 0 ? (millis() - lastBeat) : 800));
+      liveAnomaly = classifyTinyMLAnomaly(stableBPM, stableSpO2, liveSQI);
+    }
+    else
+    {
+      liveSQI = 0;
+      liveAnomaly = fingerDetected ? "STABILIZING" : "NO_FINGER";
+    }
+
     updateOLED();
 
     Serial.println();
@@ -829,5 +880,27 @@ void loop()
     }
 
     Serial.println(F("------------------------------"));
+
+    // Standardized AERIS Machine-Readable TinyML Telemetry Packet
+    if (!fingerDetected)
+    {
+      Serial.println(F("AERIS:NO_FINGER,0,0,0,NO_FINGER"));
+    }
+    else if (!measuring)
+    {
+      Serial.println(F("AERIS:STABILIZING,0,0,50,STABILIZING"));
+    }
+    else
+    {
+      Serial.print(F("AERIS:MEASURING,"));
+      Serial.print(stableBPM > 0 ? stableBPM : 0);
+      Serial.print(F(","));
+      Serial.print(stableSpO2 > 0 ? stableSpO2 : 0);
+      Serial.print(F(","));
+      Serial.print(liveSQI);
+      Serial.print(F(","));
+      Serial.println(liveAnomaly);
+    }
   }
 }
+

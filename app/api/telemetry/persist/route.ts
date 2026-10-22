@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthContext } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { hasSupabaseEnv } from '@/lib/supabase/env'
 import type { TelemetryData } from '@/types/aeris'
 
 const activityStates: TelemetryData['activity'][] = [
@@ -72,6 +73,10 @@ export async function POST(req: Request) {
 
     if (!isTelemetryPayload(body)) {
       return NextResponse.json({ error: 'Invalid telemetry data' }, { status: 400 })
+    }
+
+    if (!hasSupabaseEnv()) {
+      return NextResponse.json({ success: true, mode: 'local' })
     }
 
     const supabase = await createServerSupabaseClient()

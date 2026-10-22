@@ -15,6 +15,8 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
     isSimulationRunning,
     setIsSimulationRunning,
     userProfile,
+    sqi,
+    anomaly,
   } = useTelemetry()
 
   return (
@@ -84,8 +86,25 @@ export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
                 }}
               />
             </span>
-            <span style={{ fontSize: 11, fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
-              LIVE HARDWARE ({transport.includes('WiFi') ? 'WIFI' : 'STREAM'})
+            <span style={{ fontSize: 11, fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span>LIVE HARDWARE ({transport.includes('WiFi') ? 'WIFI' : 'STREAM'})</span>
+              {sqi !== null && sqi !== undefined && (
+                <span style={{ opacity: 0.85, fontWeight: 600 }}>• SQI {sqi}%</span>
+              )}
+              {anomaly && anomaly !== 'NORMAL' && (
+                <span
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    color: '#DC2626',
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                  }}
+                >
+                  {anomaly}
+                </span>
+              )}
             </span>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import React, { FormEvent, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
+import { hasSupabaseEnv } from '@/lib/supabase/env'
 import type { AppRole } from '@/lib/auth'
 import {
   Activity,
@@ -79,6 +80,7 @@ export function AuthForm() {
   const [message, setMessage] = useState<string | null>(null)
   const [isSuccessMessage, setIsSuccessMessage] = useState(false)
   const [busy, setBusy] = useState(false)
+  const isSupabaseConfigured = hasSupabaseEnv()
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -155,6 +157,13 @@ export function AuthForm() {
     setBusy(true)
     setMessage(null)
     setIsSuccessMessage(false)
+
+    if (!isSupabaseConfigured) {
+      setBusy(false)
+      setMessage('Supabase is not configured in .env.local. Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY to enable cloud auth, or continue in offline mode.')
+      setIsSuccessMessage(false)
+      return
+    }
 
     try {
       const supabase = createBrowserSupabaseClient()
@@ -360,6 +369,49 @@ export function AuthForm() {
                 Select Account Type
               </h2>
             </div>
+
+            {!isSupabaseConfigured && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 16,
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: 'rgba(234, 179, 8, 0.08)',
+                  border: '1px solid rgba(234, 179, 8, 0.25)',
+                  marginBottom: 20,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#FACC15', fontSize: 13 }}>
+                  <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                  <span>
+                    <strong>Offline / Local Mode:</strong> Supabase cloud credentials are not set in <code>.env.local</code>. You can run all core sensors, vitals, heat risk, and AI companion features locally.
+                  </span>
+                </div>
+                <a
+                  href="/user"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    background: '#DC2626',
+                    color: '#FFFFFF',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                  }}
+                >
+                  <span>Launch Local User Dashboard</span>
+                  <ArrowRight size={13} />
+                </a>
+              </div>
+            )}
 
             <div
               style={{
@@ -581,6 +633,44 @@ export function AuthForm() {
               </span>
             </div>
 
+            {!isSupabaseConfigured && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  padding: '12px 16px',
+                  borderRadius: 10,
+                  background: 'rgba(234, 179, 8, 0.08)',
+                  border: '1px solid rgba(234, 179, 8, 0.25)',
+                  marginBottom: 18,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ color: '#FACC15', fontSize: 13 }}>
+                  Offline mode active: Cloud login requires Supabase credentials.
+                </span>
+                <a
+                  href={selectedRole === 'user' ? '/user' : selectedRole === 'admin' ? '/admin' : '/government'}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    background: '#DC2626',
+                    color: '#FFFFFF',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <span>Continue to {selectedRole.toUpperCase()} Dashboard</span>
+                  <ArrowRight size={12} />
+                </a>
+              </div>
+            )}
 
             {/* Mode Switcher: [ Login ] [ Create Account ] */}
             <div

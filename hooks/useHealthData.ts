@@ -15,6 +15,8 @@ export interface ArduinoHealthData {
   timestamp: number
   source?: string
   lastRawLine?: string
+  sqi?: number | null
+  anomaly?: string | null
 }
 
 export interface UseHealthDataReturn {
@@ -30,6 +32,8 @@ export interface UseHealthDataReturn {
   rawLogs: string[]
   transport: 'WiFi (ESP8266)' | 'Serial (COM3)' | 'Offline'
   lastSosEvent: { type: string; source: string; timestamp: number } | null
+  sqi: number | null
+  anomaly: string | null
 }
 
 export function useHealthData(): UseHealthDataReturn {
@@ -108,7 +112,8 @@ export function useHealthData(): UseHealthDataReturn {
 
     const connectWs = () => {
       const port = process.env.NEXT_PUBLIC_WEBSOCKET_PORT || '3001'
-      const wsUrl = `ws://localhost:${port}`
+      const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost'
+      const wsUrl = `ws://${host}:${port}`
 
       try {
         const socket = new WebSocket(wsUrl)
@@ -203,5 +208,7 @@ export function useHealthData(): UseHealthDataReturn {
     rawLogs,
     transport: isHardwareConnected ? transport : 'Offline',
     lastSosEvent,
+    sqi: data?.sqi ?? null,
+    anomaly: data?.anomaly ?? null,
   }
 }

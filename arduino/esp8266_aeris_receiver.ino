@@ -5,8 +5,8 @@
 // ======================= CONFIG =======================
 const char* WIFI_SSID     = "Vimal";
 const char* WIFI_PASSWORD = "12345678";
-const char* SERVER_URL    = "http://10.97.91.171:3000/api/telemetry";
-const char* NOTIFY_URL    = "http://10.97.91.171:3000/api/notify";
+const char* SERVER_URL    = "http://10.19.173.171:3000/api/telemetry";
+const char* NOTIFY_URL    = "http://10.19.173.171:3000/api/notify";
 
 // =================== HARDWARE PINS ====================
 // Connect Pushbutton between D5 (GPIO 14) and GND (uses internal pullup)
@@ -21,7 +21,9 @@ HTTPClient http;
 
 int    bpm          = 0;
 int    spo2         = 0;
+int    sqi          = 0;
 String healthStatus = "NO FINGER";
+String anomaly      = "NORMAL";
 bool   hasNewData   = false;
 unsigned long lastPost = 0;
 
@@ -113,33 +115,54 @@ void loop() {
 }
 
 // ========================================================
-// 1. UNCHANGED PACKET PARSER: AERIS:MEASURING,78,98
+// 1. TINYML PACKET PARSER: AERIS:MEASURING,78,98,92,NORMAL
 // ========================================================
 void parseAerisPacket(String pkt) {
   String data = pkt.substring(6);
   data.trim();
 
-  int firstComma  = data.indexOf(',');
-  int secondComma = data.indexOf(',', firstComma + 1);
+  // Handle special one-shot SOS packet from Arduino
+  if (data.startsWith("SOS_TRIGGERED")) {
+    triggerTelegramAlertPush();
+    return;
+  }
 
-  if (firstComma > 0 && secondComma > firstComma) {
-    healthStatus = data.substring(0, firstComma);
-    bpm          = data.substring(firstComma + 1, secondComma).toInt();
-    spo2         = data.substring(secondComma + 1).toInt();
+  int c1 = data.indexOf(',');
+  int c2 = data.indexOf(',', c1 + 1);
+  int c3 = data.indexOf(',', c2 + 1);
+  int c4 = data.indexOf(',', c3 + 1);
+
+  if (c1 > 0 && c2 > c1) {
+    healthStatus = data.substring(0, c1);
+    bpm          = data.substring(c1 + 1, c2).toInt();
+    if (c3 > c2) {
+      spo2 = data.substring(c2 + 1, c3).toInt();
+      if (c4 > c3) {
+        sqi     = data.substring(c3 + 1, c4).toInt();
+        anomaly = data.substring(c4 + 1);
+        anomaly.trim();
+      } else {
+        sqi = data.substring(c3 + 1).toInt();
+      }
+    } else {
+      spo2 = data.substring(c2 + 1).toInt();
+    }
   }
 }
 
 // ========================================================
-// 2. UNCHANGED TELEMETRY STREAM
+// 2. TINYML TELEMETRY STREAM
 // ========================================================
 void sendTelemetry() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   String json = "{";
   json += "\"source\":\"esp8266_wifi\",";
-  json += "\"bpm\":"    + String(bpm) + ",";
-  json += "\"spo2\":"   + String(spo2) + ",";
-  json += "\"status\":\"" + healthStatus + "\",";
+  json += "\"bpm\":"       + String(bpm) + ",";
+  json += "\"spo2\":"      + String(spo2) + ",";
+  json += "\"sqi\":"       + String(sqi) + ",";
+  json += "\"status\":\""  + healthStatus + "\",";
+  json += "\"anomaly\":\"" + anomaly + "\",";
   json += "\"sos\":false,";
   json += "\"timestamp\":" + String(millis());
   json += "}";

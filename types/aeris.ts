@@ -169,10 +169,12 @@ export interface ChatMessage {
   sender: 'user' | 'aeris'
   text: string
   timestamp: string
-  source?: 'Gemini 3.6 Flash' | 'Local Rule Engine'
+  source?: 'Gemini 3.6 Flash' | 'Local Rule Engine' | 'Local Edge AI'
   supportingData?: {
     riskScore?: number
     vitalsSummary?: string
+    triageLevel?: string
+    confidence?: number
   }
 }
 

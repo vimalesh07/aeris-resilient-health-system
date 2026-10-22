@@ -208,14 +208,14 @@ export function SettingsView() {
               />
             </div>
 
-            {/* Twilio SMS Push Notification Container */}
+            {/* Telegram Bot & SMS Push Notification Container */}
             <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 10, marginTop: 2 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <strong style={{ fontSize: 12, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  📱 Twilio SMS Push Notification
+                  🤖 Telegram Bot & SMS Emergency Push
                 </strong>
                 <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--risk-safe)', background: 'rgba(16,185,129,0.12)', padding: '2px 6px', borderRadius: 4 }}>
-                  ACTIVE (+91)
+                  ONLINE (Telegram +91)
                 </span>
               </div>
 
@@ -230,7 +230,7 @@ export function SettingsView() {
                 style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 6, background: '#FFFFFF', border: '1px solid #CBD5E1', color: 'var(--main-red)', fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 800, outline: 'none', marginBottom: 6 }}
               />
               <p style={{ margin: '0 0 10px', fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                ℹ️ <strong>Twilio Trial:</strong> Verified recipient is <code>+91 9715042529</code>. To test another phone, add it in Twilio Console under Verified Caller IDs.
+                ℹ️ <strong>Automated Push Pipeline:</strong> Instant push alerts are dispatched to Telegram bot <code>@hacksporabot</code> and emergency SMS to <code>+91 {phone || '9715042529'}</code>.
               </p>
 
               <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
@@ -240,7 +240,7 @@ export function SettingsView() {
                     checked={enableSms}
                     onChange={(e) => setEnableSms(e.target.checked)}
                   />
-                  <span>Automated Twilio SMS Alert</span>
+                  <span>Automated Push & Telegram Alerts</span>
                 </label>
               </div>
 
@@ -264,7 +264,7 @@ export function SettingsView() {
                   gap: 6,
                 }}
               >
-                ⚡ Test Twilio SMS Push to +91 {phone || '9715042529'}
+                ⚡ Dispatch Test Emergency Push (Telegram & SMS)
               </button>
               {testStatus && (
                 <small style={{ display: 'block', marginTop: 6, fontSize: 10, color: 'var(--main-red)', fontFamily: 'var(--font-mono)' }}>

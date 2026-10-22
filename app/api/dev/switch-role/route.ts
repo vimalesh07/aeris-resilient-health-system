@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { hasSupabaseEnv } from '@/lib/supabase/env'
 
 const VALID_ROLES = ['user', 'admin', 'government'] as const
 type ValidRole = (typeof VALID_ROLES)[number]
@@ -14,6 +15,14 @@ export async function POST(req: NextRequest) {
     const { role } = await req.json()
     if (!VALID_ROLES.includes(role as ValidRole)) {
       return NextResponse.json({ error: 'Invalid role specified.' }, { status: 400 })
+    }
+
+    if (!hasSupabaseEnv()) {
+      return NextResponse.json({
+        success: true,
+        role,
+        message: `Offline mode: Switched to ${role.toUpperCase()}. You can now access /${role}.`,
+      })
     }
 
     const cookieStore = await cookies()

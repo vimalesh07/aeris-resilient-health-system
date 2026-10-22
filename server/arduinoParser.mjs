@@ -13,6 +13,8 @@ export class ArduinoParser {
       stableBpm: null,
       stableSpo2: null,
       r: null,
+      sqi: null,
+      anomaly: null,
       fingerDetected: false,
       connected: false,
       timestamp: Date.now(),
@@ -29,7 +31,53 @@ export class ArduinoParser {
     this.state.lastRawLine = line
     this.state.timestamp = Date.now()
 
-    // 0. Explicit Physical SOS Button Trigger Detection (Excludes startup logs like "SOS BUTTON READY")
+    // 0. Handle Standard Machine-Readable AERIS TinyML Telemetry Packet
+    // Format: AERIS:<STATUS>,<BPM>,<SpO2>,<SQI>,<ANOMALY>
+    const aerisMatch = line.match(/^AERIS:([A-Za-z0-9_]+)(?:,(\d+),(\d+),(\d+),([A-Za-z0-9_]+))?/i)
+    if (aerisMatch) {
+      const statusToken = aerisMatch[1].toUpperCase()
+      const rawBpm = aerisMatch[2] ? parseInt(aerisMatch[2], 10) : null
+      const rawSpo2 = aerisMatch[3] ? parseInt(aerisMatch[3], 10) : null
+      const rawSqi = aerisMatch[4] ? parseInt(aerisMatch[4], 10) : null
+      const anomalyToken = aerisMatch[5] || null
+
+      this.state.connected = true
+      if (rawSqi !== null) this.state.sqi = rawSqi
+      if (anomalyToken) this.state.anomaly = anomalyToken
+
+      if (statusToken === 'SOS' || statusToken === 'SOS_TRIGGERED') {
+        this.state.sosEvent = {
+          type: 'SOS_TRIGGERED',
+          source: 'PHYSICAL_BUTTON',
+          device: 'AERIS_HEALTH_WATCH',
+          timestamp: Date.now(),
+        }
+      } else if (statusToken === 'NO_FINGER') {
+        this.state.status = 'NO FINGER'
+        this.state.fingerDetected = false
+        this.state.bpm = null
+        this.state.spo2 = null
+        this.state.stableBpm = null
+        this.state.stableSpo2 = null
+      } else if (statusToken === 'STABILIZING') {
+        this.state.status = 'STABILIZING'
+        this.state.fingerDetected = true
+      } else if (statusToken === 'MEASURING') {
+        this.state.status = 'MEASURING'
+        this.state.fingerDetected = true
+        if (rawBpm && rawBpm > 0) {
+          this.state.bpm = rawBpm
+          this.state.stableBpm = rawBpm
+        }
+        if (rawSpo2 && rawSpo2 > 0) {
+          this.state.spo2 = rawSpo2
+          this.state.stableSpo2 = rawSpo2
+        }
+      }
+      return this.state
+    }
+
+    // 0b. Explicit Physical SOS Button Trigger Detection (Excludes startup logs like "SOS BUTTON READY")
     if (/(?:^|\s)SOS STARTED(?:$|\s)|(?:^|\s)SOS_TRIGGERED(?:$|\s)|(?:^|\s)SOS CONFIRMED(?:$|\s)/i.test(line) && !/READY/i.test(line)) {
       this.state.sosEvent = {
         type: 'SOS_TRIGGERED',
@@ -152,6 +200,8 @@ export class ArduinoParser {
       this.state.spo2 = null
       this.state.stableBpm = null
       this.state.stableSpo2 = null
+      this.state.sqi = null
+      this.state.anomaly = null
     }
   }
 

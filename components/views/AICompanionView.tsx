@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import { Bot, Loader2, Send, Sparkles, User, Zap } from 'lucide-react'
+import { Bot, Cpu, Loader2, Send, Sparkles, User, Zap } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
-import { generateCompanionResponse } from '@/lib/companion'
+import { generateEdgeAiResponse } from '@/lib/edge-ai-companion'
 import { ChatMessage } from '@/types/aeris'
 
 export function AICompanionView() {
-  const { telemetry, risks, baseline, isOffline } = useTelemetry()
+  const { telemetry, risks, baseline, isOffline, setIsOffline } = useTelemetry()
   const chatBottomRef = useRef<HTMLDivElement>(null)
 
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -42,12 +42,19 @@ export function AICompanionView() {
     setIsLoading(true)
 
     let replyText = ''
-    let replySource: 'Gemini 3.6 Flash' | 'Local Rule Engine' = 'Local Rule Engine'
+    let replySource: 'Gemini 3.6 Flash' | 'Local Edge AI' = 'Local Edge AI'
+    let supportingData: ChatMessage['supportingData'] = undefined
 
     try {
       if (isOffline) {
-        replyText = generateCompanionResponse(query, telemetry, risks, baseline)
-        replySource = 'Local Rule Engine'
+        const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
+        replyText = edgeRes.response
+        replySource = 'Local Edge AI'
+        supportingData = {
+          riskScore: risks.overall,
+          triageLevel: edgeRes.triageLevel,
+          confidence: edgeRes.confidence,
+        }
       } else {
         const res = await fetch('/api/companion', {
           method: 'POST',
@@ -69,14 +76,26 @@ export function AICompanionView() {
           replyText = data.text
           replySource = 'Gemini 3.6 Flash'
         } else {
-          replyText = generateCompanionResponse(query, telemetry, risks, baseline)
-          replySource = 'Local Rule Engine'
+          const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
+          replyText = edgeRes.response
+          replySource = 'Local Edge AI'
+          supportingData = {
+            riskScore: risks.overall,
+            triageLevel: edgeRes.triageLevel,
+            confidence: edgeRes.confidence,
+          }
         }
       }
     } catch (err) {
-      console.warn('Gemini API fallback to local engine:', err)
-      replyText = generateCompanionResponse(query, telemetry, risks, baseline)
-      replySource = 'Local Rule Engine'
+      console.warn('Gemini API fallback to Local Edge AI:', err)
+      const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
+      replyText = edgeRes.response
+      replySource = 'Local Edge AI'
+      supportingData = {
+        riskScore: risks.overall,
+        triageLevel: edgeRes.triageLevel,
+        confidence: edgeRes.confidence,
+      }
     } finally {
       setIsLoading(false)
       const aiMsg: ChatMessage = {
@@ -85,6 +104,7 @@ export function AICompanionView() {
         text: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         source: replySource,
+        supportingData,
       }
       setMessages((prev) => [...prev, aiMsg])
     }
@@ -99,12 +119,79 @@ export function AICompanionView() {
 
   return (
     <div style={{ paddingTop: 6 }}>
-      <div style={{ marginBottom: 10 }}>
-        <p className="eyebrow" style={{ margin: 0, fontSize: 10 }}>AERIS AI Clinical Assistant</p>
-        <h1 style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 800, margin: '2px 0 4px', color: 'var(--text-primary)' }}>AI Companion</h1>
-        <p className="subhead" style={{ margin: 0, fontSize: 12 }}>
-          Contextual AI Assistant with live provenance tags: <strong>Gemini 3.6 Flash API</strong> vs. <strong>Local Rule Engine</strong>.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+        <div>
+          <p className="eyebrow" style={{ margin: 0, fontSize: 10 }}>AERIS AI Clinical Assistant</p>
+          <h1 style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 800, margin: '2px 0 4px', color: 'var(--text-primary)' }}>AI Companion</h1>
+          <p className="subhead" style={{ margin: 0, fontSize: 12 }}>
+            Dual-Pipeline AI Assistant: <strong>Cloud Gemini 3.6 Flash</strong> vs. <strong>Local Edge AI Engine</strong> (100% Offline).
+          </p>
+        </div>
+
+        {/* AI Processing Engine Switcher */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: '#F1F5F9',
+            padding: 3,
+            borderRadius: 8,
+            border: '1px solid var(--border-subtle)',
+            gap: 4,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setIsOffline(false)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '6px 11px',
+              borderRadius: 6,
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              border: 0,
+              cursor: 'pointer',
+              background: !isOffline ? '#FFFFFF' : 'transparent',
+              color: !isOffline ? '#0F172A' : 'var(--text-secondary)',
+              boxShadow: !isOffline ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+            title="Use Cloud Gemini 3.6 Flash API for rich contextual clinical reasoning"
+          >
+            <Sparkles size={12} color={!isOffline ? '#D97706' : 'currentColor'} />
+            <span>Gemini 3.6 Flash</span>
+            {!isOffline && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsOffline(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '6px 11px',
+              borderRadius: 6,
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              border: 0,
+              cursor: 'pointer',
+              background: isOffline ? '#FFFFFF' : 'transparent',
+              color: isOffline ? '#0F172A' : 'var(--text-secondary)',
+              boxShadow: isOffline ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+            title="Use zero-latency edge-native clinical reasoning engine without cloud API"
+          >
+            <Cpu size={12} color={isOffline ? '#10B981' : 'currentColor'} />
+            <span>Local Edge AI</span>
+            {isOffline && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />}
+          </button>
+        </div>
       </div>
 
       <div style={{ width: '100%' }}>
@@ -173,14 +260,26 @@ export function AICompanionView() {
                           borderRadius: 4,
                           background: 'var(--panel-elevated)',
                           border: '1px solid var(--border-subtle)',
-                          color: msg.source === 'Gemini 3.6 Flash' ? 'var(--yellow)' : 'var(--text-secondary)',
+                          color: msg.source === 'Gemini 3.6 Flash' ? 'var(--yellow)' : '#10B981',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: 3,
+                          gap: 4,
                         }}
                       >
-                        {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={10} /> : <Zap size={10} />}
-                        {msg.source === 'Gemini 3.6 Flash' ? 'Gemini 3.6 Flash' : 'Local Engine'}
+                        {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={10} /> : <Cpu size={10} />}
+                        {msg.source === 'Gemini 3.6 Flash' ? 'Gemini 3.6 Flash' : 'Local Edge AI'}
+                        {msg.supportingData?.triageLevel && (
+                          <span style={{
+                            padding: '1px 4px',
+                            borderRadius: 3,
+                            fontSize: 9,
+                            background: msg.supportingData.triageLevel === 'Emergency' ? '#DC2626' : msg.supportingData.triageLevel === 'Urgent' ? '#F59E0B' : 'rgba(16, 185, 129, 0.2)',
+                            color: msg.supportingData.triageLevel === 'Emergency' || msg.supportingData.triageLevel === 'Urgent' ? '#FFFFFF' : '#10B981',
+                            fontWeight: 800,
+                          }}>
+                            {msg.supportingData.triageLevel.toUpperCase()}
+                          </span>
+                        )}
                       </span>
                     )}
 

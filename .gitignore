@@ -19,3 +19,5 @@ node_modules
 .next/
 .DS_Store
 aeris-resilient-health-system/
+*.mp4
+~$*

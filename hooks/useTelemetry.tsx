@@ -97,6 +97,8 @@ interface TelemetryContextType {
   isFingerDetected: boolean
   transport: 'WiFi (ESP8266)' | 'Serial (COM3)' | 'Offline'
   rawLogs: string[]
+  sqi: number | null
+  anomaly: string | null
 }
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined)
@@ -118,13 +120,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     rawLogs,
     transport,
     lastSosEvent,
+    sqi,
+    anomaly,
   } = useHealthData()
 
   const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE)
   const [scenario, setScenarioState] = useState<Scenario>('Normal')
   // Default to simulation running when offline / hardware disconnected
   const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(true)
-  const [isOffline, setIsOffline] = useState<boolean>(true)
+  const [isOffline, setIsOffline] = useState<boolean>(false)
   const [useRealWeather, setUseRealWeather] = useState<boolean>(true)
   const [realWeatherData, setRealWeatherData] = useState<ExternalWeatherData | null>(null)
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false)
@@ -866,6 +870,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         isFingerDetected,
         transport,
         rawLogs,
+        sqi,
+        anomaly,
       }}
     >
       {children}

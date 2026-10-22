@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
+import { hasSupabaseEnv } from '@/lib/supabase/env'
 import type { AppRole } from '@/lib/auth'
 import { LogOut, RefreshCw, ChevronDown } from 'lucide-react'
 
@@ -140,7 +141,13 @@ export function SessionControls({ name, role }: { name: string; role: AppRole })
       <button
         type="button"
         onClick={async () => {
-          await createBrowserSupabaseClient().auth.signOut()
+          if (hasSupabaseEnv()) {
+            try {
+              await createBrowserSupabaseClient().auth.signOut()
+            } catch (err) {
+              console.warn('Sign out error:', err)
+            }
+          }
           router.replace('/login')
           router.refresh()
         }}

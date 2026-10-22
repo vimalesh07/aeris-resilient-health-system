@@ -44,6 +44,8 @@ export function DashboardView() {
     triggerSos,
     dismissSos,
     triggerNotificationPush,
+    sqi,
+    anomaly,
   } = useTelemetry()
 
   const [scenarioTab, setScenarioTab] = useState<'everyday' | 'disaster'>('everyday')
@@ -187,6 +189,38 @@ export function DashboardView() {
               >
                 BASELINE STABLE ({baseline.restingHR} BPM)
               </span>
+            )}
+            {isArduinoActive && (
+              <>
+                <span
+                  style={{
+                    background: (sqi ?? 0) >= 70 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                    color: (sqi ?? 0) >= 70 ? 'var(--risk-safe)' : '#D97706',
+                    border: `1px solid ${(sqi ?? 0) >= 70 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                  }}
+                >
+                  TINYML SQI: {sqi !== null ? `${sqi}%` : 'CALIBRATING'}
+                </span>
+                <span
+                  style={{
+                    background: anomaly && anomaly !== 'NORMAL' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                    color: anomaly && anomaly !== 'NORMAL' ? '#DC2626' : '#2563EB',
+                    border: `1px solid ${anomaly && anomaly !== 'NORMAL' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: 6,
+                  }}
+                >
+                  EDGE AI: {anomaly || 'NORMAL'}
+                </span>
+              </>
             )}
           </div>
           <h1 style={{ margin: '4px 0' }}>{getGreeting()}, {userProfile.name}.</h1>

@@ -1,413 +1,386 @@
 'use client'
 
 import React, { useState } from 'react'
-import { BiologicalSex, UserActivityLevel } from '@/types/aeris'
-import { Info, Save, Sliders, User } from 'lucide-react'
+import { BellRing, ChevronLeft, ChevronRight, Cpu, Database, HardDrive, Lock, RotateCcw, Save, Send, Sliders, User, Watch } from 'lucide-react'
+import type { BiologicalSex, UserActivityLevel } from '@/types/aeris'
 import { ArduinoDebugPanel } from '@/components/ArduinoDebugPanel'
 import { useTelemetry } from '@/hooks/useTelemetry'
-import { calculateBMI } from '@/lib/telemetry'
+import { calculateBMI, DEFAULT_BASELINE } from '@/lib/telemetry'
+import { useIsDesktop } from '@/hooks/useIsDesktop'
+import { Dialog } from '@/components/ui/dialog'
+import { PageHeader } from '@/components/ui/page-header'
+import { Card, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Field, Input, Select, Switch } from '@/components/ui/field'
+import { Stat } from '@/components/ui/meter'
+import { useToast } from '@/components/ui/toast'
+import { cn } from '@/lib/utils'
+import { normalizePhone } from '@/lib/phone'
+import { hasSupabaseEnv } from '@/lib/supabase/env'
+import { getBrowserSupabase } from '@/lib/supabase/lazy'
+
+type Section = 'profile' | 'baselines' | 'alerts' | 'device' | 'privacy'
+
+const SECTIONS: { id: Section; label: string; description: string; icon: React.ElementType }[] = [
+  { id: 'profile', label: 'Profile', description: 'Name, mobile number, body details', icon: User },
+  { id: 'baselines', label: 'Baselines', description: 'What “normal” means for you', icon: Sliders },
+  { id: 'alerts', label: 'Alerts & contacts', description: 'Emergency contact and notifications', icon: BellRing },
+  { id: 'device', label: 'Wearable', description: 'Connection and live sensor log', icon: Watch },
+  { id: 'privacy', label: 'Privacy', description: 'On-device AI and where data lives', icon: Lock },
+]
 
 export function SettingsView() {
-  const { userProfile, updateUserProfile, baseline } = useTelemetry()
+  const { userProfile, updateUserProfile, baseline, notificationsEnabled, enableChromeNotifications, triggerNotificationPush, isOffline, setIsOffline, telemetry, account, updateBaseline } = useTelemetry()
+  const { toast } = useToast()
+  const [section, setSection] = useState<Section>('profile')
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
+  const isDesktop = useIsDesktop()
 
-  const [name, setName] = useState<string>(userProfile.name || 'Vimal')
-  const [age, setAge] = useState<number>(userProfile.age || 20)
+  const [name, setName] = useState(userProfile.name || '')
+  const [accountPhone, setAccountPhone] = useState((account?.phone || '').replace(/^\+91/, ''))
+  const [savedAccountPhone, setSavedAccountPhone] = useState(account?.phone || null)
+  const [age, setAge] = useState<number | ''>(userProfile.age || '')
   const [sex, setSex] = useState<BiologicalSex>(userProfile.sex || 'Male')
-  const [heightCm, setHeightCm] = useState<number>(userProfile.heightCm || 175)
-  const [weightKg, setWeightKg] = useState<number>(userProfile.weightKg || 72)
+  const [heightCm, setHeightCm] = useState<number | ''>(userProfile.heightCm || '')
+  const [weightKg, setWeightKg] = useState<number | ''>(userProfile.weightKg || '')
   const [activityLevel, setActivityLevel] = useState<UserActivityLevel>(userProfile.activityLevel || 'Moderately Active')
-  const [knownRestingHR, setKnownRestingHR] = useState<number | ''>(userProfile.knownRestingHR || 64)
-  const [phone, setPhone] = useState<string>(userProfile.emergencyContactPhone || '9715042529')
-  const [enableSms, setEnableSms] = useState<boolean>(userProfile.enableSmsAlerts !== false)
-  const [testStatus, setTestStatus] = useState<string>('')
-  const [saved, setSaved] = useState<boolean>(false)
+  const [knownRestingHR, setKnownRestingHR] = useState<number | ''>(userProfile.knownRestingHR || '')
+  const [healthNotes, setHealthNotes] = useState(userProfile.healthNotes || '')
+  const [phone, setPhone] = useState(userProfile.emergencyContactPhone || '')
+  const [autoAlerts, setAutoAlerts] = useState(userProfile.enableSmsAlerts !== false)
+  const [testing, setTesting] = useState(false)
 
-  const bmi = calculateBMI(weightKg, heightCm)
+  const bmi = calculateBMI(Number(weightKg), Number(heightCm))
 
-  const handleSaveProfile = () => {
+  const save = async () => {
+    // The account mobile number lives on the Supabase profile and is what QR login checks.
+    const normalized = accountPhone.trim() ? normalizePhone(accountPhone) : null
+    if (accountPhone.trim() && !normalized) {
+      toast({ tone: 'error', title: 'Check your mobile number', description: 'Enter a 10-digit number, like 98765 43210.' })
+      return
+    }
+    if (normalized !== savedAccountPhone && hasSupabaseEnv()) {
+      const supabase = (await getBrowserSupabase())
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { error } = await supabase.from('profiles').update({ phone: normalized }).eq('id', user.id)
+        if (error) {
+          toast({ tone: 'error', title: 'Mobile number not saved', description: error.message })
+          return
+        }
+        setSavedAccountPhone(normalized)
+      }
+    }
     updateUserProfile({
-      name,
-      age: Number(age) || 20,
+      name: name.trim(),
+      age: Number(age) || userProfile.age,
       sex,
-      heightCm: Number(heightCm) || 175,
-      weightKg: Number(weightKg) || 72,
+      heightCm: Number(heightCm) || userProfile.heightCm,
+      weightKg: Number(weightKg) || userProfile.weightKg,
       activityLevel,
       knownRestingHR: knownRestingHR !== '' ? Number(knownRestingHR) : null,
-      emergencyContactPhone: phone,
-      enableSmsAlerts: enableSms,
+      healthNotes,
+      emergencyContactPhone: phone.trim(),
+      enableSmsAlerts: autoAlerts,
     })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    toast({ tone: 'success', title: 'Settings saved' })
   }
 
-  const handleTestSms = async () => {
-    setTestStatus('Dispatching test SMS alert...')
-    try {
-      const res = await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: '🔥 AERIS System Test Alert',
-          trigger: 'Manual test push requested from AERIS Settings panel',
-          severity: 'Critical',
-          recommendedAction: 'Verify SMS delivery on your mobile phone.',
-          phone: phone || '9715042529',
-          vitals: { heartRate: 78, spo2: 98, bodyTemp: 36.6 },
-        }),
-      })
-      const data = await res.json()
-      if (data.success && data.smsStatus && data.smsStatus.startsWith('sent')) {
-        setTestStatus(`✅ Alert dispatched! SMS Status: ${data.smsStatus}`)
-      } else if (data.smsStatus) {
-        setTestStatus(`⚠️ Push notice: ${data.smsStatus}`)
-      } else {
-        setTestStatus(`⚠️ Push notice: ${data.error || 'Failed to dispatch'}`)
-      }
-    } catch (e: any) {
-      setTestStatus(`⚠️ Dispatch failed: ${e?.message}`)
-    }
+  const sendTest = async () => {
+    setTesting(true)
+    const data = await triggerNotificationPush({
+      type: 'threshold',
+      title: 'Test alert from AERIS',
+      body: 'This is a test. No action is needed.',
+      vitals: { heartRate: telemetry.heartRate, spo2: telemetry.spo2, bodyTemp: telemetry.bodyTemp },
+    })
+    setTesting(false)
+    if (!data) toast({ tone: 'error', title: 'Test alert failed', description: 'Could not reach the server.' })
+  }
+
+  const enableNotifications = async () => {
+    const ok = await enableChromeNotifications()
+    toast(
+      ok
+        ? { tone: 'success', title: 'Notifications on', description: 'You will get alerts even when this tab is in the background.' }
+        : { tone: 'warning', title: 'Notifications blocked', description: 'Allow notifications for this site in your browser settings.' },
+    )
   }
 
   return (
-    <div style={{ paddingTop: 8 }}>
-      {/* Top Header Section */}
-      <div style={{ marginBottom: 16 }}>
-        <p className="eyebrow" style={{ textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontSize: 11, fontWeight: 700, margin: '0 0 4px' }}>
-          PERSONAL SYSTEM TUNING & BASELINE ENGINE
-        </p>
-        <h1 style={{ fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, margin: '0 0 6px', color: 'var(--text-primary)' }}>
-          Personal Profile & System Settings
-        </h1>
-        <p className="subhead" style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-          AERIS evaluates your physiological metrics against your learned circadian baseline rather than generic population averages.
-        </p>
-      </div>
+    <>
+      <PageHeader title="Settings" description="AERIS compares your readings with your own baseline, so keeping your profile accurate matters." />
 
-      {/* Arduino Device Diagnostics Bar (Directly below Header, exact match to Image 2) */}
-      <div style={{ marginBottom: 20 }}>
-        <ArduinoDebugPanel />
-      </div>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        {!isDesktop && !mobileOpen && (
+          <nav aria-label="Settings sections">
+            <ul className="overflow-hidden rounded-[20px] border border-line bg-surface">
+              {SECTIONS.map(({ id, label, description, icon: Icon }) => (
+                <li key={id} className="border-b border-line last:border-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSection(id)
+                      setMobileOpen(true)
+                    }}
+                    className="flex min-h-16 w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-surface-2"
+                  >
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg-2">
+                      <Icon className="size-5" aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-medium text-fg">{label}</span>
+                      <span className="block truncate text-xs text-fg-muted">{description}</span>
+                    </span>
+                    <ChevronRight className="size-4 text-fg-muted" aria-hidden />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
 
-      {/* 3-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        {/* 1. PERSONAL HEALTH PROFILE */}
-        <article className="panel" style={{ padding: 22, background: '#FFFFFF', borderRadius: 12, border: '1px solid var(--border-subtle)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <User size={18} style={{ color: 'var(--main-red)' }} />
-            <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', margin: 0, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-              1. PERSONAL HEALTH PROFILE
-            </h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                User Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                  Age (years)
-                </label>
-                <input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(Number(e.target.value))}
-                  style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                  Biological Sex
-                </label>
-                <select
-                  value={sex}
-                  onChange={(e) => setSex(e.target.value as BiologicalSex)}
-                  style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
+        <nav aria-label="Settings sections" className="hidden lg:block">
+          <ul className="flex flex-col gap-1">
+            {SECTIONS.map(({ id, label, icon: Icon }) => (
+              <li key={id}>
+                <button
+                  type="button"
+                  onClick={() => setSection(id)}
+                  aria-current={section === id ? 'page' : undefined}
+                  className={cn(
+                    'flex h-10 w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 text-sm font-medium whitespace-nowrap transition-colors',
+                    section === id ? 'bg-surface text-fg shadow-sm ring-1 ring-line' : 'text-fg-2 hover:bg-surface-2 hover:text-fg',
+                  )}
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
+                  <Icon className="size-4" aria-hidden />
+                  {label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                  Height (cm)
-                </label>
-                <input
-                  type="number"
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(Number(e.target.value))}
-                  style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(Number(e.target.value))}
-                  style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-                />
-              </div>
-            </div>
-
-            {/* Calculated BMI Badge */}
-            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: '10px 12px', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <strong style={{ fontSize: 12, color: 'var(--text-primary)', display: 'block' }}>Body Mass Index (BMI)</strong>
-                <small style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}>Contextual profile metric</small>
-              </div>
-              <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--main-red)', background: '#FEF2F2', padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(220, 38, 38, 0.25)' }}>
-                {bmi} BMI
-              </span>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                Physical Activity Level
-              </label>
-              <select
-                value={activityLevel}
-                onChange={(e) => setActivityLevel(e.target.value as UserActivityLevel)}
-                style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-              >
-                <option value="Sedentary">Sedentary (Little or no exercise)</option>
-                <option value="Lightly Active">Lightly Active (1-3 days/week)</option>
-                <option value="Moderately Active">Moderately Active (3-5 days/week)</option>
-                <option value="Very Active">Very Active (6-7 days/week)</option>
-                <option value="Athlete">Athlete (Professional training)</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                Known Resting HR (BPM, optional)
-              </label>
-              <input
-                type="number"
-                placeholder="64"
-                value={knownRestingHR}
-                onChange={(e) => setKnownRestingHR(e.target.value !== '' ? Number(e.target.value) : '')}
-                style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 8, background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: 13, outline: 'none' }}
-              />
-            </div>
-
-            {/* Telegram Bot & SMS Push Notification Container */}
-            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 10, marginTop: 2 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <strong style={{ fontSize: 12, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  🤖 Telegram Bot & SMS Emergency Push
-                </strong>
-                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--risk-safe)', background: 'rgba(16,185,129,0.12)', padding: '2px 6px', borderRadius: 4 }}>
-                  ONLINE (Telegram +91)
-                </span>
-              </div>
-
-              <label style={{ display: 'block', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: 4 }}>
-                Emergency Contact Phone Number
-              </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="9715042529"
-                style={{ width: '100%', padding: '8px 12px', minHeight: 38, borderRadius: 6, background: '#FFFFFF', border: '1px solid #CBD5E1', color: 'var(--main-red)', fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 800, outline: 'none', marginBottom: 6 }}
-              />
-              <p style={{ margin: '0 0 10px', fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                ℹ️ <strong>Automated Push Pipeline:</strong> Instant push alerts are dispatched to Telegram bot <code>@hacksporabot</code> and emergency SMS to <code>+91 {phone || '9715042529'}</code>.
-              </p>
-
-              <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={enableSms}
-                    onChange={(e) => setEnableSms(e.target.checked)}
-                  />
-                  <span>Automated Push & Telegram Alerts</span>
-                </label>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleTestSms}
-                style={{
-                  width: '100%',
-                  padding: '9px 12px',
-                  background: 'var(--main-red)',
-                  color: '#FFF',
-                  border: 0,
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                ⚡ Dispatch Test Emergency Push (Telegram & SMS)
-              </button>
-              {testStatus && (
-                <small style={{ display: 'block', marginTop: 6, fontSize: 10, color: 'var(--main-red)', fontFamily: 'var(--font-mono)' }}>
-                  {testStatus}
-                </small>
-              )}
-            </div>
-
+        <div className={cn('min-w-0', !isDesktop && !mobileOpen && 'hidden')}>
+          {!isDesktop && (
             <button
               type="button"
-              onClick={handleSaveProfile}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                background: 'var(--main-red)',
-                color: '#FFFFFF',
-                border: 0,
-                marginTop: 4,
-                width: '100%',
-                minHeight: 40,
-                borderRadius: 8,
-                fontSize: 12,
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 800,
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
-              }}
+              onClick={() => setMobileOpen(false)}
+              className="mb-3 -ml-2 inline-flex h-11 cursor-pointer items-center gap-1 rounded-xl px-2 text-sm font-medium text-fg-2 hover:text-fg"
             >
-              <Save size={15} />
-              <span>{saved ? 'Profile Saved!' : 'Save Profile Settings'}</span>
+              <ChevronLeft className="size-4" aria-hidden /> Settings
             </button>
-          </div>
-        </article>
+          )}
+          {section === 'profile' && (
+            <Card className="p-5 md:p-6">
+              <CardHeader title="Personal profile" description="Used to set your reference heart-rate range and for responders in an emergency." />
+              <form
+                className="mt-5 grid gap-4 md:grid-cols-2"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  save()
+                }}
+              >
+                <Field label="Name" htmlFor="set-name" className="md:col-span-2">
+                  <Input id="set-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+                </Field>
+                <Field label="Your mobile number" htmlFor="set-mobile" hint="Used for Scan to log in — only this number can approve a QR login to your account." className="md:col-span-2">
+                  <div className="flex h-11 items-center overflow-hidden rounded-xl border border-line bg-surface focus-within:border-brand">
+                    <span className="border-r border-line px-3 text-[15px] text-fg-muted">+91</span>
+                    <input
+                      id="set-mobile"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel-national"
+                      placeholder="98765 43210"
+                      value={accountPhone}
+                      onChange={(e) => setAccountPhone(e.target.value)}
+                      className="h-full flex-1 bg-transparent px-3 text-[15px] text-fg placeholder:text-fg-muted focus:outline-none"
+                    />
+                  </div>
+                </Field>
+                <Field label="Age" htmlFor="set-age">
+                  <Input id="set-age" type="number" inputMode="numeric" min={1} max={120} value={age} onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))} />
+                </Field>
+                <Field label="Sex" htmlFor="set-sex">
+                  <Select id="set-sex" value={sex} onChange={(e) => setSex(e.target.value as BiologicalSex)}>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </Select>
+                </Field>
+                <Field label="Height (cm)" htmlFor="set-height">
+                  <Input id="set-height" type="number" inputMode="numeric" value={heightCm} onChange={(e) => setHeightCm(e.target.value === '' ? '' : Number(e.target.value))} />
+                </Field>
+                <Field label="Weight (kg)" htmlFor="set-weight" hint={heightCm && weightKg ? `BMI ${bmi}` : undefined}>
+                  <Input id="set-weight" type="number" inputMode="decimal" value={weightKg} onChange={(e) => setWeightKg(e.target.value === '' ? '' : Number(e.target.value))} />
+                </Field>
+                <Field label="Activity level" htmlFor="set-activity">
+                  <Select id="set-activity" value={activityLevel} onChange={(e) => setActivityLevel(e.target.value as UserActivityLevel)}>
+                    <option value="Sedentary">Sedentary — little or no exercise</option>
+                    <option value="Lightly Active">Lightly active — 1–3 days a week</option>
+                    <option value="Moderately Active">Moderately active — 3–5 days a week</option>
+                    <option value="Very Active">Very active — 6–7 days a week</option>
+                    <option value="Athlete">Athlete — professional training</option>
+                  </Select>
+                </Field>
+                <Field label="Resting heart rate (optional)" htmlFor="set-rhr" hint="If you know it from another device">
+                  <Input id="set-rhr" type="number" inputMode="numeric" placeholder="e.g. 64" value={knownRestingHR} onChange={(e) => setKnownRestingHR(e.target.value === '' ? '' : Number(e.target.value))} />
+                </Field>
+                <Field label="Medical notes for responders (optional)" htmlFor="set-notes" hint="Allergies, conditions or medication. Shown in the SOS screen." className="md:col-span-2">
+                  <Input id="set-notes" value={healthNotes} onChange={(e) => setHealthNotes(e.target.value)} placeholder="e.g. Asthma, allergic to penicillin" />
+                </Field>
+                <div className="md:col-span-2">
+                  <Button type="submit">
+                    <Save /> Save profile
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          )}
 
-        {/* 2. LEARNED BASELINES */}
-        <article className="panel" style={{ padding: 22, background: '#FFFFFF', borderRadius: 12, border: '1px solid var(--border-subtle)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Sliders size={18} style={{ color: 'var(--main-red)' }} />
-            <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', margin: 0, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-              2. LEARNED BASELINES
-            </h3>
-          </div>
+          {section === 'baselines' && (
+            <Card className="p-5 md:p-6">
+              <CardHeader
+                title="Your baselines"
+                description="Learned from your own readings. Alerts trigger when you move away from these, not from population averages."
+                action={<Badge tone={baseline.isLearningMode ? 'warning' : 'success'}>{baseline.isLearningMode ? `Learning · ${baseline.totalSamplesCount}/10` : 'Established'}</Badge>}
+              />
+              <div className="mt-5 grid gap-2 md:grid-cols-3">
+                <Stat label="Resting heart rate" value={baseline.restingHR} unit="BPM" hint={`Normal for you ${baseline.restingHRRange.min}–${baseline.restingHRRange.max}`} />
+                <Stat label="Body temperature" value={baseline.tempBaseline.toFixed(1)} unit="°C" hint={`Normal for you ${baseline.tempRange.min}–${baseline.tempRange.max}`} />
+                <Stat label="Blood oxygen" value="95–100" unit="%" hint="Healthy range" />
+              </div>
+              <dl className="mt-5 grid gap-4 border-t border-line pt-5 text-sm md:grid-cols-2">
+                <div>
+                  <dt className="text-fg-muted">Reference range for your age and activity</dt>
+                  <dd className="mt-0.5 font-medium text-fg">
+                    {baseline.refRestingHRRange.min}–{baseline.refRestingHRRange.max} BPM
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-fg-muted">Readings used</dt>
+                  <dd className="mt-0.5 font-medium text-fg">{baseline.totalSamplesCount} over a rolling 14 days</dd>
+                </div>
+                <div>
+                  <dt className="text-fg-muted">Confidence</dt>
+                  <dd className="mt-0.5 font-medium text-fg">{baseline.confidence || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-fg-muted">Learned on</dt>
+                  <dd className="mt-0.5 font-mono font-medium text-fg">{baseline.lastUpdated || '—'}</dd>
+                </div>
+              </dl>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+                <p className="text-sm text-fg-2">Moved, changed medication or started training? Reset so AERIS learns your new normal.</p>
+                <Button variant="danger-soft" onClick={() => setResetOpen(true)}>
+                  <RotateCcw /> Reset baselines
+                </Button>
+              </div>
+            </Card>
+          )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 14, borderRadius: 8, borderLeft: '3px solid var(--main-red)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>Resting Heart Rate Baseline</span>
-                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--risk-safe)' }}>
-                  {baseline.isLearningMode ? 'LEARNING' : 'ESTABLISHED'}
-                </span>
-              </div>
-              <div style={{ fontSize: 24, fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#0F172A' }}>
-                {baseline.restingHR} <small style={{ fontSize: 12, color: 'var(--text-muted)' }}>BPM</small>
-              </div>
-              <small style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'block', marginTop: 4 }}>
-                Target range: {baseline.restingHRRange.min}–{baseline.restingHRRange.max} BPM
-              </small>
+          {section === 'alerts' && (
+            <div className="grid gap-4">
+              <Card className="p-5 md:p-6">
+                <CardHeader title="Emergency contact" description="Receives SOS and high-risk alerts with your location and vitals." />
+                <div className="mt-5 grid gap-4">
+                  <Field label="Phone number" htmlFor="set-phone" hint="Include the country code if outside India.">
+                    <Input id="set-phone" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number" />
+                  </Field>
+                  <Switch id="set-auto" checked={autoAlerts} onChange={setAutoAlerts} label="Send alerts automatically" description="When a reading becomes critical, notify your contact and the response channel without asking." />
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={save}>
+                      <Save /> Save
+                    </Button>
+                    <Button variant="secondary" onClick={sendTest} disabled={testing}>
+                      <Send /> {testing ? 'Sending…' : 'Send test alert'}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-5 md:p-6">
+                <Switch
+                  id="set-notify"
+                  checked={notificationsEnabled}
+                  onChange={(v) => v && enableNotifications()}
+                  label="Browser notifications"
+                  description={notificationsEnabled ? 'On — alerts appear even when AERIS is in the background.' : 'Get alerts even when this tab is in the background.'}
+                />
+              </Card>
             </div>
+          )}
 
-            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 14, borderRadius: 8, borderLeft: '3px solid var(--main-red)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>Body Temperature Baseline</span>
-                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--risk-safe)' }}>
-                  ESTABLISHED
-                </span>
+          {section === 'device' && (
+            <Card className="p-5 md:p-6">
+              <CardHeader title="AERIS wearable" description="Connection status and live sensor data. Useful when setting up the watch." icon={<Watch className="size-4" />} />
+              <div className="mt-5">
+                <ArduinoDebugPanel />
               </div>
-              <div style={{ fontSize: 24, fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#0F172A' }}>
-                {baseline.tempBaseline.toFixed(1)} <small style={{ fontSize: 12, color: 'var(--text-muted)' }}>°C</small>
-              </div>
-              <small style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'block', marginTop: 4 }}>
-                Target range: {baseline.tempRange.min}–{baseline.tempRange.max}°C
-              </small>
-            </div>
+            </Card>
+          )}
 
-            <div style={{ background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 14, borderRadius: 8, borderLeft: '3px solid var(--risk-safe)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>Blood Oxygen (SpO₂) Target</span>
-                <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--risk-safe)' }}>
-                  ESTABLISHED
-                </span>
-              </div>
-              <div style={{ fontSize: 24, fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#0F172A' }}>
-                98 <small style={{ fontSize: 12, color: 'var(--text-muted)' }}>%</small>
-              </div>
-              <small style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'block', marginTop: 4 }}>
-                Expected Range: 95–100%
-              </small>
+          {section === 'privacy' && (
+            <div className="grid gap-4">
+              <Card className="p-5 md:p-6">
+                <Switch
+                  id="set-offline"
+                  checked={isOffline}
+                  onChange={setIsOffline}
+                  label="On-device AI only"
+                  description="The assistant answers using the built-in model and never sends your question or vitals to a cloud AI service."
+                />
+              </Card>
+              <Card className="p-5 md:p-6">
+                <CardHeader title="Where your data lives" />
+                <ul className="mt-4 grid gap-4">
+                  {[
+                    { icon: Cpu, title: 'Risk scoring runs on your device', body: 'Heart rate, temperature and weather are combined in your browser. Raw sensor streams are not uploaded.' },
+                    { icon: HardDrive, title: 'Recent readings are cached locally', body: 'Kept in this browser so AERIS keeps working without a connection.' },
+                    { icon: Database, title: 'Your profile and baseline sync to your account', body: 'When signed in, they are stored in your AERIS account so they follow you across devices.' },
+                    { icon: BellRing, title: 'Alerts share only what responders need', body: 'Your name, vitals and location are sent only when you trigger SOS or an alert fires.' },
+                  ].map(({ icon: Icon, title, body }) => (
+                    <li key={title} className="flex gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg-2">
+                        <Icon className="size-4" aria-hidden />
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-fg">{title}</p>
+                        <p className="mt-0.5 text-sm text-fg-2">{body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             </div>
-          </div>
-        </article>
-
-        {/* 3. BASELINE EXPLAINABILITY */}
-        <article className="panel" style={{ padding: 22, background: '#FFFFFF', borderRadius: 12, border: '1px solid var(--border-subtle)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Info size={18} style={{ color: 'var(--main-red)' }} />
-            <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', margin: 0, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-              3. BASELINE EXPLAINABILITY
-            </h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 12 }}>
-            <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
-              <span style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, display: 'block', letterSpacing: '0.04em', marginBottom: 4 }}>
-                RATIONALE
-              </span>
-              <strong style={{ color: '#0F172A', fontSize: 13, display: 'block' }}>
-                Personal Resting HR: {baseline.restingHR} BPM
-              </strong>
-              <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Learned from {baseline.totalSamplesCount || 342} valid measurements over a 14-day rolling window.
-              </p>
-            </div>
-
-            <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
-              <span style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, display: 'block', letterSpacing: '0.04em', marginBottom: 4 }}>
-                DEMOGRAPHIC CONTEXT
-              </span>
-              <strong style={{ color: '#0F172A', fontSize: 13, display: 'block' }}>
-                Reference Range: {baseline.refRestingHRRange.min}–{baseline.refRestingHRRange.max} BPM
-              </strong>
-              <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Reference calculated for {userProfile.age || 20}yo {userProfile.sex || 'Male'} ({userProfile.activityLevel || 'Moderately Active'}).
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, marginTop: 4 }}>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, display: 'block', marginBottom: 2 }}>
-                  CONFIDENCE
-                </span>
-                <strong style={{ fontSize: 13, color: '#0F172A' }}>
-                  {baseline.confidence || 'High'} Confidence
-                </strong>
-              </div>
-              <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                Last sync: {baseline.lastUpdated || 'Sep 19, 2026'}
-              </span>
-            </div>
-          </div>
-        </article>
+          )}
+        </div>
       </div>
-    </div>
+      <Dialog
+        open={resetOpen}
+        onClose={() => setResetOpen(false)}
+        title="Reset your baselines?"
+        description="AERIS will forget what is normal for you and start learning again from your next 10 readings. Alerts are less personal until then."
+        size="sm"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={() => setResetOpen(false)} data-autofocus>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              updateBaseline({ ...DEFAULT_BASELINE, refRestingHRRange: baseline.refRestingHRRange, isLearningMode: true, totalSamplesCount: 0, lastUpdated: new Date().toLocaleDateString() })
+              setResetOpen(false)
+              toast({ tone: 'success', title: 'Baselines reset', description: 'AERIS is learning your normal again.' })
+            }}
+          >
+            Reset
+          </Button>
+        </div>
+      </Dialog>
+    </>
   )
 }

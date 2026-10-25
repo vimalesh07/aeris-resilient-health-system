@@ -1,6 +1,19 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+  display: 'swap',
+})
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'AERIS — Personal Health Intelligence',
@@ -26,9 +39,19 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'dark',
-  themeColor: '#080B10',
+  width: 'device-width',
+  initialScale: 1,
+  // Android Chrome: the keyboard resizes the layout so the chat composer stays above it.
+  interactiveWidget: 'resizes-content',
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F4F3F0' },
+    { media: '(prefers-color-scheme: dark)', color: '#07090D' },
+  ],
 }
+
+// Applies the saved theme before first paint so there is no light/dark flash.
+const themeScript = `(function(){try{var t=localStorage.getItem('aeris-theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()`
 
 export default function RootLayout({
   children,
@@ -36,7 +59,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

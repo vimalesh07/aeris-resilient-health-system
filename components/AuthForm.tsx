@@ -4,6 +4,8 @@ import React, { FormEvent, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { hasSupabaseEnv } from '@/lib/supabase/env'
+import { QrLoginPanel } from '@/components/QrLoginPanel'
+import { BootReveal } from '@/components/BootReveal'
 import type { AppRole } from '@/lib/auth'
 import {
   Activity,
@@ -81,6 +83,9 @@ export function AuthForm() {
   const [isSuccessMessage, setIsSuccessMessage] = useState(false)
   const [busy, setBusy] = useState(false)
   const isSupabaseConfigured = hasSupabaseEnv()
+  // After signing in on a phone to approve a QR login, return to the approval page.
+  const nextParam = searchParams.get('next')
+  const nextPath = nextParam && nextParam.startsWith('/approve/') ? nextParam : null
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -229,7 +234,7 @@ export function AuthForm() {
           }
 
           // Redirect to the correct dashboard
-          router.replace(`/${selectedRole}`)
+          router.replace(nextPath ?? `/${selectedRole}`)
           router.refresh()
           return
         }
@@ -274,7 +279,7 @@ export function AuthForm() {
       }
 
       // Route to destination matching the verified portal
-      router.replace(`/${selectedRole}`)
+      router.replace(nextPath ?? `/${selectedRole}`)
       router.refresh()
     } catch (error) {
       setIsSuccessMessage(false)
@@ -293,12 +298,13 @@ export function AuthForm() {
         display: 'grid',
         placeItems: 'center',
         padding: '32px 16px',
-        background: 'radial-gradient(ellipse at 50% 12%, rgba(220, 38, 38, 0.12) 0%, #080B10 70%)',
+        background: 'radial-gradient(520px circle at 50% 80px, rgba(220, 38, 38, 0.06), transparent 70%), #07090D',
         color: '#F8FAFC',
         fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
-      <div style={{ width: '100%', maxWidth: selectedRole ? 480 : 860, margin: '0 auto' }}>
+      <BootReveal />
+      <div style={{ width: '100%', maxWidth: selectedRole ? 480 : isSupabaseConfigured ? 1120 : 860, margin: '0 auto' }}>
         {/* AERIS System Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div
@@ -350,6 +356,7 @@ export function AuthForm() {
           </p>
         </div>
 
+        <div className={!selectedRole && isSupabaseConfigured ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:items-start lg:gap-8' : undefined}>
         {/* ========================================================
             STAGE 1: ROLE SELECTION (When no role is selected)
         ======================================================== */}
@@ -416,7 +423,7 @@ export function AuthForm() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gridTemplateColumns: isSupabaseConfigured ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))',
                 gap: 16,
                 marginBottom: 24,
               }}
@@ -569,6 +576,9 @@ export function AuthForm() {
             )}
           </div>
         )}
+
+        {!selectedRole && <QrLoginPanel enabled={isSupabaseConfigured} className="lg:sticky lg:top-8 lg:mt-[44px]" />}
+        </div>
 
         {/* ========================================================
             STAGE 2: AUTHENTICATION FORM (Login or Create Account)

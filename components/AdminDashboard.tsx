@@ -1,8 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { SessionControls } from './SessionControls'
-import { ShieldCheck, Users, AlertTriangle, FileText, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react'
+import { motion } from 'motion/react'
+import { FileText, Loader2, ShieldCheck, Siren, UserCog, Users } from 'lucide-react'
+import { PortalShell } from '@/components/PortalShell'
+import { PageHeader } from '@/components/ui/page-header'
+import { Card, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
+import { Field, Input, Select } from '@/components/ui/field'
+import { useToast } from '@/components/ui/toast'
+import { AnimatedNumber } from '@/components/ui/animated-number'
+
+type Role = 'user' | 'admin' | 'government'
+
+const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
+  { value: 'user', label: 'Personal', description: 'Own health dashboard and SOS' },
+  { value: 'government', label: 'Government', description: 'Anonymised incident feed' },
+  { value: 'admin', label: 'Admin', description: 'Full access, including role changes' },
+]
 
 export function AdminDashboard({
   profile,
@@ -11,409 +27,160 @@ export function AdminDashboard({
   profile: { full_name: string; role: 'admin' }
   counts: { users: number; requests: number; alerts: number }
 }) {
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'user' | 'admin' | 'government'>('user')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [isSuccess, setIsSuccess] = useState(false)
+  return (
+    <PortalShell portal="Admin console" role="admin" name={profile.full_name}>
+      <AdminContent counts={counts} />
+    </PortalShell>
+  )
+}
 
-  const assignRole = async () => {
+function AdminContent({ counts }: { counts: { users: number; requests: number; alerts: number } }) {
+  const { toast } = useToast()
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState<Role>('user')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  const stats = [
+    { label: 'Registered users', value: counts.users, icon: Users },
+    { label: 'Emergency requests', value: counts.requests, icon: Siren },
+    { label: 'Risk alerts', value: counts.alerts, icon: FileText },
+  ]
+
+  const submit = () => {
     const trimmed = email.trim().toLowerCase()
-    if (!trimmed || !trimmed.includes('@')) {
-      setMessage('Please enter a valid email address.')
-      setIsSuccess(false)
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError('Enter a valid email address, like name@example.com.')
       return
     }
+    setError(null)
+    if (role === 'admin') setConfirmOpen(true)
+    else void assignRole()
+  }
 
+  const assignRole = async () => {
+    setConfirmOpen(false)
     setLoading(true)
-    setMessage('')
     try {
       const response = await fetch('/api/admin/roles', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmed, role }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), role }),
       })
       const data = await response.json()
       if (response.ok) {
-        setIsSuccess(true)
-        setMessage(`Success: Updated ${data.email} to ${data.role.toUpperCase()} role.`)
+        toast({ tone: 'success', title: 'Role updated', description: `${data.email} is now ${ROLE_OPTIONS.find((r) => r.value === data.role)?.label ?? data.role}.` })
         setEmail('')
       } else {
-        setIsSuccess(false)
-        setMessage(data.error || 'Role update failed.')
+        setError(data.error || 'Role update failed.')
       }
     } catch {
-      setIsSuccess(false)
-      setMessage('Network error: Failed to reach the server. Please try again.')
+      setError('Could not reach the server. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const quickSwitchRole = async (targetRole: 'user' | 'admin' | 'government') => {
-    try {
-      const res = await fetch('/api/dev/switch-role', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: targetRole }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        window.location.href = `/${targetRole}`
-      } else {
-        alert(data.error || 'Could not switch role')
-      }
-    } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Error switching role')
-    }
-  }
-
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        padding: '36px clamp(16px, 5vw, 60px)',
-        background: 'radial-gradient(ellipse at 50% 10%, rgba(220, 38, 38, 0.08) 0%, #080B10 60%)',
-        color: '#F8FAFC',
-        fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      }}
-    >
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: 20,
-          flexWrap: 'wrap',
-          paddingBottom: 24,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '4px 12px',
-              borderRadius: 9999,
-              background: 'rgba(220, 38, 38, 0.15)',
-              border: '1px solid rgba(220, 38, 38, 0.35)',
-              marginBottom: 10,
-            }}
-          >
-            <ShieldCheck size={14} color="#EF4444" />
-            <span style={{ color: '#EF4444', fontWeight: 800, fontSize: 11, letterSpacing: '.1em' }}>
-              AERIS SYSTEM ADMINISTRATION
-            </span>
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: 28, fontWeight: 800, color: '#FFFFFF' }}>
-            Operations & Control Dashboard
-          </h1>
-          <p style={{ margin: 0, color: '#94A3B8', fontSize: 14 }}>
-            Administrative management of user accounts, telemetry systems, and emergency operations.
-          </p>
-        </div>
-        <SessionControls name={profile.full_name} role="admin" />
-      </header>
+    <>
+      <PageHeader title="Admin console" description="Manage accounts and monitor emergency activity across AERIS." />
 
-      {/* Metrics Grid */}
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 16,
-          marginTop: 28,
-        }}
-      >
-        <article
-          style={{
-            padding: 20,
-            background: 'rgba(15, 23, 42, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: 'rgba(59, 130, 246, 0.15)',
-              color: '#3B82F6',
-            }}
-          >
-            <Users size={24} />
-          </div>
-          <div>
-            <strong style={{ fontSize: 26, fontWeight: 800, color: '#FFFFFF' }}>{counts.users}</strong>
-            <p style={{ margin: '2px 0 0', color: '#94A3B8', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-              Registered Users
-            </p>
-          </div>
-        </article>
-
-        <article
-          style={{
-            padding: 20,
-            background: 'rgba(15, 23, 42, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: 'rgba(239, 68, 68, 0.15)',
-              color: '#EF4444',
-            }}
-          >
-            <AlertTriangle size={24} />
-          </div>
-          <div>
-            <strong style={{ fontSize: 26, fontWeight: 800, color: '#FFFFFF' }}>{counts.requests}</strong>
-            <p style={{ margin: '2px 0 0', color: '#94A3B8', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-              Emergency Requests
-            </p>
-          </div>
-        </article>
-
-        <article
-          style={{
-            padding: 20,
-            background: 'rgba(15, 23, 42, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: 'rgba(234, 179, 8, 0.15)',
-              color: '#EAB308',
-            }}
-          >
-            <FileText size={24} />
-          </div>
-          <div>
-            <strong style={{ fontSize: 26, fontWeight: 800, color: '#FFFFFF' }}>{counts.alerts}</strong>
-            <p style={{ margin: '2px 0 0', color: '#94A3B8', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-              Active Risk Alerts
-            </p>
-          </div>
-        </article>
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4" aria-label="Overview">
+        {stats.map(({ label, value, icon: Icon }, i) => (
+          <motion.div key={label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}>
+            <Card className="flex items-center gap-4 p-5">
+              <span className="grid size-11 place-items-center rounded-xl bg-surface-2 text-fg-2">
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <div>
+                <p className="font-mono text-3xl font-light tracking-tight text-fg tabular-nums">
+                  <AnimatedNumber value={value} />
+                </p>
+                <p className="text-eyebrow text-fg-muted uppercase">{label}</p>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
       </section>
 
-      {/* Role Management Section */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24,
-          marginTop: 28,
-        }}
-      >
-        <section
-          style={{
-            padding: 24,
-            background: 'rgba(15, 23, 42, 0.85)',
-            borderRadius: 14,
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>
-            Assign Account Role
-          </h2>
-          <p style={{ margin: '0 0 20px', color: '#94A3B8', fontSize: 13, lineHeight: 1.5 }}>
-            Elevate or change application permissions for any registered user.
-          </p>
-
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#CBD5E1' }}>
-              User Email
-            </label>
-            <input
-              aria-label="User email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
-              type="email"
-              style={{
-                width: '100%',
-                padding: '11px 14px',
-                borderRadius: 8,
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                background: 'rgba(0, 0, 0, 0.4)',
-                color: '#FFFFFF',
-                fontSize: 14,
-                boxSizing: 'border-box',
-                outline: 'none',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#CBD5E1' }}>
-              Target Role
-            </label>
-            <select
-              aria-label="Role"
-              value={role}
-              onChange={(e) => setRole(e.target.value as typeof role)}
-              style={{
-                width: '100%',
-                padding: '11px 14px',
-                borderRadius: 8,
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                fontSize: 14,
-                boxSizing: 'border-box',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="user">USER — Personal Health & Biometrics</option>
-              <option value="admin">ADMIN — Operations & Management</option>
-              <option value="government">GOVERNMENT — Incident Feed</option>
-            </select>
-          </div>
-
-          <button
-            onClick={assignRole}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px 18px',
-              borderRadius: 8,
-              border: 0,
-              background: loading ? '#6B7280' : '#DC2626',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)',
+      <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-5">
+        <Card className="p-5 md:p-6 lg:col-span-3">
+          <CardHeader title="Change an account’s role" description="Grant or remove government and admin access for an existing account." icon={<UserCog className="size-4" />} />
+          <form
+            className="mt-5 grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              submit()
             }}
+            noValidate
           >
-            {loading ? 'Updating...' : 'Confirm Role Update'}
-            <ArrowRight size={16} />
-          </button>
-
-          {message && (
-            <div
-              role="status"
-              style={{
-                marginTop: 16,
-                padding: '10px 14px',
-                borderRadius: 8,
-                background: isSuccess ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                border: isSuccess ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
-                color: isSuccess ? '#34D399' : '#F87171',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              {isSuccess ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <span>{message}</span>
+            <Field label="Account email" htmlFor="role-email">
+              <Input
+                id="role-email"
+                type="email"
+                autoComplete="off"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (error) setError(null)
+                }}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? 'role-email-error' : undefined}
+              />
+            </Field>
+            {error && (
+              <p id="role-email-error" role="alert" className="-mt-2 text-sm text-danger">
+                {error}
+              </p>
+            )}
+            <Field label="New role" htmlFor="role-select" hint={ROLE_OPTIONS.find((r) => r.value === role)?.description}>
+              <Select id="role-select" value={role} onChange={(e) => setRole(e.target.value as Role)}>
+                {ROLE_OPTIONS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <div>
+              <Button type="submit" disabled={loading}>
+                {loading ? <Loader2 className="animate-spin" /> : <ShieldCheck />} Update role
+              </Button>
             </div>
-          )}
-        </section>
+          </form>
+        </Card>
 
-        {/* Quick Testing & Portal Preview */}
-        <section
-          style={{
-            padding: 24,
-            background: 'rgba(15, 23, 42, 0.85)',
-            borderRadius: 14,
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>
-            Portal Testing Hub
-          </h2>
-          <p style={{ margin: '0 0 20px', color: '#94A3B8', fontSize: 13, lineHeight: 1.5 }}>
-            Switch your current session instantly to test and verify the distinct portals:
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button
-              onClick={() => quickSwitchRole('user')}
-              style={{
-                padding: '14px 18px',
-                borderRadius: 10,
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                background: 'rgba(255, 255, 255, 0.04)',
-                color: '#FFFFFF',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <strong style={{ display: 'block', fontSize: 14, color: '#60A5FA' }}>1. USER Portal (/user)</strong>
-                <span style={{ fontSize: 12, color: '#94A3B8' }}>Test telemetry, vitals, hardware, SOS</span>
-              </div>
-              <ArrowRight size={16} color="#60A5FA" />
-            </button>
-
-            <button
-              onClick={() => quickSwitchRole('government')}
-              style={{
-                padding: '14px 18px',
-                borderRadius: 10,
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                background: 'rgba(255, 255, 255, 0.04)',
-                color: '#FFFFFF',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <strong style={{ display: 'block', fontSize: 14, color: '#34D399' }}>2. GOVERNMENT Portal (/government)</strong>
-                <span style={{ fontSize: 12, color: '#94A3B8' }}>Test anonymized incident resilience feed</span>
-              </div>
-              <ArrowRight size={16} color="#34D399" />
-            </button>
-
-            <div
-              style={{
-                padding: '12px 14px',
-                borderRadius: 8,
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                fontSize: 12,
-                color: '#FCA5A5',
-                marginTop: 6,
-              }}
-            >
-              <strong>Active Role:</strong> {profile.role.toUpperCase()} (You are currently on the ADMIN operations portal).
-            </div>
-          </div>
-        </section>
+        <Card className="p-5 md:p-6 lg:col-span-2">
+          <CardHeader title="Role permissions" />
+          <ul className="mt-4 grid gap-3">
+            {ROLE_OPTIONS.map((r) => (
+              <li key={r.value} className="rounded-xl border border-line p-3.5">
+                <p className="text-sm font-semibold text-fg">{r.label}</p>
+                <p className="mt-0.5 text-sm text-fg-2">{r.description}</p>
+              </li>
+            ))}
+          </ul>
+        </Card>
       </div>
-    </main>
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Grant admin access?"
+        description={`${email.trim()} will be able to change any account’s role, including yours.`}
+        size="sm"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={() => setConfirmOpen(false)} data-autofocus>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={assignRole}>
+            Grant admin
+          </Button>
+        </div>
+      </Dialog>
+    </>
   )
 }

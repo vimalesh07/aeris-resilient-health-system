@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { title, trigger, severity, recommendedAction, vitals, location, type } = body
 
-    if (!['sos', 'food', 'obstacle', 'threshold'].includes(type || 'sos')) {
+    if (!['sos', 'food', 'obstacle', 'threshold', 'cancel'].includes(type || 'sos')) {
       return NextResponse.json({ success: false, error: 'Invalid emergency request type.' }, { status: 400 })
     }
 
@@ -49,10 +49,11 @@ export async function POST(req: Request) {
     const patientName = context.profile.full_name || 'AERIS user'
     const alertStatus = severity ? severity.toUpperCase() : 'CRITICAL'
 
-    const requestType = (type || 'sos') as 'sos' | 'food' | 'obstacle' | 'threshold'
+    const requestType = (type || 'sos') as 'sos' | 'food' | 'obstacle' | 'threshold' | 'cancel'
     const normalizedSeverity = ['Low', 'Medium', 'High', 'Critical'].includes(severity) ? severity.toLowerCase() : 'high'
 
-    if (hasSupabaseEnv()) {
+    // A cancellation is a follow-up message, not a new emergency request.
+    if (hasSupabaseEnv() && requestType !== 'cancel') {
       try {
         const supabase = await createServerSupabaseClient()
         const { error: requestError } = await supabase.from('emergency_requests').insert({
@@ -76,7 +77,13 @@ export async function POST(req: Request) {
 
 
     let messageText = ''
-    if (type === 'obstacle') {
+    if (type === 'cancel') {
+      messageText = `✅ SOS CANCELLED: AERIS
+User: ${patientName}
+The earlier emergency alert was a false alarm. The user cancelled it and reports being safe.
+- Time: ${currentTime}
+Last Location: ${mapsUrl}`
+    } else if (type === 'obstacle') {
       messageText = `🚧 EMERGENCY OBSTACLE PUSH: AERIS RESILIENCE
 Reporter: ${patientName}
 Priority: HIGH (${title || 'Field Path Obstruction Reported'})

@@ -10,7 +10,19 @@ type ValidRole = (typeof VALID_ROLES)[number]
  * Dev/Testing endpoint to quickly switch the active user's role in public.profiles
  * so that USER, ADMIN, and GOVERNMENT workflows can all be tested independently.
  */
+/**
+ * Role switching lets any signed-in user change their own role, so it is only
+ * available in development or when AERIS_ENABLE_PORTAL_SWITCH=true is set for
+ * a demo deployment.
+ */
+function portalSwitchEnabled(): boolean {
+  return process.env.NODE_ENV !== 'production' || process.env.AERIS_ENABLE_PORTAL_SWITCH === 'true'
+}
+
 export async function POST(req: NextRequest) {
+  if (!portalSwitchEnabled()) {
+    return NextResponse.json({ error: 'Portal switching is disabled on this deployment.' }, { status: 403 })
+  }
   try {
     const { role } = await req.json()
     if (!VALID_ROLES.includes(role as ValidRole)) {

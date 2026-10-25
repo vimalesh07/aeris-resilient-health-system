@@ -1,160 +1,39 @@
 'use client'
 
 import React from 'react'
-import { Activity, Cpu, Menu, Play, Pause, Wifi, WifiOff } from 'lucide-react'
+import Link from 'next/link'
+import { Activity } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
-import { SessionControls } from '@/components/SessionControls'
+import { getView } from '@/lib/navigation'
+import { ConnectionStatus } from '@/components/ConnectionStatus'
+import { UserMenu } from '@/components/UserMenu'
 
-export function TopBar({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) {
-  const {
-    isOffline,
-    setIsOffline,
-    setActiveView,
-    isHardwareConnected,
-    transport,
-    isSimulationRunning,
-    setIsSimulationRunning,
-    userProfile,
-    sqi,
-    anomaly,
-  } = useTelemetry()
+export function TopBar() {
+  const { activeView, setActiveView, userProfile, account } = useTelemetry()
+  const view = getView(activeView)
 
   return (
-    <header className="topbar white-glassmorphism rounded-full relative flex items-center justify-between w-full px-5 sm:px-7">
-      {/* Left: Logo / Brand */}
-      <div className="flex items-center gap-3 z-10">
-        {onOpenMobileMenu && (
-          <button
-            className="icon-button mobile-only mobile-hamburger-btn"
-            onClick={onOpenMobileMenu}
-            aria-label="Open navigation menu"
-            title="Open navigation menu"
-          >
-            <Menu size={20} />
-          </button>
-        )}
-
-        <div
-          className="topbar-brand flex items-center gap-2.5"
-          onClick={() => setActiveView('Dashboard')}
-          style={{ cursor: 'pointer' }}
-          title="Go to Home Dashboard"
-        >
-          <span className="brand-mark">
-            <Activity size={15} />
-          </span>
-          <strong className="brand-title">AERIS</strong>
+    <header className="sticky top-0 z-[var(--z-nav)] border-b border-line bg-[color-mix(in_srgb,var(--bg-primary)_82%,transparent)] pt-[var(--sat)] backdrop-blur-md">
+      <div className="mx-auto flex h-[var(--topbar-h)] max-w-[1400px] items-center justify-between gap-3 px-4 md:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link href="/user" className="flex items-center gap-2 lg:hidden" aria-label="AERIS home">
+            <span className="grid size-8 place-items-center rounded-lg bg-brand text-white">
+              <Activity className="size-4" aria-hidden />
+            </span>
+            <span className="text-sm font-bold tracking-[0.12em] text-fg">AERIS</span>
+          </Link>
+          <p className="hidden truncate text-sm font-medium text-fg-2 lg:block">{view.label}</p>
         </div>
 
-        <span className="top-divider desktop-only" />
-
-        <span className="muted desktop-only" style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-          {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-        </span>
-      </div>
-
-      {/* Center: Live Hardware Indicator (Only shown when live physical sensor stream is active) */}
-      {isHardwareConnected && (
-        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center pointer-events-auto z-10">
-          <div
-            className="top-status flex items-center gap-2 px-3.5 py-1.5 rounded-full"
-            style={{
-              background: 'rgba(16, 185, 129, 0.08)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              color: 'var(--risk-safe)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <span style={{ position: 'relative', display: 'flex', width: 7, height: 7 }}>
-              <span
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: '50%',
-                  background: 'var(--risk-safe)',
-                  opacity: 0.75,
-                  animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
-                }}
-              />
-              <span
-                style={{
-                  position: 'relative',
-                  borderRadius: '50%',
-                  width: 7,
-                  height: 7,
-                  background: 'var(--risk-safe)',
-                }}
-              />
-            </span>
-            <span style={{ fontSize: 11, fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span>LIVE HARDWARE ({transport.includes('WiFi') ? 'WIFI' : 'STREAM'})</span>
-              {sqi !== null && sqi !== undefined && (
-                <span style={{ opacity: 0.85, fontWeight: 600 }}>• SQI {sqi}%</span>
-              )}
-              {anomaly && anomaly !== 'NORMAL' && (
-                <span
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.2)',
-                    color: '#DC2626',
-                    padding: '1px 6px',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    fontWeight: 700,
-                  }}
-                >
-                  {anomaly}
-                </span>
-              )}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <ConnectionStatus compact className="hidden sm:inline-flex" />
+          <UserMenu
+            name={userProfile.name || account?.name || ''}
+            email={account?.email}
+            role="user"
+            onOpenSettings={() => setActiveView('settings')}
+          />
         </div>
-      )}
-
-      {/* Right: Actions */}
-      <div className="top-actions flex items-center gap-2 sm:gap-2.5 z-10">
-        <span className="desktop-only" style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--main-red)' }}>USER</span>
-        {/* Simulation Toggle Button when Offline */}
-        {!isHardwareConnected && (
-          <button
-            className="top-pill-button desktop-only"
-            onClick={() => setIsSimulationRunning(!isSimulationRunning)}
-            title={isSimulationRunning ? 'Pause Simulation Loop' : 'Resume Simulation Loop'}
-            style={{
-              background: isSimulationRunning ? 'rgba(254, 242, 242, 0.9)' : 'rgba(255, 255, 255, 0.85)',
-              color: isSimulationRunning ? '#DC2626' : 'var(--text-secondary)',
-              borderColor: isSimulationRunning ? 'rgba(220, 38, 38, 0.3)' : 'rgba(226, 232, 240, 0.9)',
-            }}
-          >
-            {isSimulationRunning ? <Pause size={13} /> : <Play size={13} />}
-            <span>{isSimulationRunning ? 'Sim Ticking' : 'Sim Paused'}</span>
-          </button>
-        )}
-
-        {/* Offline Mode Toggle */}
-        <button
-          className="top-pill-button desktop-only"
-          onClick={() => setIsOffline(!isOffline)}
-          title="Toggle Privacy Mode"
-          style={{
-            background: isOffline ? '#FEF2F2' : 'rgba(255, 255, 255, 0.85)',
-            borderColor: isOffline ? 'rgba(220, 38, 38, 0.3)' : 'rgba(226, 232, 240, 0.9)',
-            color: isOffline ? 'var(--main-red)' : 'var(--text-secondary)',
-          }}
-        >
-          {isOffline ? <WifiOff size={13} /> : <Wifi size={13} />}
-          <span>{isOffline ? 'LOCAL PROCESSING' : 'Online Hub'}</span>
-        </button>
-
-        {/* Profile Avatar */}
-        <button
-          className="avatar"
-          onClick={() => setActiveView('Settings')}
-          aria-label="User Settings"
-          title="Settings & Profile"
-        >
-          VM
-        </button>
-        <span className="desktop-only"><SessionControls name={userProfile.name} role="user" /></span>
       </div>
     </header>
   )

@@ -1,295 +1,125 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { AlertOctagon, HeartPulse, PhoneCall, ShieldAlert, X, CheckCircle2 } from 'lucide-react'
+import { motion } from 'motion/react'
+import { HeartPulse, Send } from 'lucide-react'
+import { Dialog } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { useTelemetry } from '@/hooks/useTelemetry'
 
-interface HeartRateLimitSosPopupProps {
-  thresholdBpm?: number
-}
+const CHECK_SECONDS = 10
+const SNOOZE_AFTER_OK_MS = 5 * 60_000
+const SNOOZE_AFTER_SEND_MS = 2 * 60_000
 
-export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: HeartRateLimitSosPopupProps) {
-  const { telemetry, userProfile, setActiveView, isSosActive, scenario } = useTelemetry()
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [secondsLeft, setSecondsLeft] = useState<number>(3)
-  const [isCancelled, setIsCancelled] = useState<boolean>(false)
-  const [isDispatched, setIsDispatched] = useState<boolean>(false)
-  const [dispatchStatus, setDispatchStatus] = useState<string>('')
-  const [waUrl, setWaUrl] = useState<string>('')
+/**
+ * When heart rate crosses the safe limit, ask "Are you OK?" and give the user
+ * 10 seconds to respond before an alert is sent automatically.
+ */
+export function HeartRateLimitSosPopup({ thresholdBpm = 115 }: { thresholdBpm?: number }) {
+  const { telemetry, isSosActive, scenario, triggerNotificationPush } = useTelemetry()
+  const [open, setOpen] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(CHECK_SECONDS)
+  const [status, setStatus] = useState<'asking' | 'sending' | 'sent'>('asking')
+  const triggeredRef = useRef(false)
+  const snoozedUntilRef = useRef(0)
+  const peakBpmRef = useRef(0)
 
-  const targetPhone = userProfile?.emergencyContactPhone || '9715042529'
-  const isTriggeredRef = useRef<boolean>(false)
-  const snoozedUntilRef = useRef<number>(0)
-
-  // Detect when Heart Rate exceeds threshold BPM limit
   useEffect(() => {
-    // If global SOS is already active or in disaster fall scenario, do not trigger separate tachycardia popup
     if (isSosActive || scenario === 'disaster_fall_sos') {
-      if (isOpen) {
-        setIsOpen(false)
-        isTriggeredRef.current = false
-      }
+      if (open) setOpen(false)
+      triggeredRef.current = false
       return
     }
-
-    const currentBpm = telemetry.heartRate
-    const now = Date.now()
-
-    if (currentBpm >= thresholdBpm && now > snoozedUntilRef.current) {
-      if (!isTriggeredRef.current) {
-        isTriggeredRef.current = true
-        setIsOpen(true)
-        setSecondsLeft(3)
-        setIsCancelled(false)
-        setIsDispatched(false)
-        setDispatchStatus('')
-        setWaUrl('')
-      }
-    } else if (currentBpm < thresholdBpm - 5) {
-      isTriggeredRef.current = false
+    const bpm = telemetry.heartRate
+    if (bpm >= thresholdBpm && Date.now() > snoozedUntilRef.current && !triggeredRef.current) {
+      triggeredRef.current = true
+      peakBpmRef.current = bpm
+      setSecondsLeft(CHECK_SECONDS)
+      setStatus('asking')
+      setOpen(true)
+    } else if (bpm < thresholdBpm - 5 && !open) {
+      triggeredRef.current = false
     }
-  }, [telemetry.heartRate, thresholdBpm, isSosActive, scenario, isOpen])
+    if (open) peakBpmRef.current = Math.max(peakBpmRef.current, bpm)
+  }, [telemetry.heartRate, thresholdBpm, isSosActive, scenario, open])
 
-  // 3-Second Precision Countdown Timer
   useEffect(() => {
-    if (!isOpen || isCancelled || isDispatched) return
-
-    const timer = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          triggerSosPush()
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [isOpen, isCancelled, isDispatched])
-
-  // Trigger automated Telegram Bot Push
-  const triggerSosPush = async () => {
-    setIsDispatched(true)
-    setDispatchStatus('Dispatching automated Telegram SOS...')
-
-    try {
-      const res = await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: `🚨 CRITICAL TACHYCARDIA SOS (HR ${telemetry.heartRate} BPM)`,
-          trigger: `Heart rate exceeded maximum safe threshold (${telemetry.heartRate} BPM vs limit ${thresholdBpm} BPM). User did not halt operation within 3s popup window.`,
-          severity: 'Critical',
-          recommendedAction: 'IMMEDIATE DISPATCH: Contact user or dispatch emergency medical responder team.',
-          phone: targetPhone,
-          vitals: {
-            heartRate: telemetry.heartRate,
-            spo2: telemetry.spo2,
-            bodyTemp: telemetry.bodyTemp,
-          },
-        }),
-      })
-
-      const data = await res.json()
-      if (data.success && (data.telegramDelivered || (data.smsStatus && data.smsStatus.startsWith('sent')))) {
-        setDispatchStatus(`✅ EMERGENCY ALERT DISPATCHED: ${data.smsStatus || 'Delivered to Telegram Bot'}`)
-      } else if (data.smsStatus) {
-        setDispatchStatus(`⚠️ ${data.smsStatus}`)
-      } else {
-        setDispatchStatus(`⚠️ Dispatch notice: ${data.error || 'Check Telegram Bot credentials'}`)
-      }
-    } catch (err: any) {
-      setDispatchStatus(`⚠️ Network alert dispatch error: ${err?.message}`)
-    } finally {
-      // Snooze popup for 2 minutes and reset trigger lock so it doesn't loop infinitely
-      snoozedUntilRef.current = Date.now() + 120000
-      isTriggeredRef.current = false
-      setTimeout(() => {
-        setIsOpen(false)
-      }, 2500)
+    if (!open || status !== 'asking') return
+    if (secondsLeft <= 0) {
+      void sendAlert()
+      return
     }
+    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [open, status, secondsLeft])
+
+  const sendAlert = async () => {
+    setStatus('sending')
+    await triggerNotificationPush({
+      type: 'threshold',
+      title: `High heart rate: ${peakBpmRef.current} BPM`,
+      body: `Heart rate stayed above the ${thresholdBpm} BPM limit and the user did not respond within ${CHECK_SECONDS} seconds.`,
+      vitals: { heartRate: telemetry.heartRate, spo2: telemetry.spo2, bodyTemp: telemetry.bodyTemp },
+    })
+    setStatus('sent')
+    snoozedUntilRef.current = Date.now() + SNOOZE_AFTER_SEND_MS
+    window.setTimeout(() => {
+      setOpen(false)
+      triggeredRef.current = false
+    }, 2500)
   }
 
-  // Handle user manual cancellation / shutdown operation button
-  const handleStopOperation = () => {
-    setIsCancelled(true)
-    setIsOpen(false)
-    isTriggeredRef.current = false
-    // Snooze popup for 60 seconds so user can stabilize
-    snoozedUntilRef.current = Date.now() + 60000
+  const imOk = () => {
+    snoozedUntilRef.current = Date.now() + SNOOZE_AFTER_OK_MS
+    setOpen(false)
+    triggeredRef.current = false
   }
-
-  if (!isOpen) return null
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 200,
-        display: 'grid',
-        placeItems: 'center',
-        background: 'rgba(15, 23, 42, 0.65)',
-        backdropFilter: 'blur(12px)',
-        padding: 16,
-      }}
+    <Dialog
+      open={open}
+      onClose={imOk}
+      dismissible={false}
+      tone="danger"
+      size="sm"
+      title="Are you OK?"
+      description={
+        status === 'sent'
+          ? 'An alert with your vitals and location has been sent.'
+          : `Your heart rate is ${telemetry.heartRate} BPM, above your ${thresholdBpm} BPM limit.`
+      }
     >
-      <div
-        className="panel"
-        style={{
-          width: '100%',
-          maxWidth: 480,
-          background: '#FFFFFF',
-          border: '2px solid var(--main-red)',
-          borderRadius: 16,
-          padding: 24,
-          boxShadow: '0 20px 50px rgba(0,0,0,0.15), 0 0 30px rgba(220, 38, 38, 0.2)',
-          color: 'var(--text-primary)',
-          position: 'relative',
-          textAlign: 'center',
-        }}
-      >
-        <button
-          onClick={handleStopOperation}
-          style={{
-            position: 'absolute',
-            top: 14,
-            right: 14,
-            background: 'var(--panel-elevated)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-secondary)',
-            borderRadius: '50%',
-            width: 34,
-            height: 34,
-            display: 'grid',
-            placeItems: 'center',
-            cursor: 'pointer',
-          }}
-          aria-label="Close popup"
+      <div className="flex flex-col items-center">
+        <motion.span
+          className="my-2 grid size-20 place-items-center rounded-full bg-danger-soft text-brand"
+          animate={status === 'asking' ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+          transition={{ duration: 0.9, repeat: status === 'asking' ? Infinity : 0 }}
         >
-          <X size={16} />
-        </button>
-
-        {/* Header Badge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--main-red)', marginBottom: 10 }}>
-          <AlertOctagon size={22} className="animate-pulse" />
-          <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-            AUTOMATED CRITICAL VITAL OVERRIDE
-          </span>
-        </div>
-
-        <h2 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 6px', color: 'var(--text-primary)' }}>
-          HEART RATE LIMIT EXCEEDED!
-        </h2>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.4 }}>
-          Live Heart Rate reached <strong style={{ color: 'var(--main-red)' }}>{telemetry.heartRate} BPM</strong> (Limit: {thresholdBpm} BPM).
-        </p>
-
-        {/* 3-Second Giant Countdown Circle */}
-        {!isDispatched ? (
-          <div style={{ margin: '14px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div
-              style={{
-                width: 110,
-                height: 110,
-                borderRadius: '50%',
-                background: '#FEF2F2',
-                border: '3px solid var(--main-red)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 30px rgba(220, 38, 38, 0.25)',
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ fontSize: 44, fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', lineHeight: 1 }}>
-                {secondsLeft}
-              </span>
-              <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--main-red)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-                SECONDS
-              </span>
-            </div>
-
-            <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--main-red)', margin: 0, fontWeight: 700 }}>
-              Auto-pushing Telegram SOS in {secondsLeft}s...
-            </p>
-          </div>
-        ) : (
-          /* Dispatched Status Report */
-          <div style={{ background: '#ECFDF5', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 12, padding: 14, margin: '14px 0 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--risk-safe-text)', fontWeight: 800, fontSize: 14 }}>
-              <CheckCircle2 size={20} />
-              {dispatchStatus}
-            </div>
+          <HeartPulse className="size-9" aria-hidden />
+        </motion.span>
+        {status === 'asking' && (
+          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2" aria-hidden>
+            <motion.div className="h-full w-full origin-left bg-brand" initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} transition={{ duration: CHECK_SECONDS, ease: 'linear' }} />
           </div>
         )}
+        {status === 'asking' && (
+          <p className="text-sm text-fg-2" aria-live="assertive">
+            Sending an alert in <strong className="text-fg tabular-nums">{secondsLeft}s</strong> unless you respond.
+          </p>
+        )}
+        {status === 'sending' && <p className="text-sm text-fg-2">Sending alert…</p>}
 
-        {/* Vitals Summary Card */}
-        <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 12, marginBottom: 18, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-          <div>
-            <small style={{ display: 'block', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Heart Rate</small>
-            <strong style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--main-red)' }}>{telemetry.heartRate} BPM</strong>
+        {status === 'asking' && (
+          <div className="mt-5 grid w-full gap-2">
+            <Button variant="secondary" size="lg" className="h-14" onClick={imOk} data-autofocus>
+              I&apos;m OK
+            </Button>
+            <Button variant="primary" size="lg" className="h-14" onClick={sendAlert}>
+              <Send /> Get help
+            </Button>
           </div>
-          <div>
-            <small style={{ display: 'block', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>SpO₂ Level</small>
-            <strong style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--risk-safe)' }}>{telemetry.spo2}%</strong>
-          </div>
-          <div>
-            <small style={{ display: 'block', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Body Temp</small>
-            <strong style={{ fontSize: 14, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{telemetry.bodyTemp}°C</strong>
-          </div>
-        </div>
-
-        {/* Primary Action Button: STOP OPERATION */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button
-            onClick={handleStopOperation}
-            style={{
-              width: '100%',
-              minHeight: 48,
-              padding: '12px 16px',
-              background: 'var(--main-red)',
-              color: '#FFFFFF',
-              border: 0,
-              borderRadius: 10,
-              fontWeight: 900,
-              fontSize: 14,
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.05em',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              boxShadow: '0 4px 20px rgba(220, 38, 38, 0.35)',
-            }}
-          >
-            <ShieldAlert size={18} />
-            <span>🛑 STOP OPERATION / CANCEL ALARM</span>
-          </button>
-
-          {isDispatched && (
-            <button
-              onClick={() => setIsOpen(false)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: 'transparent',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
-                borderRadius: 8,
-                fontSize: 12,
-                fontFamily: 'var(--font-mono)',
-                cursor: 'pointer',
-              }}
-            >
-              Close Window
-            </button>
-          )}
-        </div>
+        )}
       </div>
-    </div>
+    </Dialog>
   )
 }

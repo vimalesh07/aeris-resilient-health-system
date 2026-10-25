@@ -1,377 +1,255 @@
 'use client'
 
-import React, { useRef, useEffect, useState } from 'react'
-import { Bot, Cpu, Loader2, Send, Sparkles, User, Zap } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { Activity, ArrowUp, Cpu, Sparkles } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { generateEdgeAiResponse } from '@/lib/edge-ai-companion'
-import { ChatMessage } from '@/types/aeris'
+import { useKeyboardInset } from '@/hooks/useKeyboardInset'
+import type { ChatMessage } from '@/types/aeris'
+import { PageHeader } from '@/components/ui/page-header'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Segmented } from '@/components/ui/segmented'
+import { cn } from '@/lib/utils'
+
+const SUGGESTIONS = [
+  'Why is my heat risk elevated?',
+  'Am I stressed right now?',
+  'Is my body temperature normal?',
+  'What should I do in this weather?',
+]
+
+const TRIAGE_TONE = { Emergency: 'danger', Urgent: 'warning' } as const
 
 export function AICompanionView() {
-  const { telemetry, risks, baseline, isOffline, setIsOffline } = useTelemetry()
-  const chatBottomRef = useRef<HTMLDivElement>(null)
+  const { telemetry, risks, baseline, isOffline, setIsOffline, userProfile } = useTelemetry()
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const firstName = (userProfile.name || '').split(' ')[0]
+  useKeyboardInset()
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
-      id: '1',
+      id: 'welcome',
       sender: 'aeris',
-      text: `Hello Vimal! I am your AERIS Companion. Currently, your overall risk score is ${risks.overall}/100 (${risks.statusLabel}). How can I clarify your signals today?`,
-      timestamp: 'Just now',
-      source: 'Gemini 3.6 Flash',
+      text: `Hi${firstName ? ` ${firstName}` : ''}, I'm your AERIS assistant. Your overall risk is ${risks.overall}/100 right now. Ask me anything about your vitals, stress or the weather.`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ])
-  const [input, setInput] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [stillThinking, setStillThinking] = useState(false)
 
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (!isLoading) return setStillThinking(false)
+    const t = window.setTimeout(() => setStillThinking(true), 20_000)
+    return () => window.clearTimeout(t)
+  }, [isLoading])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, isLoading])
 
-  const handleSend = async (textToSend?: string) => {
-    const query = textToSend || input
-    if (!query.trim() || isLoading) return
-
-    const userMsg: ChatMessage = {
-      id: String(Date.now()),
-      sender: 'user',
-      text: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  const edgeReply = (query: string) => {
+    const edge = generateEdgeAiResponse(query, telemetry, risks, baseline)
+    return {
+      text: edge.response,
+      source: 'Local Edge AI' as const,
+      supportingData: { riskScore: risks.overall, triageLevel: edge.triageLevel, confidence: edge.confidence },
     }
+  }
 
-    setMessages((prev) => [...prev, userMsg])
+  const send = async (override?: string) => {
+    const query = (override ?? input).trim()
+    if (!query || isLoading) return
+
+    setMessages((prev) => [
+      ...prev,
+      { id: String(Date.now()), sender: 'user', text: query, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+    ])
     setInput('')
     setIsLoading(true)
 
-    let replyText = ''
-    let replySource: 'Gemini 3.6 Flash' | 'Local Edge AI' = 'Local Edge AI'
-    let supportingData: ChatMessage['supportingData'] = undefined
-
+    let reply: { text: string; source: ChatMessage['source']; supportingData?: ChatMessage['supportingData'] }
     try {
       if (isOffline) {
-        const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
-        replyText = edgeRes.response
-        replySource = 'Local Edge AI'
-        supportingData = {
-          riskScore: risks.overall,
-          triageLevel: edgeRes.triageLevel,
-          confidence: edgeRes.confidence,
-        }
+        reply = edgeReply(query)
       } else {
         const res = await fetch('/api/companion', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: query,
-            telemetry,
-            risks,
-            baseline,
-          }),
+          body: JSON.stringify({ prompt: query, telemetry, risks, baseline }),
         })
-
-        if (!res.ok) {
-          throw new Error('Gemini API request failed')
-        }
-
+        if (!res.ok) throw new Error('Cloud assistant request failed')
         const data = await res.json()
-        if (data.text) {
-          replyText = data.text
-          replySource = 'Gemini 3.6 Flash'
-        } else {
-          const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
-          replyText = edgeRes.response
-          replySource = 'Local Edge AI'
-          supportingData = {
-            riskScore: risks.overall,
-            triageLevel: edgeRes.triageLevel,
-            confidence: edgeRes.confidence,
-          }
-        }
+        reply = data.text ? { text: data.text, source: 'Gemini 3.6 Flash' } : edgeReply(query)
       }
     } catch (err) {
-      console.warn('Gemini API fallback to Local Edge AI:', err)
-      const edgeRes = generateEdgeAiResponse(query, telemetry, risks, baseline)
-      replyText = edgeRes.response
-      replySource = 'Local Edge AI'
-      supportingData = {
-        riskScore: risks.overall,
-        triageLevel: edgeRes.triageLevel,
-        confidence: edgeRes.confidence,
-      }
-    } finally {
-      setIsLoading(false)
-      const aiMsg: ChatMessage = {
+      console.warn('Cloud assistant unavailable, answering on-device:', err)
+      reply = edgeReply(query)
+    }
+
+    setIsLoading(false)
+    setMessages((prev) => [
+      ...prev,
+      {
         id: String(Date.now() + 1),
         sender: 'aeris',
-        text: replyText,
+        text: reply.text,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        source: replySource,
-        supportingData,
-      }
-      setMessages((prev) => [...prev, aiMsg])
-    }
+        source: reply.source,
+        supportingData: reply.supportingData,
+      },
+    ])
+    inputRef.current?.focus()
   }
 
-  const presets = [
-    'Why is my heat risk score elevated?',
-    'Explain my physiological stress pattern',
-    'Is my body temperature variance normal?',
-    'What hardware sensors are active?',
-  ]
-
   return (
-    <div style={{ paddingTop: 6 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-        <div>
-          <p className="eyebrow" style={{ margin: 0, fontSize: 10 }}>AERIS AI Clinical Assistant</p>
-          <h1 style={{ fontSize: 'clamp(20px, 3vw, 24px)', fontWeight: 800, margin: '2px 0 4px', color: 'var(--text-primary)' }}>AI Companion</h1>
-          <p className="subhead" style={{ margin: 0, fontSize: 12 }}>
-            Dual-Pipeline AI Assistant: <strong>Cloud Gemini 3.6 Flash</strong> vs. <strong>Local Edge AI Engine</strong> (100% Offline).
-          </p>
-        </div>
+    <>
+      <PageHeader
+        title="AI assistant"
+        description={isOffline ? 'On-device: your questions and vitals never leave this device. Not a substitute for medical advice.' : 'Cloud: your question and current vitals are sent to Gemini to answer. Not a substitute for medical advice.'}
+        actions={
+          <Segmented
+            label="Where answers are generated"
+            value={isOffline ? 'device' : 'cloud'}
+            onChange={(v) => setIsOffline(v === 'device')}
+            options={[
+              {
+                value: 'cloud',
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="size-3.5" /> Cloud
+                  </span>
+                ),
+              },
+              {
+                value: 'device',
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <Cpu className="size-3.5" /> On-device
+                  </span>
+                ),
+              },
+            ]}
+          />
+        }
+      />
 
-        {/* AI Processing Engine Switcher */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: '#F1F5F9',
-            padding: 3,
-            borderRadius: 8,
-            border: '1px solid var(--border-subtle)',
-            gap: 4,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setIsOffline(false)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: '6px 11px',
-              borderRadius: 6,
-              fontSize: 11,
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              border: 0,
-              cursor: 'pointer',
-              background: !isOffline ? '#FFFFFF' : 'transparent',
-              color: !isOffline ? '#0F172A' : 'var(--text-secondary)',
-              boxShadow: !isOffline ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.15s ease',
-            }}
-            title="Use Cloud Gemini 3.6 Flash API for rich contextual clinical reasoning"
-          >
-            <Sparkles size={12} color={!isOffline ? '#D97706' : 'currentColor'} />
-            <span>Gemini 3.6 Flash</span>
-            {!isOffline && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsOffline(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: '6px 11px',
-              borderRadius: 6,
-              fontSize: 11,
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              border: 0,
-              cursor: 'pointer',
-              background: isOffline ? '#FFFFFF' : 'transparent',
-              color: isOffline ? '#0F172A' : 'var(--text-secondary)',
-              boxShadow: isOffline ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.15s ease',
-            }}
-            title="Use zero-latency edge-native clinical reasoning engine without cloud API"
-          >
-            <Cpu size={12} color={isOffline ? '#10B981' : 'currentColor'} />
-            <span>Local Edge AI</span>
-            {isOffline && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981' }} />}
-          </button>
-        </div>
-      </div>
-
-      <div style={{ width: '100%' }}>
-        {/* Expanded Full-Width Chat Window */}
-        <article
-          className="panel"
-          style={{
-            padding: '14px 18px',
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'clamp(580px, 78vh, 780px)',
-            width: '100%',
-          }}
-        >
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingRight: 4 }}>
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <span
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : '#FEF2F2',
-                    border: msg.sender === 'user' ? '1px solid var(--border-subtle)' : '1px solid rgba(220, 38, 38, 0.25)',
-                    color: msg.sender === 'user' ? 'var(--text-primary)' : 'var(--main-red)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontWeight: 800,
-                    fontSize: 12,
-                    flexShrink: 0,
-                  }}
-                >
-                  {msg.sender === 'user' ? <User size={15} /> : <Bot size={16} />}
-                </span>
-
-                <div
-                  style={{
-                    maxWidth: '85%',
-                    background: msg.sender === 'user' ? 'var(--panel-elevated)' : 'var(--panel-bg)',
-                    border: '1px solid var(--border-subtle)',
-                    color: 'var(--text-primary)',
-                    padding: '10px 14px',
-                    borderRadius: 10,
-                    fontSize: 13,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{msg.text}</p>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, paddingTop: 4 }}>
-                    {msg.sender === 'aeris' && msg.source && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 700,
-                          padding: '2px 6px',
-                          borderRadius: 4,
-                          background: 'var(--panel-elevated)',
-                          border: '1px solid var(--border-subtle)',
-                          color: msg.source === 'Gemini 3.6 Flash' ? 'var(--yellow)' : '#10B981',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                        }}
-                      >
-                        {msg.source === 'Gemini 3.6 Flash' ? <Sparkles size={10} /> : <Cpu size={10} />}
-                        {msg.source === 'Gemini 3.6 Flash' ? 'Gemini 3.6 Flash' : 'Local Edge AI'}
-                        {msg.supportingData?.triageLevel && (
-                          <span style={{
-                            padding: '1px 4px',
-                            borderRadius: 3,
-                            fontSize: 9,
-                            background: msg.supportingData.triageLevel === 'Emergency' ? '#DC2626' : msg.supportingData.triageLevel === 'Urgent' ? '#F59E0B' : 'rgba(16, 185, 129, 0.2)',
-                            color: msg.supportingData.triageLevel === 'Emergency' || msg.supportingData.triageLevel === 'Urgent' ? '#FFFFFF' : '#10B981',
-                            fontWeight: 800,
-                          }}>
-                            {msg.supportingData.triageLevel.toUpperCase()}
-                          </span>
-                        )}
+      <Card className="flex h-[calc(100dvh-var(--topbar-h)-var(--bottom-nav-h)-220px-var(--kb,0px))] [[data-kb-open]_&]:h-[calc(100dvh-var(--topbar-h)-var(--kb,0px)-24px)] min-h-[460px] flex-col overflow-hidden p-0 lg:h-[calc(100dvh-var(--topbar-h)-200px)]">
+        <div className="flex-1 overflow-y-auto px-4 py-5 md:px-6" aria-live="polite">
+          <ul className="mx-auto flex max-w-3xl flex-col gap-4">
+            <AnimatePresence initial={false}>
+              {messages.map((msg) => {
+                const mine = msg.sender === 'user'
+                return (
+                  <motion.li
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className={cn('flex gap-3', mine && 'justify-end')}
+                  >
+                    {!mine && (
+                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-white" aria-label="AERIS">
+                        <Activity className="size-3.5" aria-hidden />
                       </span>
                     )}
-
-                    <small style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>{msg.timestamp}</small>
-                  </div>
-                </div>
-              </div>
-            ))}
-
+                    <div className={cn(mine ? 'max-w-[85%] text-right md:max-w-[75%]' : 'max-w-[92%] md:max-w-[80%]')}>
+                      <div
+                        className={cn(
+                          'inline-block rounded-2xl px-4 py-2.5 text-left text-[15px] leading-relaxed whitespace-pre-line',
+                          mine ? 'rounded-br-md bg-surface-2 text-fg ring-1 ring-line' : 'px-0 py-0.5 text-fg',
+                        )}
+                      >
+                        {msg.text}
+                      </div>
+                      <div className={cn('mt-1 flex items-center gap-2 text-[11px] text-fg-muted', mine && 'justify-end')}>
+                        {msg.source && <span>{msg.source === 'Local Edge AI' ? 'On-device' : 'Cloud'}</span>}
+                        {msg.supportingData?.triageLevel && msg.supportingData.triageLevel in TRIAGE_TONE && (
+                          <Badge tone={TRIAGE_TONE[msg.supportingData.triageLevel as keyof typeof TRIAGE_TONE]}>{msg.supportingData.triageLevel}</Badge>
+                        )}
+                        <span>{msg.timestamp}</span>
+                      </div>
+                    </div>
+                  </motion.li>
+                )
+              })}
+            </AnimatePresence>
             {isLoading && (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
-                <Loader2 size={15} className="animate-spin" />
-                <span>Evaluating telemetry context...</span>
-              </div>
+              <li className="flex gap-3" aria-label="Assistant is typing">
+                <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-white">
+                  <Activity className="size-3.5" aria-hidden />
+                </span>
+                <span className="inline-flex items-center gap-1 py-3">
+                  {stillThinking ? <span className="text-sm text-fg-muted">Still thinking…</span> : [0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="size-1.5 rounded-full bg-fg-muted"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                    />
+                  ))}
+                </span>
+              </li>
             )}
-            <div ref={chatBottomRef} />
-          </div>
+          </ul>
+          <div ref={bottomRef} />
+        </div>
 
-          {/* Touch-Friendly Prompt Shortcuts */}
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', margin: '10px 0', paddingBottom: 4 }}>
-            {presets.map((preset) => (
-              <button
-                key={preset}
-                disabled={isLoading}
-                onClick={() => handleSend(preset)}
-                style={{
-                  border: '1px solid var(--border-subtle)',
-                  background: 'var(--panel-elevated)',
-                  color: 'var(--text-secondary)',
-                  padding: '5px 10px',
-                  minHeight: 34,
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  cursor: 'pointer',
-                }}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-
-          {/* Input Box */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              type="text"
+        <div className="border-t border-line bg-surface px-3 pt-3 pb-3 md:px-6">
+          {messages.length <= 2 && (
+            <div className="mx-auto mb-2 flex max-w-3xl gap-1.5 overflow-x-auto pb-1">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => send(s)}
+                  className="h-8 shrink-0 cursor-pointer rounded-full border border-line bg-surface px-3 text-[13px] text-fg-2 hover:border-line-strong hover:text-fg disabled:opacity-50"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+          <form
+            className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-line bg-surface-2 p-1.5 focus-within:border-line-strong"
+            onSubmit={(e) => {
+              e.preventDefault()
+              send()
+            }}
+          >
+            <label htmlFor="assistant-input" className="sr-only">
+              Message the assistant
+            </label>
+            <textarea
+              id="assistant-input"
+              ref={inputRef}
+              rows={1}
               value={input}
-              disabled={isLoading}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about your vitals, heat risk, or weather..."
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                minHeight: 40,
-                borderRadius: 8,
-                background: 'var(--panel-elevated)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: 13,
-                outline: 'none',
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  send()
+                }
               }}
+              placeholder="Ask a question…"
+              className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-[15px] text-fg placeholder:text-fg-muted focus:outline-none"
             />
             <button
-              disabled={isLoading}
-              onClick={() => handleSend()}
-              style={{
-                background: 'var(--main-red)',
-                color: '#FFFFFF',
-                border: 0,
-                padding: '0 14px',
-                minHeight: 40,
-                borderRadius: 8,
-                fontWeight: 800,
-                fontFamily: 'var(--font-mono)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
-              }}
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              aria-label="Send message"
+              className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-              <span>Send</span>
+              <ArrowUp className="size-5" />
             </button>
-          </div>
-        </article>
-      </div>
-    </div>
+          </form>
+        </div>
+      </Card>
+    </>
   )
 }

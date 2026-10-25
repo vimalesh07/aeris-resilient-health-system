@@ -223,11 +223,11 @@ export interface UserLocation {
 
 export interface PushNotificationEvent {
   id: string
-  type: 'obstacle' | 'food' | 'sos' | 'threshold'
+  type: 'obstacle' | 'food' | 'sos' | 'threshold' | 'cancel'
   title: string
   body: string
   timestamp: string
-  targetPhone: string
+  targetPhone?: string
   smsStatus?: string
   vitals?: { heartRate: number; spo2: number; bodyTemp?: number }
   location?: { lat: number; lon: number }

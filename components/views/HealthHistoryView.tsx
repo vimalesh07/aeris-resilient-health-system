@@ -1,197 +1,196 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
+import { Footprints, HeartPulse, Thermometer, Sun, TriangleAlert } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { RiskBadge } from '@/components/ui/RiskBadge'
+import { PageHeader } from '@/components/ui/page-header'
+import { Card, CardHeader } from '@/components/ui/card'
+import { Segmented } from '@/components/ui/segmented'
+import { Stat } from '@/components/ui/meter'
+import { TrendChart } from '@/components/ui/trend-chart'
+import { Badge } from '@/components/ui/badge'
+
+const TIMEFRAMES = [
+  { value: '24h' as const, label: '24 hours' },
+  { value: '7d' as const, label: '7 days' },
+  { value: '30d' as const, label: '30 days' },
+]
 
 export function HealthHistoryView() {
-  const { history, realHistory, baseline, timeframe, setTimeframe } = useTelemetry()
+  const { history, realHistory, baseline, timeframe, setTimeframe, telemetry, risks, scenario } = useTelemetry()
+  const [tableView, setTableView] = useState<'heat' | 'all'>('heat')
 
-  const activePoints = realHistory.length > 0 ? realHistory : history
-  const avgHR = history.length ? Math.round(history.reduce((sum, pt) => sum + pt.heartRate, 0) / history.length) : 70
-  const validHrvs = history.map((h) => h.hrv).filter((v): v is number => v !== null)
-  const avgHRV = validHrvs.length ? Math.round(validHrvs.reduce((sum, v) => sum + v, 0) / validHrvs.length) : 65
-  const minTemp = history.length ? Math.min(...history.map((h) => h.bodyTemp)).toFixed(1) : '36.2'
-  const maxTemp = history.length ? Math.max(...history.map((h) => h.bodyTemp)).toFixed(1) : '37.0'
+  const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
+  const avgHR = Math.round(avg(history.map((h) => h.heartRate)))
+  const hrvs = history.map((h) => h.hrv).filter((v): v is number => v !== null)
+  const avgHRV = Math.round(avg(hrvs))
+  const temps = history.map((h) => h.bodyTemp)
+  const minTemp = temps.length ? Math.min(...temps) : 0
+  const maxTemp = temps.length ? Math.max(...temps) : 0
+  const peakRisk = history.length ? Math.max(...history.map((h) => h.overallRisk)) : 0
+
+  const heatRows = (realHistory.length > 0 ? realHistory : history).slice(-10).reverse()
+  const mobilityScore = Math.max(5, 100 - risks.mobility)
+  const fallDetected = scenario === 'disaster_fall_sos'
 
   return (
-    <div style={{ paddingTop: 16 }}>
-      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <p className="eyebrow">Longitudinal Signal Intelligence & Analytics</p>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Health Analytics</h1>
-          <p className="subhead">
-            Tracking biometrics, multi-signal heat trends, and climate resilience over time.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        title="Trends"
+        description="How your vitals, heat exposure and movement change over time."
+        actions={<Segmented label="Time range" value={timeframe} onChange={setTimeframe} options={TIMEFRAMES} />}
+      />
 
-        {/* Timeframe Selector */}
-        <div style={{ display: 'flex', gap: 4, background: 'var(--panel-elevated)', padding: 4, borderRadius: 8, border: '1px solid var(--border-subtle)', width: '100%', maxWidth: 320 }}>
-          {(['24h', '7d', '30d'] as const).map((tf) => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              style={{
-                flex: 1,
-                background: timeframe === tf ? 'var(--main-red)' : 'transparent',
-                color: timeframe === tf ? '#FFFFFF' : 'var(--text-secondary)',
-                border: 0,
-                padding: '6px 12px',
-                minHeight: 36,
-                borderRadius: 6,
-                fontSize: 12,
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 800,
-                cursor: 'pointer',
-                boxShadow: timeframe === tf ? '0 1px 4px rgba(220, 38, 38, 0.25)' : 'none',
-              }}
-            >
-              {tf === '24h' ? '24 Hours' : tf === '7d' ? '7 Days' : '30 Days'}
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <Stat label="Average heart rate" value={avgHR} unit="BPM" hint={`Baseline ${baseline.restingHR} BPM`} />
+        <Stat label="Average HRV" value={avgHRV || '—'} unit={avgHRV ? 'ms' : undefined} hint="Higher means better recovery" />
+        <Stat label="Body temp range" value={`${minTemp.toFixed(1)}–${maxTemp.toFixed(1)}`} unit="°C" />
+        <Stat label="Peak risk" value={peakRisk} unit="/100" />
       </div>
 
-      {/* Historical Signal Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 18 }}>
-        {/* Heart Rate Trend Card */}
-        <article className="panel" style={{ padding: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Heart Rate ({timeframe.toUpperCase()} Trend)</h3>
-          <div style={{ height: 140, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--border-subtle)' }}>
-            {history.map((pt, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div
-                  style={{
-                    width: '100%',
-                    background: 'var(--main-red)',
-                    height: `${Math.max(12, ((pt.heartRate - 50) / 60) * 100)}px`,
-                    borderRadius: 3,
-                  }}
-                  title={`${pt.time}: ${pt.heartRate} BPM`}
-                />
-                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{pt.time}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-            <span>Avg HR: <strong style={{ color: 'var(--text-primary)' }}>{avgHR} BPM</strong></span>
-            <span>Avg HRV: <strong style={{ color: 'var(--text-primary)' }}>{avgHRV} ms</strong></span>
-          </div>
-        </article>
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+        <Card className="p-5 md:p-6">
+          <CardHeader title="Heart rate" icon={<HeartPulse className="size-4" />} iconLayoutId="morph-heart" description="Dashed line is your normal resting rate" />
+          <TrendChart
+            className="mt-5"
+            data={history.map((h) => ({ label: h.time, value: h.heartRate }))}
+            unit="BPM"
+            color="var(--brand)"
+            baseline={baseline.restingHR}
+            datasetKey={timeframe}
+            demo={realHistory.length === 0}
+            ariaLabel={`Heart rate over ${timeframe}, average ${avgHR} BPM`}
+          />
+        </Card>
 
-        {/* Body Temperature History Card */}
-        <article className="panel" style={{ padding: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>Body Temperature Variance</h3>
-          <div style={{ height: 140, display: 'flex', alignItems: 'flex-end', gap: 6, padding: '8px 0', borderBottom: '1px solid var(--border-subtle)' }}>
-            {history.map((pt, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div
-                  style={{
-                    width: '100%',
-                    background: pt.bodyTemp > 37.2 ? 'var(--risk-critical)' : '#3B82F6',
-                    height: `${Math.max(12, (pt.bodyTemp - 35.8) * 35)}px`,
-                    borderRadius: 3,
-                  }}
-                  title={`${pt.time}: ${pt.bodyTemp}°C`}
-                />
-                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{pt.time}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-            <span>Min: <strong style={{ color: 'var(--text-primary)' }}>{minTemp}°C</strong></span>
-            <span>Max: <strong style={{ color: 'var(--text-primary)' }}>{maxTemp}°C</strong></span>
-          </div>
-        </article>
-      </div>
+        <Card className="p-5 md:p-6">
+          <CardHeader title="Body temperature" icon={<Thermometer className="size-4" />} description="Dashed line is your usual temperature" />
+          <TrendChart
+            className="mt-5"
+            data={history.map((h) => ({ label: h.time, value: h.bodyTemp }))}
+            unit="°C"
+            decimals={1}
+            baseline={baseline.tempBaseline}
+            datasetKey={timeframe}
+            demo={realHistory.length === 0}
+            ariaLabel={`Body temperature over ${timeframe}, between ${minTemp.toFixed(1)} and ${maxTemp.toFixed(1)} °C`}
+          />
+        </Card>
 
-      {/* HEAT TREND GRAPH / MULTI-FACTOR CORRELATION */}
-      <article className="panel" style={{ padding: 20, marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-              📈 HEAT TREND: Environmental Ambient vs Body Temp vs Heart Rate
-            </h3>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
-              Correlating live environmental heat exposure against physiological body temperature and cardiac load.
-            </p>
-          </div>
-          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', padding: '3px 8px', borderRadius: 6, background: '#FEF2F2', color: 'var(--main-red)', border: '1px solid rgba(220, 38, 38, 0.2)', fontWeight: 700 }}>
-            LIVE THERMAL TELEMETRY
-          </span>
-        </div>
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table style={{ width: '100%', minWidth: 580, borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', textAlign: 'left' }}>
-                <th style={{ padding: '10px 12px' }}>⏱️ Timestamp</th>
-                <th style={{ padding: '10px 12px' }}>🌡️ Ambient Temp (°C)</th>
-                <th style={{ padding: '10px 12px' }}>🩺 Body Temp (°C)</th>
-                <th style={{ padding: '10px 12px' }}>❤️ Heart Rate (BPM)</th>
-                <th style={{ padding: '10px 12px' }}>⚡ Thermal Strain (PSI)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activePoints.slice(-10).map((pt, idx) => {
-                const samplePsi = Number(
-                  (
-                    5 * Math.max(0, (pt.bodyTemp - baseline.tempBaseline) / 3.0) +
-                    5 * Math.max(0, (pt.heartRate - baseline.restingHR) / 112)
-                  ).toFixed(1)
-                )
-                return (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                    <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{pt.time}</td>
-                    <td style={{ padding: '10px 12px', fontWeight: 700 }}>{pt.ambientTemp}°C</td>
-                    <td style={{ padding: '10px 12px', color: pt.bodyTemp > baseline.tempBaseline + 0.6 ? 'var(--risk-critical)' : 'var(--text-primary)', fontWeight: 700 }}>
-                      {pt.bodyTemp}°C
-                    </td>
-                    <td style={{ padding: '10px 12px', color: pt.heartRate > baseline.restingHR + 10 ? 'var(--risk-critical)' : 'var(--text-primary)', fontWeight: 700 }}>
-                      {pt.heartRate} BPM
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <RiskBadge level={samplePsi >= 7 ? 'CRITICAL' : samplePsi >= 4 ? 'WARNING' : 'SAFE'} score={samplePsi} size="sm" />
-                    </td>
+        <Card className="p-5 md:p-6 lg:col-span-2">
+          <CardHeader
+            title={tableView === 'heat' ? 'Heat exposure log' : 'All readings'}
+            icon={<Sun className="size-4" />}
+            description={tableView === 'heat' ? 'Outside temperature against your body’s response' : `Every reading in the last ${TIMEFRAMES.find((t) => t.value === timeframe)?.label}`}
+            action={
+              <Segmented
+                label="Table"
+                value={tableView}
+                onChange={setTableView}
+                options={[
+                  { value: 'heat', label: 'Heat' },
+                  { value: 'all', label: 'All' },
+                ]}
+              />
+            }
+          />
+          <div className="mt-4 overflow-x-auto">
+            {tableView === 'heat' ? (
+              <table className="w-full min-w-[560px] text-sm">
+                <thead className="sticky top-0 bg-surface">
+                  <tr className="border-b border-line text-left text-xs text-fg-muted">
+                    <th className="py-2 pr-4 font-medium">Time</th>
+                    <th className="py-2 pr-4 font-medium">Outside</th>
+                    <th className="py-2 pr-4 font-medium">Body temp</th>
+                    <th className="py-2 pr-4 font-medium">Heart rate</th>
+                    <th className="py-2 font-medium">Heat strain</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </article>
+                </thead>
+                <tbody>
+                  {heatRows.map((pt, i) => {
+                    const psi = Number((5 * Math.max(0, (pt.bodyTemp - baseline.tempBaseline) / 3) + 5 * Math.max(0, (pt.heartRate - baseline.restingHR) / 112)).toFixed(1))
+                    const hotBody = pt.bodyTemp > baseline.tempBaseline + 0.6
+                    const highHr = pt.heartRate > baseline.restingHR + 10
+                    return (
+                      <tr key={`${pt.time}-${i}`} className="border-b border-line last:border-0">
+                        <td className="py-2.5 pr-4 text-fg-muted tabular-nums">{pt.time}</td>
+                        <td className="py-2.5 pr-4 text-fg tabular-nums">{pt.ambientTemp}°C</td>
+                        <td className="py-2.5 pr-4 tabular-nums">
+                          <span className={hotBody ? 'font-medium text-danger' : 'text-fg'}>
+                            {pt.bodyTemp}°C{hotBody && <TriangleAlert className="ml-1 inline size-3.5" aria-label="above baseline" />}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 tabular-nums">
+                          <span className={highHr ? 'font-medium text-danger' : 'text-fg'}>
+                            {pt.heartRate} BPM{highHr && <TriangleAlert className="ml-1 inline size-3.5" aria-label="above baseline" />}
+                          </span>
+                        </td>
+                        <td className="py-2.5">
+                          <RiskBadge level={psi >= 7 ? 'CRITICAL' : psi >= 4 ? 'WARNING' : 'SAFE'} score={psi} size="sm" />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <table className="w-full min-w-[560px] text-sm">
+                <thead className="sticky top-0 bg-surface">
+                  <tr className="border-b border-line text-left text-xs text-fg-muted">
+                    <th className="py-2 pr-4 font-medium">Time</th>
+                    <th className="py-2 pr-4 font-medium">Heart rate</th>
+                    <th className="py-2 pr-4 font-medium">HRV</th>
+                    <th className="py-2 pr-4 font-medium">Body temp</th>
+                    <th className="py-2 pr-4 font-medium">Heat risk</th>
+                    <th className="py-2 font-medium">Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((row, i) => (
+                    <tr key={`${row.time}-${i}`} className="border-b border-line last:border-0">
+                      <td className="py-2.5 pr-4 text-fg-muted tabular-nums">{row.time}</td>
+                      <td className="py-2.5 pr-4 text-fg tabular-nums">{row.heartRate} BPM</td>
+                      <td className="py-2.5 pr-4 text-fg tabular-nums">{row.hrv ?? '—'}{row.hrv !== null && ' ms'}</td>
+                      <td className="py-2.5 pr-4 text-fg tabular-nums">{row.bodyTemp}°C</td>
+                      <td className="py-2.5 pr-4 text-fg tabular-nums">{row.heatRisk}/100</td>
+                      <td className="py-2.5">
+                        <RiskBadge level={row.overallRisk > 60 ? 'CRITICAL' : row.overallRisk > 30 ? 'MONITOR' : 'SAFE'} score={row.overallRisk} size="sm" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </Card>
 
-      {/* Historical Data Log */}
-      <article className="panel" style={{ padding: 18 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>Longitudinal Data Archive ({timeframe.toUpperCase()})</h3>
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table style={{ width: '100%', minWidth: 500, borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-mono)' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', textAlign: 'left' }}>
-                <th style={{ padding: '10px 8px' }}>Time</th>
-                <th style={{ padding: '10px 8px' }}>Heart Rate</th>
-                <th style={{ padding: '10px 8px' }}>HRV</th>
-                <th style={{ padding: '10px 8px' }}>Body Temp</th>
-                <th style={{ padding: '10px 8px' }}>Heat Risk</th>
-                <th style={{ padding: '10px 8px' }}>Overall Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((row, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                  <td style={{ padding: '10px 8px', color: 'var(--text-secondary)' }}>{row.time}</td>
-                  <td style={{ padding: '10px 8px' }}>{row.heartRate} BPM</td>
-                  <td style={{ padding: '10px 8px' }}>{row.hrv} ms</td>
-                  <td style={{ padding: '10px 8px' }}>{row.bodyTemp}°C</td>
-                  <td style={{ padding: '10px 8px' }}>{row.heatRisk} / 100</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <RiskBadge level={row.overallRisk > 50 ? 'CRITICAL' : 'SAFE'} score={row.overallRisk} size="sm" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    </div>
+        <Card className="p-5 md:p-6 lg:col-span-2">
+          <CardHeader
+            title="Movement"
+            icon={<Footprints className="size-4" />}
+            description="Walking rhythm and balance from the wearable’s motion sensor"
+            action={fallDetected ? <Badge tone="danger" dot>Fall detected</Badge> : <RiskBadge level={mobilityScore < 50 ? 'WARNING' : 'SAFE'} score={mobilityScore} size="sm" />}
+          />
+          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
+            <Stat label="Mobility score" value={mobilityScore} unit="/100" />
+            <Stat label="Steps today" value={telemetry.steps.toLocaleString()} />
+            <Stat label="Cadence" value={telemetry.cadence} unit="steps/min" />
+            <Stat label="Walking speed" value={telemetry.walkingSpeed} unit="m/s" />
+            <Stat label="Left/right balance" value={telemetry.gaitSymmetry} unit="%" hint={`Usual ${baseline.gaitSymmetryBaseline}%`} />
+            <Stat label="Step variability" value={telemetry.gaitVariability} unit="%" hint={`Usual ${baseline.gaitVariabilityBaseline}%`} />
+          </div>
+          <p className="mt-3 text-sm text-fg-2">
+            {fallDetected
+              ? 'A sudden impact was detected. Emergency SOS has been triggered.'
+              : risks.mobility > 45
+              ? 'Your movement pattern differs from usual — this can be a sign of fatigue.'
+              : 'Your walking rhythm and balance look normal.'}
+          </p>
+        </Card>
+      </div>
+
+      <p className="mt-8 text-center text-xs text-fg-muted">AERIS does not diagnose joint, neurological or heart conditions.</p>
+    </>
   )
 }

@@ -1,7 +1,9 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { ArduinoHealthData, useHealthData } from '@/hooks/useHealthData'
+import { resolveViewId, viewHref, viewIdFromPathname, type UserViewId } from '@/lib/navigation'
 import { evaluateAlerts } from '@/lib/alerts'
 import { ExternalWeatherData, fetchRealWeather } from '@/lib/external-weather'
 import { calculateRiskScores } from '@/lib/risk-engine'
@@ -17,7 +19,7 @@ import {
   updateBaselineWithSample,
 } from '@/lib/telemetry'
 import { playPushNotificationSound } from '@/lib/notifications'
-import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
+import { getBrowserSupabase } from '@/lib/supabase/lazy'
 import {
   AlertItem,
   DailyAnalysis,
@@ -42,7 +44,30 @@ export interface RealHistoryPoint {
   aqi: number
 }
 
+export type NotificationType = 'obstacle' | 'food' | 'sos' | 'threshold' | 'cancel'
+
+export interface DeviceLocation {
+  lat: number
+  lon: number
+  accuracy?: number
+  capturedAt: number
+}
+
+export type SosPhase = 'idle' | 'countdown' | 'sending' | 'sent'
+
+export interface AccountInfo {
+  name: string
+  email: string
+  role: string
+  phone: string | null
+}
+
+export const SOS_COUNTDOWN_SECONDS = 10
+
 interface TelemetryContextType {
+  account: AccountInfo | null
+  location: DeviceLocation | null
+  refreshLocation: () => Promise<DeviceLocation | null>
   userProfile: UserProfile
   updateUserProfile: (updates: Partial<UserProfile>) => void
   scenario: Scenario
@@ -60,11 +85,11 @@ interface TelemetryContextType {
   activePushNotification: PushNotificationEvent | null
   dismissPushNotification: () => void
   triggerNotificationPush: (params: {
-    type: 'obstacle' | 'food' | 'sos'
+    type: NotificationType
     title: string
     body: string
     vitals?: { heartRate: number; spo2: number; bodyTemp?: number }
-    location?: { lat: number; lon: number }
+    location?: { lat: number; lon: number } | null
   }) => Promise<any>
   telemetry: TelemetryData
   baseline: PersonalBaseline
@@ -80,13 +105,18 @@ interface TelemetryContextType {
   timeframe: '24h' | '7d' | '30d'
   setTimeframe: (t: '24h' | '7d' | '30d') => void
   sensors: HardwareSensor[]
-  activeView: string
+  activeView: UserViewId
   setActiveView: (v: string) => void
 
-  // Canonical SOS System Pipeline
+  // Canonical SOS pipeline: countdown first, then dispatch; cancelling after
+  // dispatch sends a false-alarm follow-up.
   isSosActive: boolean
+  sosPhase: SosPhase
+  sosCountdown: number
   sosSource: 'WEB' | 'PHYSICAL_BUTTON' | null
+  sosDispatchStatus: string | null
   triggerSos: (source?: 'WEB' | 'PHYSICAL_BUTTON') => void
+  sendSosNow: () => void
   dismissSos: () => void
 
   // Arduino / ESP8266 Live Hardware Telemetry
@@ -106,7 +136,9 @@ const TelemetryContext = createContext<TelemetryContextType | undefined>(undefin
 const LOCAL_STORAGE_KEY = 'aeris_telemetry_store_v1'
 const LOCAL_PROFILE_KEY = 'aeris_user_profile_v1'
 
-export function TelemetryProvider({ children }: { children: React.ReactNode }) {
+export function TelemetryProvider({ children, account = null }: { children: React.ReactNode; account?: AccountInfo | null }) {
+  const router = useRouter()
+  const pathname = usePathname()
   const {
     data: arduinoData,
     wsConnected,
@@ -124,7 +156,11 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     anomaly,
   } = useHealthData()
 
-  const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE)
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => ({
+    ...DEFAULT_USER_PROFILE,
+    name: account?.name || DEFAULT_USER_PROFILE.name,
+  }))
+  const [location, setLocation] = useState<DeviceLocation | null>(null)
   const [scenario, setScenarioState] = useState<Scenario>('Normal')
   // Default to simulation running when offline / hardware disconnected
   const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(true)
@@ -132,7 +168,14 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [useRealWeather, setUseRealWeather] = useState<boolean>(true)
   const [realWeatherData, setRealWeatherData] = useState<ExternalWeatherData | null>(null)
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false)
-  const [activeView, setActiveView] = useState<string>('Dashboard')
+  const activeView = viewIdFromPathname(pathname)
+  const setActiveView = useCallback(
+    (value: string) => {
+      const id = resolveViewId(value)
+      if (id) router.push(viewHref(id))
+    },
+    [router],
+  )
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d'>('24h')
 
   // Global Push Notification State (Visible On-Screen HUD Toast + Desktop Push + Twilio)
@@ -142,7 +185,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Canonical SOS System State
-  const [isSosActive, setIsSosActive] = useState<boolean>(false)
+  const [sosPhase, setSosPhase] = useState<SosPhase>('idle')
+  const [sosCountdown, setSosCountdown] = useState<number>(SOS_COUNTDOWN_SECONDS)
+  const [sosDispatchStatus, setSosDispatchStatus] = useState<string | null>(null)
+  const isSosActive = sosPhase !== 'idle'
   const [sosSource, setSosSource] = useState<'WEB' | 'PHYSICAL_BUTTON' | null>(null)
   const lastProcessedSosTimestampRef = useRef<number>(0)
   const dismissedCooldownRef = useRef<number>(0)
@@ -155,55 +201,82 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const supabaseUserIdRef = useRef<string | null>(null)
   const supabaseLoadedRef = useRef(false)
 
-  // Universal Push Notification Trigger (Used by Obstacle Push, Food Requirement & SOS)
+  // Device location: captured once on load and refreshed right before any
+  // emergency dispatch so alerts carry the real position, not a fixed one.
+  const refreshLocation = useCallback((): Promise<DeviceLocation | null> => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) return Promise.resolve(null)
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const next = {
+            lat: Number(pos.coords.latitude.toFixed(5)),
+            lon: Number(pos.coords.longitude.toFixed(5)),
+            accuracy: Math.round(pos.coords.accuracy),
+            capturedAt: Date.now(),
+          }
+          setLocation(next)
+          resolve(next)
+        },
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 60_000 },
+      )
+    })
+  }, [])
+
+  const locationRef = useRef<DeviceLocation | null>(null)
+  useEffect(() => {
+    locationRef.current = location
+  }, [location])
+
+  const resolveDispatchLocation = async (): Promise<{ lat: number; lon: number } | null> => {
+    const fresh = await refreshLocation()
+    const best = fresh ?? locationRef.current
+    return best ? { lat: best.lat, lon: best.lon } : null
+  }
+
+  // Universal push trigger (reports, SOS, heart-rate threshold and SOS cancellation)
   const triggerNotificationPush = async (params: {
-    type: 'obstacle' | 'food' | 'sos'
+    type: NotificationType
     title: string
     body: string
     vitals?: { heartRate: number; spo2: number; bodyTemp?: number }
-    location?: { lat: number; lon: number }
+    location?: { lat: number; lon: number } | null
   }) => {
     const activeVitals = params.vitals || {
       heartRate: telemetry.heartRate,
       spo2: telemetry.spo2,
       bodyTemp: telemetry.bodyTemp,
     }
-    const activeLocation = params.location || { lat: 10.903, lon: 76.955 }
-    const phone = userProfile.emergencyContactPhone || '9715042529'
+    const activeLocation = params.location !== undefined ? params.location : await resolveDispatchLocation()
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
-    // 1. Play audible alert chime
-    playPushNotificationSound(params.type)
+    playPushNotificationSound(params.type === 'cancel' ? 'obstacle' : params.type === 'threshold' ? 'sos' : params.type)
 
-    // 2. Set visible floating push notification toast immediately
     setActivePushNotification({
       id: 'push-' + Date.now(),
       type: params.type,
       title: params.title,
       body: params.body,
       timestamp,
-      targetPhone: phone,
-      smsStatus: 'Dispatching via Telegram Bot...',
+      targetPhone: userProfile.emergencyContactPhone || undefined,
+      smsStatus: 'Sending…',
       vitals: activeVitals,
-      location: activeLocation,
+      location: activeLocation ?? undefined,
     })
 
-    // 3. Dispatch native Desktop/Browser Push Notification
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (params.type !== 'cancel' && typeof window !== 'undefined' && 'Notification' in window) {
       try {
         let permission = Notification.permission
         if (permission === 'default') {
           permission = await Notification.requestPermission()
-          if (permission === 'granted') {
-            setNotificationsEnabled(true)
-          }
+          if (permission === 'granted') setNotificationsEnabled(true)
         }
         if (permission === 'granted') {
           new Notification(params.title, {
-            body: `${params.body}\nTarget: Telegram Emergency Bot | Vitals: ${activeVitals.heartRate} BPM, ${activeVitals.spo2}% SpO2`,
-            icon: '/icon.svg',
+            body: `${params.body}\nVitals: ${activeVitals.heartRate} BPM, SpO₂ ${activeVitals.spo2}%`,
+            icon: '/icon.png',
             tag: `push_${params.type}_${Date.now()}`,
-            requireInteraction: true,
+            requireInteraction: params.type === 'sos',
           } satisfies NotificationOptions)
         }
       } catch (e) {
@@ -211,30 +284,33 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 4. Add into Alerts state feed
-    const newAlert: AlertItem = {
-      id: 'alert-push-' + Date.now(),
-      severity: params.type === 'sos' ? 'Critical' : 'High',
-      title: params.title,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      trigger: params.body,
-      supportingSignals: [
-        `Telegram Bot: Active Emergency Channel`,
-        `Biometrics: HR ${activeVitals.heartRate} BPM, SpO2 ${activeVitals.spo2}%`,
-        `Channel: Automated Telegram Broadcast`,
-      ],
-      recommendedAction:
-        params.type === 'obstacle'
-          ? 'Clear reported road blockage or route around obstacle'
-          : params.type === 'food'
-          ? 'Dispatch emergency food packs and potable water rations'
-          : 'Immediate physical responder dispatch & emergency evaluation',
-      acknowledged: false,
-      dismissed: false,
-    }
-    setAlerts((prev) => [newAlert, ...prev])
+    const recommendedAction =
+      params.type === 'obstacle'
+        ? 'Clear the reported blockage or route around it'
+        : params.type === 'food'
+        ? 'Send food packs and drinking water to the reported location'
+        : params.type === 'cancel'
+        ? 'No action needed — the user cancelled the alert'
+        : 'Contact the user and send a responder if they do not answer'
 
-    // 5. Fire Telegram notification API (/api/notify)
+    if (params.type !== 'cancel') {
+      const newAlert: AlertItem = {
+        id: 'alert-push-' + Date.now(),
+        severity: params.type === 'sos' || params.type === 'threshold' ? 'Critical' : 'High',
+        title: params.title,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        trigger: params.body,
+        supportingSignals: [
+          `Heart rate ${activeVitals.heartRate} BPM, SpO₂ ${activeVitals.spo2}%`,
+          activeLocation ? `Location ${activeLocation.lat}, ${activeLocation.lon}` : 'Location unavailable',
+        ],
+        recommendedAction,
+        acknowledged: false,
+        dismissed: false,
+      }
+      setAlerts((prev) => [newAlert, ...prev])
+    }
+
     try {
       const res = await fetch('/api/notify', {
         method: 'POST',
@@ -243,77 +319,87 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           type: params.type,
           title: params.title,
           trigger: params.body,
-          severity: params.type === 'sos' ? 'Critical' : 'High',
-          recommendedAction: newAlert.recommendedAction,
-          patientName: userProfile.name || 'Vimal',
-          phone,
+          severity: params.type === 'cancel' ? 'Low' : params.type === 'sos' || params.type === 'threshold' ? 'Critical' : 'High',
+          recommendedAction,
           location: activeLocation,
           vitals: activeVitals,
         }),
       })
       const data = await res.json()
-      if (data && (data.dispatchStatus || data.smsStatus)) {
-        const finalStatus = data.dispatchStatus || data.smsStatus
-        setActivePushNotification((prev) =>
-          prev ? { ...prev, smsStatus: `Delivered (${finalStatus})` } : null
-        )
-      }
+      const delivered = Boolean(data?.telegramDelivered || String(data?.dispatchStatus || data?.smsStatus || '').startsWith('sent'))
+      setActivePushNotification((prev) => (prev ? { ...prev, smsStatus: delivered ? 'Delivered' : 'Queued (offline demo)' } : null))
       return data
     } catch (e: any) {
-      console.warn('Telegram push dispatch error:', e)
-      setActivePushNotification((prev) =>
-        prev ? { ...prev, smsStatus: 'Sent to emergency queue' } : null
-      )
+      console.warn('Push dispatch error:', e)
+      setActivePushNotification((prev) => (prev ? { ...prev, smsStatus: 'Could not reach server — will retry when online' } : null))
+      return null
     }
   }
 
-  // Canonical Single SOS Trigger Function (Used by both WEB SOS button & PHYSICAL Arduino Button)
+  const currentVitals = () => {
+    const activeBpm = isHardwareConnected && arduinoData ? stableBpm || rawBpm || telemetry.heartRate : telemetry.heartRate
+    const activeSpo2 = isHardwareConnected && arduinoData ? stableSpo2 || rawSpo2 || telemetry.spo2 : telemetry.spo2
+    return { heartRate: activeBpm, spo2: activeSpo2, bodyTemp: telemetry.bodyTemp }
+  }
+
+  // Step 1: open the SOS countdown. Nothing is sent until it reaches zero or
+  // the user taps "Send now".
   const triggerSos = (source: 'WEB' | 'PHYSICAL_BUTTON' = 'WEB') => {
-    if (isSosActive) {
-      console.log(`[AERIS SOS System] Duplicate protection active: SOS already running (source: ${sosSource}). Ignoring redundant trigger.`)
-      return
-    }
-    if (Date.now() < dismissedCooldownRef.current && source === 'PHYSICAL_BUTTON') {
-      console.log('[AERIS SOS System] Cooldown active after manual user dismissal. Ignoring hardware event.')
-      return
-    }
-    console.log(`🚨 [AERIS SOS System] CANONICAL SOS ACTIVATED! Trigger Source: ${source}`)
-    setIsSosActive(true)
+    if (sosPhase !== 'idle') return
+    if (Date.now() < dismissedCooldownRef.current && source === 'PHYSICAL_BUTTON') return
     setSosSource(source)
-    setScenarioState('disaster_fall_sos')
-
-    const activeBpm = isHardwareConnected && arduinoData ? (stableBpm || rawBpm || telemetry.heartRate) : telemetry.heartRate
-    const activeSpo2 = isHardwareConnected && arduinoData ? (stableSpo2 || rawSpo2 || telemetry.spo2) : telemetry.spo2
-
-    setTelemetry((prev) => ({
-      ...prev,
-      heartRate: activeBpm,
-      spo2: activeSpo2,
-      weatherCondition: 'Impact Fall & Emergency SOS Active',
-    }))
-
-    // Dispatch automated Emergency SMS notification and visible push notification with real-time vitals
-    triggerNotificationPush({
-      type: 'sos',
-      title: source === 'PHYSICAL_BUTTON' ? '🚨 HARDWARE SOS BUTTON ACTIVATED' : '🚨 EMERGENCY SOS ACTIVATED',
-      body: 'Critical distress signal initiated. Emergency responders and contacts notified with live location.',
-      vitals: {
-        heartRate: activeBpm,
-        spo2: activeSpo2,
-        bodyTemp: telemetry.bodyTemp,
-      },
-      location: { lat: 10.903, lon: 76.955 },
-    })
+    setSosDispatchStatus(null)
+    setSosCountdown(SOS_COUNTDOWN_SECONDS)
+    setSosPhase('countdown')
   }
 
+  // Step 2: dispatch.
+  const sendSosNow = async () => {
+    if (sosPhase !== 'countdown') return
+    setSosPhase('sending')
+    setScenarioState('disaster_fall_sos')
+    const vitals = currentVitals()
+    setTelemetry((prev) => ({ ...prev, heartRate: vitals.heartRate, spo2: vitals.spo2 }))
+    const data = await triggerNotificationPush({
+      type: 'sos',
+      title: sosSource === 'PHYSICAL_BUTTON' ? 'SOS from wearable button' : 'Emergency SOS',
+      body: `${userProfile.name || 'An AERIS user'} needs help. Live vitals and location attached.`,
+      vitals,
+    })
+    const delivered = Boolean(data?.telegramDelivered || String(data?.dispatchStatus || data?.smsStatus || '').startsWith('sent'))
+    setSosDispatchStatus(delivered ? 'Responders have been alerted.' : data ? 'Alert recorded. Telegram delivery is not configured on this server.' : 'Could not reach the server. Call 112 directly.')
+    setSosPhase('sent')
+  }
+
+  // Cancel (before dispatch) or mark a sent alert as a false alarm.
   const dismissSos = () => {
-    console.log('[AERIS SOS System] Canonical SOS Alarm dismissed.')
-    dismissedCooldownRef.current = Date.now() + 5000 // 5 second cooldown for hardware re-triggers
-    setIsSosActive(false)
+    const wasSent = sosPhase === 'sent' || sosPhase === 'sending'
+    dismissedCooldownRef.current = Date.now() + 5000
+    setSosPhase('idle')
     setSosSource(null)
+    setSosDispatchStatus(null)
     setScenarioState('Normal')
     setTelemetry(getScenarioTarget('Normal'))
+    if (wasSent) {
+      void triggerNotificationPush({
+        type: 'cancel',
+        title: 'SOS cancelled — false alarm',
+        body: `${userProfile.name || 'The user'} cancelled the emergency alert and is safe.`,
+        location: locationRef.current ? { lat: locationRef.current.lat, lon: locationRef.current.lon } : null,
+      })
+    }
   }
+
+  // Countdown ticker
+  useEffect(() => {
+    if (sosPhase !== 'countdown') return
+    if (sosCountdown <= 0) {
+      void sendSosNow()
+      return
+    }
+    const t = window.setTimeout(() => setSosCountdown((c) => c - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [sosPhase, sosCountdown])
 
   // Automatic Bridge: Trigger Canonical SOS when hardware emits SOS_TRIGGERED / SOS STARTED
   useEffect(() => {
@@ -321,7 +407,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     if (lastSosEvent.timestamp <= lastProcessedSosTimestampRef.current) return
 
     lastProcessedSosTimestampRef.current = lastSosEvent.timestamp
-    console.log(`🚨 [AERIS Hardware Bridge] Physical SOS button sequence confirmed! Invoking canonical web SOS handler... (Source: ${lastSosEvent.source})`)
     triggerSos('PHYSICAL_BUTTON')
   }, [lastSosEvent])
 
@@ -336,10 +421,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isHardwareConnected) {
       setIsSimulationRunning(false)
-      console.log('[AERIS Telemetry] Hardware connected on COM bridge. Auto-pausing synthetic simulation loop.')
     } else {
       setIsSimulationRunning(true)
-      console.log('[AERIS Telemetry] Hardware bridge offline. Auto-enabling synthetic simulation loop.')
     }
   }, [isHardwareConnected])
 
@@ -350,11 +433,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       const savedProfile = localStorage.getItem(LOCAL_PROFILE_KEY)
       if (savedProfile) {
         const parsed = JSON.parse(savedProfile)
-        if (!parsed.emergencyContactPhone || parsed.emergencyContactPhone.includes('7092796084')) {
-          parsed.emergencyContactPhone = '9715042529'
-          localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(parsed))
-        }
-        setUserProfile(parsed)
+        setUserProfile({ ...parsed, name: account?.name || parsed.name })
       }
 
       const savedTelemetry = localStorage.getItem(LOCAL_STORAGE_KEY)
@@ -376,7 +455,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     let active = true
     const loadAccountData = async () => {
       try {
-        const supabase = createBrowserSupabaseClient()
+        const supabase = (await getBrowserSupabase())
         const { data: { user } } = await supabase.auth.getUser()
         if (!user || !active) return
         supabaseUserIdRef.current = user.id
@@ -437,9 +516,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     if (!supabaseLoadedRef.current || !userId) return
     const persistAccountData = async () => {
       try {
-        const supabase = createBrowserSupabaseClient()
+        const supabase = (await getBrowserSupabase())
         await Promise.all([
-          supabase.from('profiles').update({ full_name: userProfile.name, phone: userProfile.emergencyContactPhone || null }).eq('id', userId),
+          // profiles.phone is the account's own mobile number (used for QR login), not the emergency contact.
+          supabase.from('profiles').update({ full_name: userProfile.name }).eq('id', userId),
           supabase.from('user_health_profiles').upsert({
             user_id: userId, age: userProfile.age, sex: userProfile.sex, height_cm: userProfile.heightCm, weight_kg: userProfile.weightKg,
             blood_pressure_systolic: userProfile.bloodPressureSystolic ?? null, blood_pressure_diastolic: userProfile.bloodPressureDiastolic ?? null,
@@ -619,7 +699,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   const enableChromeNotifications = async (): Promise<boolean> => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      alert('Browser notifications are not supported in this environment.')
       return false
     }
 
@@ -635,7 +714,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         return true
       } else {
         setNotificationsEnabled(false)
-        alert('Notification permission was denied. Please allow notifications in Chrome site settings.')
         return false
       }
     } catch (e) {
@@ -686,6 +764,12 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined' && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
+          setLocation({
+            lat: Number(pos.coords.latitude.toFixed(5)),
+            lon: Number(pos.coords.longitude.toFixed(5)),
+            accuracy: Math.round(pos.coords.accuracy),
+            capturedAt: Date.now(),
+          })
           const data = await fetchRealWeather(pos.coords.latitude, pos.coords.longitude)
           setRealWeatherData(data)
           applyRealWeather(data)
@@ -789,17 +873,18 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
             a.id
           )
 
-          // 2. Mobile Phone Twilio SMS Push Notification (+91 9715042529)
+          // 2. Notify the emergency channel for high-severity health alerts
           if (a.severity === 'Critical' || a.severity === 'High') {
             fetch('/api/notify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
+                type: 'threshold',
                 title: a.title,
                 trigger: a.trigger,
                 severity: a.severity,
                 recommendedAction: a.recommendedAction,
-                phone: userProfile.emergencyContactPhone || '9715042529',
+                location: locationRef.current ? { lat: locationRef.current.lat, lon: locationRef.current.lon } : null,
                 vitals: {
                   heartRate: telemetry.heartRate,
                   spo2: telemetry.spo2,
@@ -826,6 +911,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   return (
     <TelemetryContext.Provider
       value={{
+        account,
+        location,
+        refreshLocation,
         userProfile,
         updateUserProfile,
         scenario,
@@ -860,8 +948,12 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         activeView,
         setActiveView,
         isSosActive,
+        sosPhase,
+        sosCountdown,
         sosSource,
+        sosDispatchStatus,
         triggerSos,
+        sendSosNow,
         dismissSos,
         arduinoData,
         wsConnected,

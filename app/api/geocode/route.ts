@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const trimmedQuery = query.trim()
     const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
       trimmedQuery
-    )}&format=json&limit=5&addressdetails=1`
+    )}&format=json&limit=5&addressdetails=1&countrycodes=in&accept-language=en`
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 8500)

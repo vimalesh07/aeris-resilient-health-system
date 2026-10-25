@@ -1,0 +1,4990 @@
+{
+ "source": "OpenStreetMap via Nominatim",
+ "license": "Data © OpenStreetMap contributors, ODbL 1.0 — https://www.openstreetmap.org/copyright",
+ "savedAt": "2026-10-25",
+ "cities": [
+  {
+   "name": "Valliyur, Tirunelveli",
+   "lat": 8.3843,
+   "lon": 77.6105
+  },
+  {
+   "name": "Tirunelveli",
+   "lat": 8.7139,
+   "lon": 77.7567
+  },
+  {
+   "name": "Nagercoil",
+   "lat": 8.1833,
+   "lon": 77.4119
+  },
+  {
+   "name": "Coimbatore",
+   "lat": 11.0168,
+   "lon": 76.9558
+  },
+  {
+   "name": "Madukkarai, Coimbatore",
+   "lat": 10.9038,
+   "lon": 76.9602
+  },
+  {
+   "name": "Madurai",
+   "lat": 9.9252,
+   "lon": 78.1198
+  },
+  {
+   "name": "Chennai",
+   "lat": 13.0827,
+   "lon": 80.2707
+  }
+ ],
+ "places": [
+  {
+   "id": "osm-node-7844921892",
+   "name": "Nalamthaa Siddha Hospital",
+   "type": "Hospital",
+   "lat": 8.412806,
+   "lon": 77.623645,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921915",
+   "name": "G.K Hospital",
+   "type": "Hospital",
+   "lat": 8.318679,
+   "lon": 77.578436,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921877",
+   "name": "Al Hudha Hospital",
+   "type": "Hospital",
+   "lat": 8.443373,
+   "lon": 77.599122,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627103",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921865",
+   "name": "Sri Kumar Hospital",
+   "type": "Hospital",
+   "lat": 8.439324,
+   "lon": 77.603196,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627115",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921917",
+   "name": "Bejan Singh Eye Hospital",
+   "type": "Hospital",
+   "lat": 8.390927,
+   "lon": 77.609267,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921870",
+   "name": "Madhumitha Hospital",
+   "type": "Hospital",
+   "lat": 8.385578,
+   "lon": 77.608115,
+   "address": "yadava N street, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921924",
+   "name": "Suham Hospital",
+   "type": "Hospital",
+   "lat": 8.387877,
+   "lon": 77.608032,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921889",
+   "name": "Balaji Hospital",
+   "type": "Hospital",
+   "lat": 8.393156,
+   "lon": 77.610889,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921920",
+   "name": "Dr. Jeganathan Hospital",
+   "type": "Hospital",
+   "lat": 8.387223,
+   "lon": 77.611919,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921875",
+   "name": "Vivek Hospital",
+   "type": "Hospital",
+   "lat": 8.322792,
+   "lon": 77.578309,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921901",
+   "name": "Jose Hemalatha Hospital",
+   "type": "Hospital",
+   "lat": 8.324206,
+   "lon": 77.578919,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-6934267074",
+   "name": "Annai Amaravathi Hospital",
+   "type": "Hospital",
+   "lat": 8.38432,
+   "lon": 77.60994,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921905",
+   "name": "Prem Hospital",
+   "type": "Hospital",
+   "lat": 8.385411,
+   "lon": 77.612187,
+   "address": "yadava S street, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921918",
+   "name": "King David Hospital",
+   "type": "Hospital",
+   "lat": 8.378462,
+   "lon": 77.610511,
+   "address": "பயணியர் விடுதிச் சாலை, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249361574",
+   "name": "Valliyur Government Hospital",
+   "type": "Hospital",
+   "lat": 8.397798,
+   "lon": 77.594768,
+   "address": "Kanyakumari - Maudrai - Bangalore - Varanasi, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249361646",
+   "name": "Government Hospital, Eruvadi",
+   "type": "Hospital",
+   "lat": 8.433534,
+   "lon": 77.600642,
+   "address": "Eruvadi - Thirukkurankudi Road, Thalavaipuram, 627115",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-6928834005",
+   "name": "Arul Mission Hospital",
+   "type": "Hospital",
+   "lat": 8.398255,
+   "lon": 77.61567,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921922",
+   "name": "Madhumita Hospital",
+   "type": "Hospital",
+   "lat": 8.412765,
+   "lon": 77.623632,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921874",
+   "name": "Annan Hospital",
+   "type": "Hospital",
+   "lat": 8.354123,
+   "lon": 77.664543,
+   "address": "Alwarthirunagari - Nazerath - Sathankulam -  Valliyoor Road, Kallikulam, 627113",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921902",
+   "name": "GM Hospital",
+   "type": "Hospital",
+   "lat": 8.355333,
+   "lon": 77.660456,
+   "address": "Alwarthirunagari - Nazerath - Sathankulam -  Valliyoor Road, Kallikulam, 627113",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-11535743843",
+   "name": "ISOS Hospital",
+   "type": "Hospital",
+   "lat": 8.353557,
+   "lon": 77.674873,
+   "address": "Alwarthirunagari - Nazerath - Sathankulam -  Valliyoor Road, Samugrengapuram, 627113",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921942",
+   "name": "Easwari Nursing Home",
+   "type": "Hospital",
+   "lat": 8.413131,
+   "lon": 77.62408,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921863",
+   "name": "Thangaraj ENT Hospitals",
+   "type": "Hospital",
+   "lat": 8.446139,
+   "lon": 77.605412,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627103",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-11535743827",
+   "name": "Oswin Clinic",
+   "type": "PHC",
+   "lat": 8.317283,
+   "lon": 77.579636,
+   "address": "Kanyakumari - Maudrai - Bangalore - Varanasi, Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921909",
+   "name": "Raihan Clinic",
+   "type": "PHC",
+   "lat": 8.444369,
+   "lon": 77.605991,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627103",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921936",
+   "name": "Oswin Clinic",
+   "type": "PHC",
+   "lat": 8.322479,
+   "lon": 77.579036,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921932",
+   "name": "Mizpa Clinic",
+   "type": "PHC",
+   "lat": 8.387876,
+   "lon": 77.610176,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-11535743832",
+   "name": "St. Michael's Dental Clinic",
+   "type": "PHC",
+   "lat": 8.388319,
+   "lon": 77.609162,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921895",
+   "name": "Dr. Kaniraj Peter Clinic",
+   "type": "PHC",
+   "lat": 8.32301,
+   "lon": 77.579221,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vaishnavi Gardens, Panagudi, 627109",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921927",
+   "name": "Maria Clinic",
+   "type": "PHC",
+   "lat": 8.443224,
+   "lon": 77.605589,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627103",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249361659",
+   "name": "Mercy Nursing Home",
+   "type": "PHC",
+   "lat": 8.446381,
+   "lon": 77.605513,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Eruvadi, 627103",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921928",
+   "name": "Giri Thangam Polyclinic",
+   "type": "PHC",
+   "lat": 8.412738,
+   "lon": 77.623639,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-6928760479",
+   "name": "Annalekshmy Nursing Home",
+   "type": "PHC",
+   "lat": 8.387978,
+   "lon": 77.609694,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249361597",
+   "name": "Eswari Nursing Home",
+   "type": "PHC",
+   "lat": 8.39151,
+   "lon": 77.609073,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249361679",
+   "name": "Lakshmi Nursing Home",
+   "type": "PHC",
+   "lat": 8.388654,
+   "lon": 77.610365,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921906",
+   "name": "Aravind Vision Centre",
+   "type": "PHC",
+   "lat": 8.384021,
+   "lon": 77.610563,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-7844921923",
+   "name": "Vijaya Murugan Eye Care",
+   "type": "PHC",
+   "lat": 8.381522,
+   "lon": 77.614832,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-12536366252",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.384021,
+   "lon": 77.610082,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-11535743829",
+   "name": "Saraswati Medicals",
+   "type": "Pharmacy",
+   "lat": 8.386062,
+   "lon": 77.609419,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-12536345257",
+   "name": "Kings Medicals",
+   "type": "Pharmacy",
+   "lat": 8.354456,
+   "lon": 77.664572,
+   "address": "Alwarthirunagari - Nazerath - Sathankulam -  Valliyoor Road, Samugrengapuram, 627113",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-13607092277",
+   "name": "Suresh Medicals",
+   "type": "Pharmacy",
+   "lat": 8.38539,
+   "lon": 77.609786,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-node-12536366254",
+   "name": "Grace Medicals",
+   "type": "Pharmacy",
+   "lat": 8.383541,
+   "lon": 77.613408,
+   "address": "Nanguneri - Eruvadi - Valliyoor - Vijayapathy Road, Valiyoor, 627117",
+   "city": "Valliyur, Tirunelveli"
+  },
+  {
+   "id": "osm-way-1092912286",
+   "name": "Government Siddha Medical College and Hospital",
+   "type": "Hospital",
+   "lat": 8.724732,
+   "lon": 77.732692,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045738",
+   "name": "Maya Hospital",
+   "type": "Hospital",
+   "lat": 8.705885,
+   "lon": 77.751368,
+   "address": "Maharaja Nagar 17th Cross Road, Maharaja Nagar, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111739",
+   "name": "Muthu Damian Hospital",
+   "type": "Hospital",
+   "lat": 8.719595,
+   "lon": 77.731876,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111691",
+   "name": "Syed Hospital",
+   "type": "Hospital",
+   "lat": 8.744189,
+   "lon": 77.704425,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Thachanallur, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045800",
+   "name": "Rathinam Hospital",
+   "type": "Hospital",
+   "lat": 8.717308,
+   "lon": 77.72032,
+   "address": "Tirunelveli Bypass Road, Vannarpettai, 627009",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111710",
+   "name": "Chendhur Cardiac Centre & Multi Speciality Hospital",
+   "type": "Hospital",
+   "lat": 8.723118,
+   "lon": 77.721889,
+   "address": "Tirunelveli Bypass Road, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249356930",
+   "name": "Shifa Hospital",
+   "type": "Hospital",
+   "lat": 8.728461,
+   "lon": 77.710179,
+   "address": "Kailasapuram, Udayarpatti, Tirunelveli, 627001",
+   "phone": "9442139292",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111695",
+   "name": "Dr. Velayudhan Pillai Hospital",
+   "type": "Hospital",
+   "lat": 8.72941,
+   "lon": 77.71843,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111733",
+   "name": "P.S. Hospital",
+   "type": "Hospital",
+   "lat": 8.726923,
+   "lon": 77.733596,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045769",
+   "name": "Mother Hospital",
+   "type": "Hospital",
+   "lat": 8.722672,
+   "lon": 77.740912,
+   "address": "Palay Market road, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045802",
+   "name": "Chella Suriya Hospital",
+   "type": "Hospital",
+   "lat": 8.719264,
+   "lon": 77.764536,
+   "address": "80 Feet Road, KTC Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6934271019",
+   "name": "Madhubala Hospital",
+   "type": "Hospital",
+   "lat": 8.707401,
+   "lon": 77.748458,
+   "address": "Railway Feeder Road, Maharaja Nagar, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936332882",
+   "name": "Tirunelveli Medical College and Hospital",
+   "type": "Hospital",
+   "lat": 8.711929,
+   "lon": 77.75074,
+   "address": "North High Ground Road, Palayamkottai, 627008",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6926175049",
+   "name": "Dr Agarwal's Eye Hospital, Vannarpet",
+   "type": "Hospital",
+   "lat": 8.726199,
+   "lon": 77.722072,
+   "address": "Tirunelveli Bypass Road, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111707",
+   "name": "V Care Hair Care Hospital",
+   "type": "Hospital",
+   "lat": 8.716051,
+   "lon": 77.732239,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936709126",
+   "name": "Krishna Hospital, Tirunelveli",
+   "type": "Hospital",
+   "lat": 8.726998,
+   "lon": 77.734801,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111694",
+   "name": "Ramabhai Ponnudurai Hospital",
+   "type": "Hospital",
+   "lat": 8.72041,
+   "lon": 77.735581,
+   "address": "South Mutharamman Kovil Street, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936380669",
+   "name": "Royal Hospital For Children",
+   "type": "Hospital",
+   "lat": 8.695902,
+   "lon": 77.739408,
+   "address": "STC college New Bus stand link, Vasantha Nagar, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045794",
+   "name": "Rhock Hospital",
+   "type": "Hospital",
+   "lat": 8.701241,
+   "lon": 77.729644,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vasantha Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045776",
+   "name": "Diawin Multi Speciality Siddha Hospital",
+   "type": "Hospital",
+   "lat": 8.700556,
+   "lon": 77.725985,
+   "address": "Tirunelveli Bypass Road, Melapalayam, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111715",
+   "name": "Allapitchi Siddha Hospital",
+   "type": "Hospital",
+   "lat": 8.715862,
+   "lon": 77.732183,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936708069",
+   "name": "Sms Hospital, Tirunelveli",
+   "type": "Hospital",
+   "lat": 8.72501,
+   "lon": 77.738465,
+   "address": "Sivan West Car Street, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045771",
+   "name": "Venkateswara Hospital",
+   "type": "Hospital",
+   "lat": 8.705057,
+   "lon": 77.75842,
+   "address": "Highground road, Maharaja Nagar, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045761",
+   "name": "K.G. Hospital",
+   "type": "Hospital",
+   "lat": 8.731177,
+   "lon": 77.702675,
+   "address": "Sivasakthi Theatre road, Thachanallur, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111740",
+   "name": "Paul Hospital",
+   "type": "Hospital",
+   "lat": 8.726895,
+   "lon": 77.733681,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936426589",
+   "name": "Devi Hospital",
+   "type": "Hospital",
+   "lat": 8.725084,
+   "lon": 77.717972,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vannarpettai, 627004",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249356968",
+   "name": "Joseph Hospital",
+   "type": "Hospital",
+   "lat": 8.724913,
+   "lon": 77.731264,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6929592135",
+   "name": "Csi Jayaraj Annapackiam Mission Hospital",
+   "type": "Hospital",
+   "lat": 8.718872,
+   "lon": 77.736325,
+   "address": "North High Ground Road, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111697",
+   "name": "Dr. V. Ganapathi Sidha Hospital",
+   "type": "Hospital",
+   "lat": 8.744868,
+   "lon": 77.707455,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111690",
+   "name": "Adam Ali Hospital",
+   "type": "Hospital",
+   "lat": 8.746132,
+   "lon": 77.702814,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Thachanallur, Tirunelveli, 627358",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045793",
+   "name": "Prem Hospital",
+   "type": "Hospital",
+   "lat": 8.729063,
+   "lon": 77.700497,
+   "address": "Swamy Nellaiapar High road, Tirunelveli Town, Tirunelveli, 627117",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045759",
+   "name": "Sree Vijaya Children's Hospital",
+   "type": "Hospital",
+   "lat": 8.696528,
+   "lon": 77.712185,
+   "address": "Tiruchendur - Palayamkottai - Ambasamudram - Tenkasi - Courtalam - Shencottai Road, Araikulam, Tharuvai, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045785",
+   "name": "Shifa Eye Hospital",
+   "type": "Hospital",
+   "lat": 8.727898,
+   "lon": 77.71035,
+   "address": "Kailasapuram, Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045739",
+   "name": "RSP Hospital",
+   "type": "Hospital",
+   "lat": 8.72594,
+   "lon": 77.705564,
+   "address": "Sivapuram, Tirunelveli Town, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045742",
+   "name": "Jayakumar Hospital",
+   "type": "Hospital",
+   "lat": 8.699246,
+   "lon": 77.714533,
+   "address": "Kokkirakulam - Nanguneri Road, Melapalayam, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045775",
+   "name": "Iswarya Fertility Hospital",
+   "type": "Hospital",
+   "lat": 8.703941,
+   "lon": 77.730072,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vasantha Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6927326944",
+   "name": "Dr Agnes' Joseph Hospital",
+   "type": "Hospital",
+   "lat": 8.724975,
+   "lon": 77.730994,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111692",
+   "name": "Jai Ayush Siddha Hospital",
+   "type": "Hospital",
+   "lat": 8.71872,
+   "lon": 77.732946,
+   "address": "Tiruchendur - Palayamkottai - Ambasamudram - Tenkasi - Courtalam - Shencottai Road, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111721",
+   "name": "Mangala Hospital",
+   "type": "Hospital",
+   "lat": 8.728756,
+   "lon": 77.740428,
+   "address": "Palayamkottai - Ottapidaram - Vilathikulam - Pandalkudi - Aruppukkottai Road, Shanti Nagar, Padappakurichi, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6928879663",
+   "name": "A.J. Hospital, Tirunelveli",
+   "type": "Hospital",
+   "lat": 8.719584,
+   "lon": 77.732111,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-way-1064288887",
+   "name": "Sri Annai ENT Clinic",
+   "type": "PHC",
+   "lat": 8.698738,
+   "lon": 77.728524,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vasantha Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111728",
+   "name": "Meera Homeo Clinic",
+   "type": "PHC",
+   "lat": 8.724942,
+   "lon": 77.733677,
+   "address": "Perumal North Mada Street, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045768",
+   "name": "Rafael Clinic",
+   "type": "PHC",
+   "lat": 8.724623,
+   "lon": 77.745417,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045791",
+   "name": "Dr.Godson, Rehoboth Psychiatry Clinic",
+   "type": "PHC",
+   "lat": 8.718742,
+   "lon": 77.742919,
+   "address": "North High Ground Road, Palayamkottai, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045765",
+   "name": "Jamuna Clinic",
+   "type": "PHC",
+   "lat": 8.724657,
+   "lon": 77.686862,
+   "address": "South Car Street, Tirunelveli Town, Tirunelveli, 627006",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111744",
+   "name": "Siva Counselling Clinic",
+   "type": "PHC",
+   "lat": 8.727267,
+   "lon": 77.736232,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111732",
+   "name": "Jeya Lakshmy Clinic",
+   "type": "PHC",
+   "lat": 8.74888,
+   "lon": 77.699599,
+   "address": "Ramayanpatti Road, Thachanallur, Tirunelveli, 627358",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111706",
+   "name": "Geetharani Clinic",
+   "type": "PHC",
+   "lat": 8.744025,
+   "lon": 77.706975,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111699",
+   "name": "Bethel Clinic",
+   "type": "PHC",
+   "lat": 8.726344,
+   "lon": 77.738301,
+   "address": "Palay Market road, Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045798",
+   "name": "Velavan ENT Clinic",
+   "type": "PHC",
+   "lat": 8.702989,
+   "lon": 77.713865,
+   "address": "Kokkirakulam - Nanguneri Road, Melapalayam, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-9865083472",
+   "name": "Crescent Multicate Clinic",
+   "type": "PHC",
+   "lat": 8.720048,
+   "lon": 77.771424,
+   "address": "Kamatchi Nagar 3rd Main Street, KTC Nagar, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111682",
+   "name": "Sri Vijayalakshmi Homeo Clinic",
+   "type": "PHC",
+   "lat": 8.725856,
+   "lon": 77.731142,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111712",
+   "name": "Aruna Siddha Clinic",
+   "type": "PHC",
+   "lat": 8.725966,
+   "lon": 77.730213,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111713",
+   "name": "Laxmi Bali Clinic",
+   "type": "PHC",
+   "lat": 8.72502,
+   "lon": 77.737483,
+   "address": "Sivan West Car Street, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111680",
+   "name": "American Clinic",
+   "type": "PHC",
+   "lat": 8.727317,
+   "lon": 77.735871,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111726",
+   "name": "Dr. Sathyas Dental and ENT Clinic",
+   "type": "PHC",
+   "lat": 8.72226,
+   "lon": 77.73175,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045781",
+   "name": "Kavitha Clinic",
+   "type": "PHC",
+   "lat": 8.730492,
+   "lon": 77.748318,
+   "address": "Palayamkottai - Ottapidaram - Vilathikulam - Pandalkudi - Aruppukkottai Road, Shanti Nagar, Padappakurichi, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111736",
+   "name": "Dr. Elangovan Chellapa Ortho Clinic",
+   "type": "PHC",
+   "lat": 8.719131,
+   "lon": 77.732712,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111727",
+   "name": "Guru Clinic",
+   "type": "PHC",
+   "lat": 8.723735,
+   "lon": 77.733602,
+   "address": "Prasanna Vinayagar Kovil Street, Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111701",
+   "name": "Dr. Pothilingam's Eye Clinic",
+   "type": "PHC",
+   "lat": 8.726668,
+   "lon": 77.724828,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Vannarpettai, 627009",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111720",
+   "name": "Dr. Alagesan Neuro Clinic",
+   "type": "PHC",
+   "lat": 8.725447,
+   "lon": 77.730831,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111743",
+   "name": "Dr. Radhakrishnan Clinic",
+   "type": "PHC",
+   "lat": 8.7445,
+   "lon": 77.711893,
+   "address": "Tirunelveli Bypass Road, Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111746",
+   "name": "Sankar Neuro Clinic",
+   "type": "PHC",
+   "lat": 8.729223,
+   "lon": 77.722964,
+   "address": "Hare Krishna Road, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111678",
+   "name": "Gold Child & Chest Clinic",
+   "type": "PHC",
+   "lat": 8.732466,
+   "lon": 77.719815,
+   "address": "Tirunelveli Bypass Road, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045795",
+   "name": "Almaa Siddha Care Clinic",
+   "type": "PHC",
+   "lat": 8.699412,
+   "lon": 77.725495,
+   "address": "Tirunelveli Bypass Road, Melapalayam, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045784",
+   "name": "Jazbah Clinic",
+   "type": "PHC",
+   "lat": 8.724148,
+   "lon": 77.746741,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045760",
+   "name": "M.G. Clinic",
+   "type": "PHC",
+   "lat": 8.732999,
+   "lon": 77.713485,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7843768452",
+   "name": "Ram Swarna Clinic",
+   "type": "PHC",
+   "lat": 8.762617,
+   "lon": 77.708793,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Melakkarai, Karaiyiruppu, 627358",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6936476052",
+   "name": "Arun Nursing Home",
+   "type": "PHC",
+   "lat": 8.724628,
+   "lon": 77.687655,
+   "address": "East car street, Tirunelveli Town, Tirunelveli, 627006",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045803",
+   "name": "Asokam Siddha Care",
+   "type": "PHC",
+   "lat": 8.715308,
+   "lon": 77.751821,
+   "address": "North High Ground Road, Palayamkottai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111703",
+   "name": "Aruna Cardiac Care",
+   "type": "PHC",
+   "lat": 8.726848,
+   "lon": 77.733758,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-3154694818",
+   "name": "Kartheek Nursing Home",
+   "type": "PHC",
+   "lat": 8.70411,
+   "lon": 77.738617,
+   "address": "Railway Feeder Road, Maharaja Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6929243677",
+   "name": "Subramaniam Nursing Home (Kidney Centre)",
+   "type": "PHC",
+   "lat": 8.736445,
+   "lon": 77.711826,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111729",
+   "name": "AKJN Skin and Laser Centre",
+   "type": "PHC",
+   "lat": 8.728036,
+   "lon": 77.723618,
+   "address": "Hare Krishna Road, Vannarpettai, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111709",
+   "name": "Beulah Nursing Home",
+   "type": "PHC",
+   "lat": 8.711325,
+   "lon": 77.734088,
+   "address": "Railway Feeder Road, Maharaja Nagar, 627007",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-6932141757",
+   "name": "Ranjeetham Nursing Home",
+   "type": "PHC",
+   "lat": 8.700041,
+   "lon": 77.755417,
+   "address": "6th North Street, Anbunagar, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847045741",
+   "name": "Subuhani Heart Centre",
+   "type": "PHC",
+   "lat": 8.721632,
+   "lon": 77.753838,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627002",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111717",
+   "name": "Southern Heart Centre",
+   "type": "PHC",
+   "lat": 8.741546,
+   "lon": 77.713791,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7249356837",
+   "name": "Chellam Natarajan Nursing Home",
+   "type": "PHC",
+   "lat": 8.735456,
+   "lon": 77.712296,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-7847111734",
+   "name": "Asukavi Acupuncture Centre",
+   "type": "PHC",
+   "lat": 8.729731,
+   "lon": 77.724431,
+   "address": "Fx College road to Main Block, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-9271938584",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.713904,
+   "lon": 77.772682,
+   "address": "NH138, Shanti Nagar, Uthamapandiankulam, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-9277595880",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.717297,
+   "lon": 77.760818,
+   "address": "Palayamkottai - Tuticorin Port Road (Old NH7A), Shakti Nagar, 627008",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-4307036754",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.731056,
+   "lon": 77.710036,
+   "address": "Old Madurai - Kanniyakumari Road, Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-13607099893",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.730505,
+   "lon": 77.721982,
+   "address": "Tirunelveli Bypass Road, Vannarpettai, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-13607099886",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.699463,
+   "lon": 77.725481,
+   "address": "Tirunelveli Bypass Road, Melapalayam, 627005",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-10795126090",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 8.71062,
+   "lon": 77.770384,
+   "address": "Tiruchendur - Palayamkottai - Ambasamudram - Tenkasi - Courtalam - Shencottai Road, Vijayaraghava Muthaliyaar Chatram, 627011",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-13889327805",
+   "name": "Byepass Medicals",
+   "type": "Pharmacy",
+   "lat": 8.727856,
+   "lon": 77.722183,
+   "address": "Varanasi - Kanniyakumari Road (Old NH7), Palayamkottai, Padappakurichi, 627003",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-9764472843",
+   "name": "Jan anushudhi",
+   "type": "Pharmacy",
+   "lat": 8.713367,
+   "lon": 77.762393,
+   "address": "Tiruchendur - Palayamkottai - Ambasamudram - Tenkasi - Courtalam - Shencottai Road, Palayamkottai, 627002",
+   "phone": "9629698622..9894632805",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-node-12536345238",
+   "name": "Balaji Medicals",
+   "type": "Pharmacy",
+   "lat": 8.731996,
+   "lon": 77.711033,
+   "address": "Old Madurai - Kanniyakumari Road, Udayarpatti, Tirunelveli, 627001",
+   "city": "Tirunelveli"
+  },
+  {
+   "id": "osm-way-547144284",
+   "name": "Manuel Ortho Hospital",
+   "type": "Hospital",
+   "lat": 8.203443,
+   "lon": 77.454995,
+   "address": "NH944, Nagercoil, 629901",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-way-1150601275",
+   "name": "Annai Velankanni Hospital",
+   "type": "Hospital",
+   "lat": 8.167882,
+   "lon": 77.4199,
+   "address": "Lourd Annai Road, Thammathukonam, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2371807803",
+   "name": "Dr. Jayaharan Memorial Hospital",
+   "type": "Hospital",
+   "lat": 8.182859,
+   "lon": 77.429325,
+   "address": "Victoria Press Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6926188824",
+   "name": "Kumaravel Hospital",
+   "type": "Hospital",
+   "lat": 8.174029,
+   "lon": 77.434863,
+   "address": "Salem - Kochi - Kanyakumari Road, Chettikulam, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361612",
+   "name": "Vattavilai Government Hospital",
+   "type": "Hospital",
+   "lat": 8.161299,
+   "lon": 77.438286,
+   "address": "Nica Street, Erulappapuram, Nagercoil, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361571",
+   "name": "Renuga Hospital",
+   "type": "Hospital",
+   "lat": 8.170026,
+   "lon": 77.437374,
+   "address": "Kottar - Dharmapuram Road, Soorankudy, Eathamozhi, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6914768007",
+   "name": "Thangam Hospital, Kanniyakumari",
+   "type": "Hospital",
+   "lat": 8.177474,
+   "lon": 77.432342,
+   "address": "DVD School Road, Chettikulam, Nagercoil, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6936296999",
+   "name": "Sankaralingam Hospital",
+   "type": "Hospital",
+   "lat": 8.175362,
+   "lon": 77.431388,
+   "address": "PWD Road, Chettikulam, Nagercoil, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361686",
+   "name": "MJ Hospital",
+   "type": "Hospital",
+   "lat": 8.165183,
+   "lon": 77.385274,
+   "address": "Santhapuram Road, Asaripallam, Pambanvilai, 629003",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6936744366",
+   "name": "Sam Hospital",
+   "type": "Hospital",
+   "lat": 8.187883,
+   "lon": 77.422725,
+   "address": "WCC Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2364874919",
+   "name": "Kottar Government Hospital",
+   "type": "Hospital",
+   "lat": 8.178274,
+   "lon": 77.436251,
+   "address": "Salem - Cochin - Kanniyakumari Road (Old NH47), Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6929592145",
+   "name": "Balasundaram - Shyamala Hospital",
+   "type": "Hospital",
+   "lat": 8.186794,
+   "lon": 77.435283,
+   "address": "Avvai Shanmugam Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361652",
+   "name": "Mahalekshmi Hospital",
+   "type": "Hospital",
+   "lat": 8.178425,
+   "lon": 77.425256,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6936695184",
+   "name": "Willam Hospital",
+   "type": "Hospital",
+   "lat": 8.191353,
+   "lon": 77.423331,
+   "address": "MS Road, Vadasery, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7213437237",
+   "name": "Thilagaram Orthopaedic Hospital",
+   "type": "Hospital",
+   "lat": 8.18218,
+   "lon": 77.41536,
+   "address": "Salem - Kochi - Kanyakumari Road, Parvathipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6933038531",
+   "name": "Irene Hospital",
+   "type": "Hospital",
+   "lat": 8.179626,
+   "lon": 77.420041,
+   "address": "Aasaripallam Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6933038524",
+   "name": "Irudayam Hospital",
+   "type": "Hospital",
+   "lat": 8.167288,
+   "lon": 77.433483,
+   "address": "Nagercoil Beach Road, Soorankudy, Vairavilai, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-4869613924",
+   "name": "ganeshmani hospital",
+   "type": "Hospital",
+   "lat": 8.171083,
+   "lon": 77.431003,
+   "address": "Nagercoil Beach Road, Soorankudy, Vairavilai, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361614",
+   "name": "Rajalekshmi Hospital",
+   "type": "Hospital",
+   "lat": 8.158196,
+   "lon": 77.43251,
+   "address": "Nagercoil Beach Road, Soorankudy, Vairavilai, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361673",
+   "name": "Ganesamony Hospital",
+   "type": "Hospital",
+   "lat": 8.170847,
+   "lon": 77.43225,
+   "address": "Nagercoil Beach Road, Soorankudy, Vairavilai, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6928330849",
+   "name": "Dr. J. Mathias Hospital",
+   "type": "Hospital",
+   "lat": 8.180749,
+   "lon": 77.418601,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6930048373",
+   "name": "Vasantham Hospital",
+   "type": "Hospital",
+   "lat": 8.186539,
+   "lon": 77.429248,
+   "address": "Nagarajacoil Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361600",
+   "name": "Carolin John Hospital",
+   "type": "Hospital",
+   "lat": 8.176412,
+   "lon": 77.409411,
+   "address": "Aasaripallam Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361616",
+   "name": "Ramya Hospital Velladichivilai",
+   "type": "Hospital",
+   "lat": 8.154372,
+   "lon": 77.44621,
+   "address": "Kottar - Manakudy Road, Puthalam, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2370307059",
+   "name": "Muthunayagam Hospital",
+   "type": "Hospital",
+   "lat": 8.180155,
+   "lon": 77.420153,
+   "address": "Kesari Street, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6927340827",
+   "name": "Ramamurthy Hospital",
+   "type": "Hospital",
+   "lat": 8.177878,
+   "lon": 77.431185,
+   "address": "PWD Road, Chettikulam, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-4865811621",
+   "name": "franklin hospital",
+   "type": "Hospital",
+   "lat": 8.191451,
+   "lon": 77.397597,
+   "address": "Salem - Kochi - Kanyakumari Road, Chunkankadai, 629003",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361621",
+   "name": "Latha Hospital",
+   "type": "Hospital",
+   "lat": 8.168325,
+   "lon": 77.435777,
+   "address": "Kottar - Dharmapuram Road, Soorankudy, Eathamozhi, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6936334917",
+   "name": "Umar Hospital",
+   "type": "Hospital",
+   "lat": 8.186657,
+   "lon": 77.431709,
+   "address": "Nagarajacoil Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-5338402909",
+   "name": "Be Well Hospital",
+   "type": "Hospital",
+   "lat": 8.176316,
+   "lon": 77.4276,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2363078212",
+   "name": "Kuzhanthai Sanjeevi Hospital",
+   "type": "Hospital",
+   "lat": 8.174961,
+   "lon": 77.427172,
+   "address": "Jawahar Street, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6915215712",
+   "name": "Padma Hospital",
+   "type": "Hospital",
+   "lat": 8.170857,
+   "lon": 77.440078,
+   "address": "Salem - Kochi - Kanyakumari Road, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361613",
+   "name": "Krishnakumar Orthopaedic Hospital",
+   "type": "Hospital",
+   "lat": 8.194654,
+   "lon": 77.394216,
+   "address": "Salem - Kochi - Kanyakumari Road, Chunkankadai, 629003",
+   "phone": "+91 4652 231 322",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361666",
+   "name": "Sindhu Hospital",
+   "type": "Hospital",
+   "lat": 8.145348,
+   "lon": 77.431865,
+   "address": "Nagercoil Beach Road, Soorankudy, Vairavilai, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361669",
+   "name": "Mother Therese Hospital",
+   "type": "Hospital",
+   "lat": 8.173564,
+   "lon": 77.417625,
+   "address": "North Sargunaveethi Road, Ramavarmapuram, Nagercoil, 629004",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6914764646",
+   "name": "Bensam Hospital",
+   "type": "Hospital",
+   "lat": 8.189669,
+   "lon": 77.412146,
+   "address": "MS Road, Parvathipuram, Nagercoil, 629003",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6934271005",
+   "name": "Aananthi Hospital",
+   "type": "Hospital",
+   "lat": 8.184847,
+   "lon": 77.434566,
+   "address": "SP Office Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6914880559",
+   "name": "Moses Mathias Hospital",
+   "type": "Hospital",
+   "lat": 8.180615,
+   "lon": 77.418922,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361637",
+   "name": "Bethesda Hospital",
+   "type": "Hospital",
+   "lat": 8.188326,
+   "lon": 77.427116,
+   "address": "Distillery Road, Vadasery, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361585",
+   "name": "SJ. Hospital",
+   "type": "Hospital",
+   "lat": 8.196694,
+   "lon": 77.428244,
+   "address": "MS Road, Vadasery, Nagercoil, 629003",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-7249361644",
+   "name": "AVM Clinic",
+   "type": "PHC",
+   "lat": 8.173497,
+   "lon": 77.402513,
+   "address": "Santhapuram Road, Asaripallam, Peruvilai, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2364135061",
+   "name": "Dr. Suresh Skin Clinic",
+   "type": "PHC",
+   "lat": 8.176502,
+   "lon": 77.427054,
+   "address": "Jawahar Street, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6933010462",
+   "name": "James Orthopaedic Clinic",
+   "type": "PHC",
+   "lat": 8.181107,
+   "lon": 77.416099,
+   "address": "Salem - Kochi - Kanyakumari Road, Parvathipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-4741157021",
+   "name": "Dr Jeyashekharam hospital",
+   "type": "PHC",
+   "lat": 8.184665,
+   "lon": 77.409913,
+   "address": "Salem - Kochi - Kanyakumari Road, Parvathipuram, Nagercoil, 629003",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6914768017",
+   "name": "S J Nursing Home",
+   "type": "PHC",
+   "lat": 8.196293,
+   "lon": 77.428281,
+   "address": "MS Road, Vadasery, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6934002119",
+   "name": "Gautham Nursing hojme",
+   "type": "PHC",
+   "lat": 8.190701,
+   "lon": 77.419645,
+   "address": "MS Road, Vadasery, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-6934496954",
+   "name": "Latha Nursing Home, Kanniyakumari",
+   "type": "PHC",
+   "lat": 8.183764,
+   "lon": 77.433237,
+   "address": "SP Office Road, Meenakshipuram, Nagercoil, 629002",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2602930280",
+   "name": "Ravi Scans",
+   "type": "PHC",
+   "lat": 8.179218,
+   "lon": 77.430668,
+   "address": "SLB South Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2365395924",
+   "name": "Joel Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.181069,
+   "lon": 77.416369,
+   "address": "Salem - Kochi - Kanyakumari Road, Parvathipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2364874913",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 8.174525,
+   "lon": 77.431641,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2365395928",
+   "name": "Oliver Medicals",
+   "type": "Pharmacy",
+   "lat": 8.180338,
+   "lon": 77.419385,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2701127494",
+   "name": "ASK Medicals",
+   "type": "Pharmacy",
+   "lat": 8.172438,
+   "lon": 77.425836,
+   "address": "Sarkuna Veethi, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-11351138790",
+   "name": "Sam Medical",
+   "type": "Pharmacy",
+   "lat": 8.163118,
+   "lon": 77.425365,
+   "address": "Kottar - Dharmapuram Road, Soorankudy, Eathamozhi, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-5003289353",
+   "name": "Ahad Stores",
+   "type": "Pharmacy",
+   "lat": 8.175223,
+   "lon": 77.436833,
+   "address": "Salem - Kochi - Kanyakumari Road, Chettikulam, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-11351138793",
+   "name": "Joyra Medicals",
+   "type": "Pharmacy",
+   "lat": 8.181702,
+   "lon": 77.427304,
+   "address": "Court Road, Meenakshipuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-node-2365395926",
+   "name": "LHL Medicals",
+   "type": "Pharmacy",
+   "lat": 8.179935,
+   "lon": 77.419587,
+   "address": "Salem - Kochi - Kanyakumari Road, Ramavarmapuram, Nagercoil, 629001",
+   "city": "Nagercoil"
+  },
+  {
+   "id": "osm-way-377993519",
+   "name": "Coimbatore Medical College Hospital",
+   "type": "Hospital",
+   "lat": 10.996419,
+   "lon": 76.970196,
+   "address": "Tiruchi Road, Ward 73, Coimbatore, 641002",
+   "emergency": true,
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-738467952",
+   "name": "Sri Ramakrishna Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.023146,
+   "lon": 76.977689,
+   "address": "Sarojini Naidu Road, Siddhapudur, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-133736673",
+   "name": "Sankara Eye Hospital",
+   "type": "Hospital",
+   "lat": 11.055865,
+   "lon": 76.997784,
+   "address": "Vilankurichi road, Ward 30, Coimbatore, 641035",
+   "phone": "0422 2666450",
+   "emergency": true,
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-497317279",
+   "name": "Rajam Medical Centre & Hospital",
+   "type": "Hospital",
+   "lat": 10.948765,
+   "lon": 76.977685,
+   "address": "Pollachi road, Ward 97, Podanur, 641021",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-498988417",
+   "name": "Coimbatore Child Trust Hospital",
+   "type": "Hospital",
+   "lat": 10.997883,
+   "lon": 77.017066,
+   "address": "NH181, Uppilipalayam, 641005",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183971",
+   "name": "Sengottaiah Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.022515,
+   "lon": 76.960158,
+   "address": "Dr. Radhakrishnan Road, Ward 50, Coimbatore, 641012",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7343511629",
+   "name": "Devi Hospital",
+   "type": "Hospital",
+   "lat": 11.025379,
+   "lon": 76.938103,
+   "address": "NSR Road, Saibaba Colony, Coimbatore, 641011",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183964",
+   "name": "Sabari Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.025444,
+   "lon": 76.939724,
+   "address": "NSR Road, Saibaba Colony, Coimbatore, 641011",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009763",
+   "name": "Paavai ENT Hospital",
+   "type": "Hospital",
+   "lat": 11.02709,
+   "lon": 76.941655,
+   "address": "Chinnappan Street, Ward 12, Coimbatore, 641011",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009749",
+   "name": "Kandaswamy Sidhq Hospital",
+   "type": "Hospital",
+   "lat": 11.026645,
+   "lon": 76.945987,
+   "address": "NSR Road, Saibaba Colony, Coimbatore, 641043",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6928852611",
+   "name": "Sree Andal Hospital",
+   "type": "Hospital",
+   "lat": 11.056007,
+   "lon": 77.016458,
+   "address": "Vilankuruchi Road, Villangkurichi, Coimbatore, 641035",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6356067518",
+   "name": "ESI Hospital",
+   "type": "Hospital",
+   "lat": 11.009281,
+   "lon": 77.024049,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844058258",
+   "name": "Srinivas Hospital",
+   "type": "Hospital",
+   "lat": 11.013248,
+   "lon": 77.019249,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183972",
+   "name": "Sangeetha Hospital, Kuniyamuthur",
+   "type": "Hospital",
+   "lat": 10.964104,
+   "lon": 76.956256,
+   "address": "Palghat road, Ward 87, Madukkarai, 641008",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009706",
+   "name": "Ranjith Dental Hospital",
+   "type": "Hospital",
+   "lat": 11.038389,
+   "lon": 76.926209,
+   "address": "Thadagam Road, Ward 8, Coimbatore, 641025",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257155935",
+   "name": "J.M.Hospital, Edayarpalayam",
+   "type": "Hospital",
+   "lat": 11.04984,
+   "lon": 76.918862,
+   "address": "Thadagam Road, Ward 6, Coimbatore, 641025",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6936696197",
+   "name": "V. G. Hospital, Thudiyalur",
+   "type": "Hospital",
+   "lat": 11.07069,
+   "lon": 76.942005,
+   "address": "Coimbatore-Mettupalayam Road, GN Mills, Coimbatore, 641034",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6392075888",
+   "name": "bhagirathi hospital",
+   "type": "Hospital",
+   "lat": 11.07948,
+   "lon": 76.940945,
+   "address": "Thudiyalur, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257156011",
+   "name": "Ramana Gounder Medical Trust Hospital",
+   "type": "Hospital",
+   "lat": 11.075394,
+   "lon": 76.939234,
+   "address": "Coimbatore-Mettupalayam Road, Subramaniapalayam, Coimbatore, 641034",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257155969",
+   "name": "SS Hospital Coimbatore",
+   "type": "Hospital",
+   "lat": 11.04761,
+   "lon": 77.000115,
+   "address": "Jeeva Nagar Road, Ward 41, Coimbatore, 641006",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257156023",
+   "name": "V.R.Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.05642,
+   "lon": 77.001972,
+   "address": "Sivanandha Mills - Vilankuruchi Road, Villangkurichi, Coimbatore, 641035",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6914937682",
+   "name": "Sri Sakthi Hospital, Ganapathi, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.047492,
+   "lon": 76.993066,
+   "address": "Police Quarters Road, Bharathi Nagar, Coimbatore, 641006",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1474518445",
+   "name": "Vasan Eye Care Hospital",
+   "type": "Hospital",
+   "lat": 11.012474,
+   "lon": 76.98624,
+   "address": "Puliyakulam Road, Puliakulam, Coimbatore, 641037",
+   "emergency": true,
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7210911318",
+   "name": "Shree Sivaa Hospital",
+   "type": "Hospital",
+   "lat": 11.045073,
+   "lon": 76.985612,
+   "address": "Sathyamangalam Road, Bharathi Nagar, Coimbatore, 641006",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1913565236",
+   "name": "Ashwin Hospital",
+   "type": "Hospital",
+   "lat": 11.024183,
+   "lon": 76.973119,
+   "address": "Sathy Main Road, Ward 52, Coimbatore, 641012",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6934340771",
+   "name": "Padmavathy Hospital",
+   "type": "Hospital",
+   "lat": 11.042743,
+   "lon": 76.947721,
+   "address": "Coimbatore-Mettupalayam Road, Kaundampalayam, Coimbatore, 641030",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1474413414",
+   "name": "Moses Eye Hospital",
+   "type": "Hospital",
+   "lat": 10.994379,
+   "lon": 76.966466,
+   "address": "Big Bazaar Street, Ukkadam, Podanur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6914911765",
+   "name": "Vasavi Hospital",
+   "type": "Hospital",
+   "lat": 10.992787,
+   "lon": 76.955023,
+   "address": "Vysial Street, Ward 84, Podanur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257155919",
+   "name": "Geethasree Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.07196,
+   "lon": 77.002444,
+   "address": "NH948, Sarvanampatti, Coimbatore, 641035",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166877",
+   "name": "Abirami Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 10.95254,
+   "lon": 76.973201,
+   "address": "Kuruchi - Madukkarai - Nachipalayam - Kannamanaickenur Road, Ward 97, Podanur, 641024",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183942",
+   "name": "Government Hospital, Kuruchi",
+   "type": "Hospital",
+   "lat": 10.963867,
+   "lon": 76.97122,
+   "address": "Pollachi road, Ward 94, Podanur, 641021",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1469101395",
+   "name": "KG Eye Hospital",
+   "type": "Hospital",
+   "lat": 11.082551,
+   "lon": 76.997422,
+   "address": "Robert Bosch Street, Sarvanampatti, Coimbatore, 641001",
+   "emergency": true,
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6936359967",
+   "name": "Kumaran Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 11.015081,
+   "lon": 76.95132,
+   "address": "Cowley Brown Road, Ward 79, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6928304820",
+   "name": "Vedanayagam Hospital (P) Limited",
+   "type": "Hospital",
+   "lat": 11.014437,
+   "lon": 76.950498,
+   "address": "Bashyakarlu Road, Vadakovai, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844132010",
+   "name": "PGS Hospital",
+   "type": "Hospital",
+   "lat": 11.015348,
+   "lon": 76.952437,
+   "address": "Cowley Brown Road, Ward 21, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131989",
+   "name": "Arun Urology Hospital",
+   "type": "Hospital",
+   "lat": 11.014317,
+   "lon": 76.944994,
+   "address": "Cowley Brown Road, Ward 79, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1472212062",
+   "name": "Manonmani Hospital",
+   "type": "Hospital",
+   "lat": 11.014798,
+   "lon": 76.9475,
+   "address": "Cowley Brown Road, Ward 21, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131999",
+   "name": "Rao Hospital",
+   "type": "Hospital",
+   "lat": 11.013153,
+   "lon": 76.948405,
+   "address": "Periasamy Road, Ward 23, Perur, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-678830304",
+   "name": "GMC & ESI Hospitals",
+   "type": "Hospital",
+   "lat": 11.009157,
+   "lon": 77.022556,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1252960651",
+   "name": "Jhayakhar Clinic",
+   "type": "PHC",
+   "lat": 11.007072,
+   "lon": 77.025779,
+   "address": "Kamarajar Road, Uppilipalayam, 641005",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1252961373",
+   "name": "Happy Kids Clinic",
+   "type": "PHC",
+   "lat": 11.006124,
+   "lon": 77.025412,
+   "address": "Kamarajar Road, Uppilipalayam, 641005",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844058302",
+   "name": "Vista Care Opticals & Eye Clinic",
+   "type": "PHC",
+   "lat": 11.010176,
+   "lon": 77.024516,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131996",
+   "name": "Lakshmi ENT Clinic",
+   "type": "PHC",
+   "lat": 10.997312,
+   "lon": 76.996362,
+   "address": "Tiruchi Road, Ward 67, Coimbatore, 641045",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131970",
+   "name": "Dr. B. Nirmala Womens Clinic",
+   "type": "PHC",
+   "lat": 11.016304,
+   "lon": 76.979908,
+   "address": "Nethaji Road, Siddhapudur, Coimbatore, 641037",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844132008",
+   "name": "Marutham Health Clinic",
+   "type": "PHC",
+   "lat": 11.004056,
+   "lon": 76.99342,
+   "address": "Puliyakulam road, Ward 69, Coimbatore, 641045",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009753",
+   "name": "Shree Kanna Clinic",
+   "type": "PHC",
+   "lat": 11.026359,
+   "lon": 76.948803,
+   "address": "NSR Road, Saibaba Colony, Coimbatore, 641011",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844132012",
+   "name": "Shree Malar Clinic",
+   "type": "PHC",
+   "lat": 11.002798,
+   "lon": 76.955125,
+   "address": "Venkatakrishna Street, RS Puram, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6914937656",
+   "name": "Sri Rani Poly Clinic",
+   "type": "PHC",
+   "lat": 10.994953,
+   "lon": 76.975575,
+   "address": "Tiruchi Road, Ward 73, Coimbatore, 641018",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1472215560",
+   "name": "Kumaran Clinic",
+   "type": "PHC",
+   "lat": 11.015258,
+   "lon": 76.951938,
+   "address": "Sir Shanmugam Road, Vadakovai, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7726414486",
+   "name": "Nithyapriya Clinic",
+   "type": "PHC",
+   "lat": 11.019092,
+   "lon": 77.022888,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6915018746",
+   "name": "Sri Loga Clinic",
+   "type": "PHC",
+   "lat": 11.072535,
+   "lon": 77.001743,
+   "address": "Sathyamangalam Road, Sarvanampatti, Coimbatore, 641302",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844058266",
+   "name": "SM Clinic",
+   "type": "PHC",
+   "lat": 11.013613,
+   "lon": 77.019663,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009759",
+   "name": "Dr. Sumathi Chandrasekaran Clinic",
+   "type": "PHC",
+   "lat": 11.031364,
+   "lon": 76.940413,
+   "address": "Chinnammal Street, Ward 12, Coimbatore, 641301",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844058283",
+   "name": "Thiru Physiotherapy Clinic",
+   "type": "PHC",
+   "lat": 11.014363,
+   "lon": 77.023391,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6935186143",
+   "name": "Ponnammal Duraisamy Eye Clinic",
+   "type": "PHC",
+   "lat": 11.010795,
+   "lon": 76.961735,
+   "address": "Senguptha Street, Ram Nagar, Coimbatore, 641007",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131981",
+   "name": "Shajitha Anwaruddin Clinic",
+   "type": "PHC",
+   "lat": 10.990519,
+   "lon": 76.959222,
+   "address": "Ramar Koil Street, Ward 84, Podanur, 641008",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257155978",
+   "name": "Rg Clinic , Coimbatore",
+   "type": "PHC",
+   "lat": 11.059668,
+   "lon": 76.997151,
+   "address": "Sathyamangalam Road, Sivanandhapuram, Coimbatore, 641301",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-11368079569",
+   "name": "Roy Physiotherapy Clinic",
+   "type": "PHC",
+   "lat": 11.020878,
+   "lon": 77.02186,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-4815778337",
+   "name": "Apollo Clinic",
+   "type": "PHC",
+   "lat": 11.015126,
+   "lon": 76.951678,
+   "address": "Cowley Brown Road, Ward 79, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131965",
+   "name": "Alshifa Healing and Naturopathy Clinic",
+   "type": "PHC",
+   "lat": 10.998631,
+   "lon": 76.951276,
+   "address": "Sukrawarpettai Mill Road, Ward 79, Perur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131971",
+   "name": "Dr. Karthikeyan Clinic",
+   "type": "PHC",
+   "lat": 10.996912,
+   "lon": 76.999538,
+   "address": "Tiruchi Road, Ward 67, Coimbatore, 641045",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009732",
+   "name": "Dr. K. Suresh Clinic",
+   "type": "PHC",
+   "lat": 11.030061,
+   "lon": 76.939721,
+   "address": "Chinnammal Street, Ward 12, Coimbatore, 641038",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009741",
+   "name": "Poornima Clinic",
+   "type": "PHC",
+   "lat": 11.025652,
+   "lon": 76.937116,
+   "address": "NSR Road, Saibaba Colony, Coimbatore, 641025",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009747",
+   "name": "Dr. Rajasekar Clinic",
+   "type": "PHC",
+   "lat": 11.03694,
+   "lon": 76.927068,
+   "address": "Thadagam Road, Ward 8, Coimbatore, 641025",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844009707",
+   "name": "Muruganatham Clinic",
+   "type": "PHC",
+   "lat": 11.024702,
+   "lon": 76.943732,
+   "address": "Bharathi Park 2nd Cross Road, Saibaba Colony, Coimbatore, 641011",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1249640585",
+   "name": "NSR Cancer Centre",
+   "type": "PHC",
+   "lat": 11.012085,
+   "lon": 76.986178,
+   "address": "Puliyakulam Road, Puliakulam, Coimbatore, 641037",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6934126430",
+   "name": "Parthiban Nursing Home",
+   "type": "PHC",
+   "lat": 11.05975,
+   "lon": 76.944109,
+   "address": "Ganapathy - Nanjegoundanpudur - Kanuvai Road, Subramaniapalayam, Coimbatore, 641029",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6915358911",
+   "name": "Mallika Nursing Home",
+   "type": "PHC",
+   "lat": 10.962774,
+   "lon": 76.957461,
+   "address": "Palghat road, Ward 87, Madukkarai, 641008",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1472212557",
+   "name": "Balaji Nursing Home",
+   "type": "PHC",
+   "lat": 11.014824,
+   "lon": 76.948765,
+   "address": "Cowley Brown Road, Ward 79, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-8321106418",
+   "name": "Kovai Scan Center",
+   "type": "PHC",
+   "lat": 11.020319,
+   "lon": 76.961072,
+   "address": "5th street, Tatabad, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6934150425",
+   "name": "Siloam Thomas Eye Hospital",
+   "type": "PHC",
+   "lat": 11.027602,
+   "lon": 76.941504,
+   "address": "Chinnappan Street, Ward 12, Coimbatore, 641038",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-4203547389",
+   "name": "Microbiological Laboratory",
+   "type": "PHC",
+   "lat": 11.023415,
+   "lon": 76.910308,
+   "address": "Maruthamalai Road, Ward 16, Coimbatore, 641001",
+   "phone": "+91-422-4342018",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131997",
+   "name": "G.K.P Clinics",
+   "type": "PHC",
+   "lat": 10.992228,
+   "lon": 76.951661,
+   "address": "Coimbatore - Siruvani Road, Ward 80, Perur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183944",
+   "name": "Rk Bai Corporation Health Centre",
+   "type": "PHC",
+   "lat": 10.999832,
+   "lon": 76.949604,
+   "address": "Thadagam Road, Ward 79, Perur, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6937449595",
+   "name": "Karthic Nursing Home Pvt. Ltd.",
+   "type": "PHC",
+   "lat": 10.990919,
+   "lon": 76.952952,
+   "address": "Vysial Street, Ward 85, Podanur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6933115102",
+   "name": "Paari Nursing Home",
+   "type": "PHC",
+   "lat": 11.032146,
+   "lon": 76.97612,
+   "address": "Sathy Main Road, Ganapathy, Coimbatore, 641006",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-7844131993",
+   "name": "Sayee Kids Care",
+   "type": "PHC",
+   "lat": 11.015436,
+   "lon": 76.984214,
+   "address": "New Scheme Road, PN Palayam, Coimbatore, 641044",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6936582309",
+   "name": "C.S.R. Nursing Home, Coimbatore",
+   "type": "PHC",
+   "lat": 11.020981,
+   "lon": 76.966113,
+   "address": "7th street Extention, Ward 52, Coimbatore, 641012",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6935272584",
+   "name": "Karthick Polyclinic",
+   "type": "PHC",
+   "lat": 10.995786,
+   "lon": 76.987699,
+   "address": "Tiruchi Road, Ward 73, Coimbatore, 641045",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1239571346",
+   "name": "Green Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.025212,
+   "lon": 76.902453,
+   "address": "Kaundampalayam - Vadavalli - Onappalayam Road, Vadavalli, Dhaliyur, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14301530119",
+   "name": "Shei Lakshmi Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.028899,
+   "lon": 76.895053,
+   "address": "Maruthamalai Road, Ward 16, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-11149608947",
+   "name": "Thulasi Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.022167,
+   "lon": 76.915408,
+   "address": "Maruthamalai Road, Ward 16, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-4878934413",
+   "name": "Sri Vaari pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.003761,
+   "lon": 76.956095,
+   "address": "Mettupalayam Road, RS Puram, 641007",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1473802733",
+   "name": "Pasumai Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.020355,
+   "lon": 76.966338,
+   "address": "100 Feet Road, Ward 52, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14301482177",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.029682,
+   "lon": 76.892959,
+   "address": "Maruthamalai Road, Ward 16, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-8193621317",
+   "name": "People's Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.012135,
+   "lon": 77.024129,
+   "address": "Kamarajar Road, Uppilipalayam, 641015",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-6404096355",
+   "name": "thulasi pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.080313,
+   "lon": 76.942717,
+   "address": "thudiyalur road, Thudiyalur, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949641",
+   "name": "Core Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.9839,
+   "lon": 76.924862,
+   "address": "Coimbatore - Siruvani Road, Ward 76, Perur, 641026",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949532",
+   "name": "Pasumai Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.025458,
+   "lon": 77.016485,
+   "address": "Avanishi Road, Ward 37, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303913680",
+   "name": "Sivam Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.967962,
+   "lon": 76.900797,
+   "address": "Coimbatore - Siruvani Road, Sundakkamuthur, Perur, 641010",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-13769333116",
+   "name": "Green Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.039511,
+   "lon": 76.928082,
+   "address": "Kaundampalayam - Vadavalli - Onappalayam Road, Ward 6, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14301530104",
+   "name": "Ramoo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.03064,
+   "lon": 76.891038,
+   "address": "Maruthamalai Road, Ward 16, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949419",
+   "name": "SPM Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.992391,
+   "lon": 76.951361,
+   "address": "Coimbatore - Siruvani Road, Ward 80, Perur, 641026",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949784",
+   "name": "Thangam Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.970933,
+   "lon": 76.891374,
+   "address": "Coimbatore - Siruvani Road, Sundakkamuthur, Perur, 641010",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1472620620",
+   "name": "Araya Vaidya Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.003885,
+   "lon": 76.951619,
+   "address": "Diwan Bahadur Road, RS Puram, Perur, 641007",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949652",
+   "name": "Alagu Pharmacy",
+   "type": "Pharmacy",
+   "lat": 11.02619,
+   "lon": 77.018781,
+   "address": "G. D. Naidu Flyover, Ward 37, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-12006552126",
+   "name": "New Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.966551,
+   "lon": 76.950655,
+   "address": "Palghat road, Kuniamuthur, Podanur, 641008",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1474518439",
+   "name": "Dheepmeena pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.996962,
+   "lon": 76.995618,
+   "address": "Tiruchi Road, Ward 68, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-5338398362",
+   "name": "Chitra pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.990553,
+   "lon": 76.960774,
+   "address": "South Ukkadam, Ward 84, Podanur, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1474924005",
+   "name": "Thulsi Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.948914,
+   "lon": 76.935463,
+   "address": "Kovaipudur Road, Ward 91, Madukkarai, 641105",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1239571485",
+   "name": "Sree Meenakshi",
+   "type": "Pharmacy",
+   "lat": 11.025115,
+   "lon": 76.901574,
+   "address": "Kaundampalayam - Vadavalli - Onappalayam Road, Vadavalli, Dhaliyur, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1232732276",
+   "name": "ஆண்டவர் செக்கு ஆயில் ஸ்டோர்",
+   "type": "Pharmacy",
+   "lat": 11.024885,
+   "lon": 76.904726,
+   "address": "Kaundampalayam - Vadavalli - Onappalayam Road, Vadavalli, Dhaliyur, 641046",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1132032492",
+   "name": "Vinayaka Medicals",
+   "type": "Pharmacy",
+   "lat": 11.018233,
+   "lon": 76.924778,
+   "address": "2nd street, PN Pudur, Coimbatore, 641041",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-1237548963",
+   "name": "Vinayaka Medicals",
+   "type": "Pharmacy",
+   "lat": 11.021545,
+   "lon": 76.917101,
+   "address": "Maruthamalai Road, Ward 15, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-12041197061",
+   "name": "RFS Medicals",
+   "type": "Pharmacy",
+   "lat": 10.965233,
+   "lon": 76.943096,
+   "address": "Palghat road, Kuniamuthur, Podanur, 641008",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1913565274",
+   "name": "Apollo Pharma",
+   "type": "Pharmacy",
+   "lat": 11.030742,
+   "lon": 76.975725,
+   "address": "Sathy Main Road, Ganapathy, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1473802717",
+   "name": "Chinnaiah Medicals",
+   "type": "Pharmacy",
+   "lat": 11.020771,
+   "lon": 76.968848,
+   "address": "2nd street Extention, Ward 52, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1471791399",
+   "name": "arya vaidhya salai",
+   "type": "Pharmacy",
+   "lat": 11.019354,
+   "lon": 76.960341,
+   "address": "Power House Road, Tatabad, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303949835",
+   "name": "Raasi Medicals",
+   "type": "Pharmacy",
+   "lat": 10.988831,
+   "lon": 76.943243,
+   "address": "Coimbatore - Siruvani Road, Ward 78, Perur, 641026",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-12285349827",
+   "name": "Kalai Medicals",
+   "type": "Pharmacy",
+   "lat": 11.01641,
+   "lon": 76.923836,
+   "address": "Maruthamalai Road, Ward 15, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-4379089792",
+   "name": "Arasu",
+   "type": "Pharmacy",
+   "lat": 11.025851,
+   "lon": 76.906045,
+   "address": "Maruthamalai Road, Ward 16, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-1468324461",
+   "name": "Revathi medicals",
+   "type": "Pharmacy",
+   "lat": 10.997217,
+   "lon": 77.000387,
+   "address": "Tiruchi Road, Ward 67, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-14303913699",
+   "name": "Med One",
+   "type": "Pharmacy",
+   "lat": 11.026068,
+   "lon": 77.02006,
+   "address": "G. D. Naidu Flyover, Ward 37, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-13769333109",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 11.039441,
+   "lon": 76.929494,
+   "address": "Kaundampalayam - Vadavalli - Onappalayam Road, Ward 6, Coimbatore, 641001",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-node-12285349817",
+   "name": "Arasu Medicals",
+   "type": "Pharmacy",
+   "lat": 11.010285,
+   "lon": 76.950296,
+   "address": "Diwan Bhadur Road, Vadakovai, Perur, 641002",
+   "city": "Coimbatore"
+  },
+  {
+   "id": "osm-way-497318359",
+   "name": "Abinand Hospital",
+   "type": "Hospital",
+   "lat": 10.954284,
+   "lon": 76.973086,
+   "address": "NH948, Ward 94, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-640746755",
+   "name": "St. Marys Hospital",
+   "type": "Hospital",
+   "lat": 10.962568,
+   "lon": 76.986567,
+   "address": "Podanur Road, Ward 98, Podanur, 641023",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-497318360",
+   "name": "FIMS Hospitals | Best Multispeciality Hospital In Sonipat",
+   "type": "Hospital",
+   "lat": 10.957909,
+   "lon": 76.97247,
+   "address": "Pollachi road, Ward 94, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-676200805",
+   "name": "Sundakamuthur Government Hospital",
+   "type": "Hospital",
+   "lat": 10.955943,
+   "lon": 76.924178,
+   "address": "KM 6/8 of Coimbatore-Siruvani Road - KM 165/8 of Salem-Cochin Road, Sundakkamuthur, Perur, 641010",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-1051328428",
+   "name": "Vasan eye Care Hospital",
+   "type": "Hospital",
+   "lat": 10.956097,
+   "lon": 76.954,
+   "address": "Palghat road, Ward 88, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183917",
+   "name": "Podanur Government Hospital",
+   "type": "Hospital",
+   "lat": 10.96641,
+   "lon": 76.987062,
+   "address": "Nanjundapuram Road, Ward 99, Nanjundapuram, 641023",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-1474923291",
+   "name": "K. J. Hospital",
+   "type": "Hospital",
+   "lat": 10.941407,
+   "lon": 76.936991,
+   "address": "Kovaipudur Terminus Road, Ward 90, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6936305098",
+   "name": "Priya Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 10.94464,
+   "lon": 76.935209,
+   "address": "Nagapillayar temple Rd, Ward 90, Madukkarai, 641014",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257184008",
+   "name": "St. Mary's Hospital",
+   "type": "Hospital",
+   "lat": 10.962664,
+   "lon": 76.98594,
+   "address": "Podanur Road, Ward 98, Podanur, 641023",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6926049956",
+   "name": "Gowtham Hospital",
+   "type": "Hospital",
+   "lat": 10.962127,
+   "lon": 76.95564,
+   "address": "Palghat road, Ward 88, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166779",
+   "name": "Government Hospital, Madukkarai",
+   "type": "Hospital",
+   "lat": 10.903799,
+   "lon": 76.963538,
+   "address": "Kuruchi - Madukkarai - Nachipalayam - Kannamanaickenur Road, Ward 100, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166809",
+   "name": "Natraj Hospital",
+   "type": "Hospital",
+   "lat": 10.90428,
+   "lon": 76.958665,
+   "address": "Madukkarai - Chettipalayam Road, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6929976817",
+   "name": "Koushikha Hospital",
+   "type": "Hospital",
+   "lat": 10.958987,
+   "lon": 76.978882,
+   "address": "Sarada Mill Road, Ward 96, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166815",
+   "name": "I.J.Hospital, Kuniayamuthur, Coimbatore",
+   "type": "Hospital",
+   "lat": 10.95365,
+   "lon": 76.955989,
+   "address": "kumaran street, Ward 93, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6936708037",
+   "name": "Aparna Hospital",
+   "type": "Hospital",
+   "lat": 10.9562,
+   "lon": 76.954162,
+   "address": "Palghat road, Ward 88, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183913",
+   "name": "Sri Meenakshi Hospital, Kuniamuthur",
+   "type": "Hospital",
+   "lat": 10.956735,
+   "lon": 76.954433,
+   "address": "Palghat road, Ward 88, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6935188981",
+   "name": "Sangeetha Hospital, Coimbatore",
+   "type": "Hospital",
+   "lat": 10.963603,
+   "lon": 76.956391,
+   "address": "Palghat road, Ward 87, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-3781623526",
+   "name": "Vasan Eye Care Hospital, Kuniamuthoor",
+   "type": "Hospital",
+   "lat": 10.957713,
+   "lon": 76.954316,
+   "address": "Palghat road, Ward 88, Madukkarai, 641008",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-497317281",
+   "name": "Sri Balaji Hospitals",
+   "type": "Hospital",
+   "lat": 10.953791,
+   "lon": 76.973606,
+   "address": "NH948, Ward 94, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-497318366",
+   "name": "NRP Hospitals",
+   "type": "Hospital",
+   "lat": 10.958168,
+   "lon": 76.971061,
+   "address": "NH948, Ward 94, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-777636349",
+   "name": "T.M.Palayam PHC",
+   "type": "Hospital",
+   "lat": 10.880012,
+   "lon": 76.924775,
+   "address": "SNGPC Road, Thirumalayampalayam, 641112",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257183965",
+   "name": "Raksha Medical Centre",
+   "type": "Hospital",
+   "lat": 10.95665,
+   "lon": 76.987019,
+   "address": "Podanur Road, Ward 98, Podanur, 641023",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166879",
+   "name": "Ganapathy Pc Sundarapuram,",
+   "type": "Hospital",
+   "lat": 10.952167,
+   "lon": 76.975881,
+   "address": "Pollachi road, Ward 97, Podanur, 641024",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-4285718048",
+   "name": "Karpagam Faculty Of Medical Sciences And Research",
+   "type": "Hospital",
+   "lat": 10.884006,
+   "lon": 77.006603,
+   "address": "Karpagam College Road, Othakalmandapam, 641032",
+   "phone": "0422-6464433, 6452888",
+   "emergency": true,
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-7257166752",
+   "name": "Ambal Malumichampatty, Coimbatore",
+   "type": "Hospital",
+   "lat": 10.90265,
+   "lon": 76.997586,
+   "address": "Pollachi - Coimbatore Road, Malumachampatti, 641050",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-1051328350",
+   "name": "Fair Pharma",
+   "type": "Hospital",
+   "lat": 10.892757,
+   "lon": 76.924698,
+   "address": "Salem - Kochi - Kanyakumari Highway, Thirumalayampalayam, 641112",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6933992416",
+   "name": "S.M.Clinic, Podhanur, Coimbatore",
+   "type": "PHC",
+   "lat": 10.955374,
+   "lon": 76.989847,
+   "address": "Podanur Road, Ward 99, Podanur, 641023",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-6934690377",
+   "name": "Senthil Nursing Home, Coimbatore",
+   "type": "PHC",
+   "lat": 10.904662,
+   "lon": 76.959611,
+   "address": "Madukkarai - Chettipalayam Road, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-5104357826",
+   "name": "Dr Hari",
+   "type": "PHC",
+   "lat": 10.954712,
+   "lon": 76.989322,
+   "address": "Podanur Road, Ward 99, Podanur, 641050",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-node-3302155213",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 10.941463,
+   "lon": 76.935346,
+   "address": "Kovaipudur Terminus Road, Ward 90, Madukkarai, 641105",
+   "city": "Madukkarai, Coimbatore"
+  },
+  {
+   "id": "osm-way-777212649",
+   "name": "G.K.F Hospital",
+   "type": "Hospital",
+   "lat": 9.917584,
+   "lon": 78.108178,
+   "address": "70 Feet Road, Ellis Nagar, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-777212751",
+   "name": "Keerthi Hospital",
+   "type": "Hospital",
+   "lat": 9.92608,
+   "lon": 78.093771,
+   "address": "DSP Nagar Main Road, Ponmeni, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-739778259",
+   "name": "Hannah Joseph Hospital",
+   "type": "Hospital",
+   "lat": 9.93029,
+   "lon": 78.14855,
+   "address": "80 Feet Road, KK Nagar, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-777212678",
+   "name": "Bagavathy Hospital",
+   "type": "Hospital",
+   "lat": 9.917626,
+   "lon": 78.129347,
+   "address": "Kamarajar Salai, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-1484716305",
+   "name": "Sethu Sarada Hospital",
+   "type": "Hospital",
+   "lat": 9.920949,
+   "lon": 78.147775,
+   "address": "Church Road, Anna Nagar, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-1484716300",
+   "name": "Krishna Gastro and Women Care Hospital",
+   "type": "Hospital",
+   "lat": 9.916564,
+   "lon": 78.148663,
+   "address": "80 Feet Road, Anna Nagar, Madurai, 625990",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-777212659",
+   "name": "Prasanna Kumaran Hospital",
+   "type": "Hospital",
+   "lat": 9.924677,
+   "lon": 78.093919,
+   "address": "West Service Road, Kalavasal, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-740915700",
+   "name": "Selvam Hospital",
+   "type": "Hospital",
+   "lat": 9.920386,
+   "lon": 78.124244,
+   "address": "Chitrakara Street, Goripalayam, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423812",
+   "name": "Dhiraviyam Pillai Hospital",
+   "type": "Hospital",
+   "lat": 9.909146,
+   "lon": 78.120796,
+   "address": "Pamban Rd, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6933999017",
+   "name": "Anand Elumalai Hospital",
+   "type": "Hospital",
+   "lat": 9.910709,
+   "lon": 78.121638,
+   "address": "South Veli Street, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423828",
+   "name": "Apollo Skin Hospital",
+   "type": "Hospital",
+   "lat": 9.911095,
+   "lon": 78.118608,
+   "address": "South Veli Street, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423835",
+   "name": "Dr. Ravisankar Children Hospital",
+   "type": "Hospital",
+   "lat": 9.911745,
+   "lon": 78.119082,
+   "address": "South Marret Road, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423813",
+   "name": "Jain Hospital and Lab",
+   "type": "Hospital",
+   "lat": 9.911647,
+   "lon": 78.116493,
+   "address": "South Veli Street, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423827",
+   "name": "Sorna Hospital",
+   "type": "Hospital",
+   "lat": 9.911665,
+   "lon": 78.113259,
+   "address": "South Veli Street, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6936663181",
+   "name": "Vasan Eye Care Hospital, Anna Nagar",
+   "type": "Hospital",
+   "lat": 9.920784,
+   "lon": 78.14889,
+   "address": "80 Feet Road, Anna Nagar, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6936339706",
+   "name": "R.R Hospital",
+   "type": "Hospital",
+   "lat": 9.9211,
+   "lon": 78.149237,
+   "address": "80 Feet Road, Anna Nagar, Madurai, 625990",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6933036788",
+   "name": "Ns Hospital",
+   "type": "Hospital",
+   "lat": 9.904698,
+   "lon": 78.097413,
+   "address": "Thirupparankundram Road, Palanganatham, Madurai, 625003",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423815",
+   "name": "Harish Hospital",
+   "type": "Hospital",
+   "lat": 9.913766,
+   "lon": 78.097122,
+   "address": "East Service Road, Madakkulam, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423870",
+   "name": "K.K Hospital",
+   "type": "Hospital",
+   "lat": 9.926662,
+   "lon": 78.092173,
+   "address": "Chokkalinga Nagar Main Road, Ponmeni, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423819",
+   "name": "Gurumithrren Hospital",
+   "type": "Hospital",
+   "lat": 9.92174,
+   "lon": 78.09211,
+   "address": "Chandra Gandhi Nagar Main Road, Ponmeni, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7252177970",
+   "name": "Chandrabai Hospital",
+   "type": "Hospital",
+   "lat": 9.921611,
+   "lon": 78.095356,
+   "address": "SS Colony 4th Street, Ponmeni, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423836",
+   "name": "Green Life Siddha Hospital",
+   "type": "Hospital",
+   "lat": 9.915934,
+   "lon": 78.096647,
+   "address": "70 Feet Road, Madakkulam, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423830",
+   "name": "Chandra Bai Hospital",
+   "type": "Hospital",
+   "lat": 9.913943,
+   "lon": 78.098275,
+   "address": "B4 Road, Madakkulam, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423857",
+   "name": "Surya Hospital",
+   "type": "Hospital",
+   "lat": 9.915776,
+   "lon": 78.13055,
+   "address": "Old Kuyavarpalayam Road, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6936709116",
+   "name": "Krithika Hospital",
+   "type": "Hospital",
+   "lat": 9.917941,
+   "lon": 78.13221,
+   "address": "kanpalayam cross St, Goripalayam, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423874",
+   "name": "Siva Jyothi Childrens Hospital",
+   "type": "Hospital",
+   "lat": 9.917312,
+   "lon": 78.13219,
+   "address": "Kamarajar Salai, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423846",
+   "name": "Blue Modern Hospital",
+   "type": "Hospital",
+   "lat": 9.917665,
+   "lon": 78.13235,
+   "address": "Munichalai Road, Goripalayam, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6928682353",
+   "name": "Venkateswara Hospital, Madurai",
+   "type": "Hospital",
+   "lat": 9.925664,
+   "lon": 78.132781,
+   "address": "Panagal Road, Goripalayam, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6928920474",
+   "name": "Dr. Chidhambaram Memorial Hospital",
+   "type": "Hospital",
+   "lat": 9.906092,
+   "lon": 78.107486,
+   "address": "Jaihindpuram 2nd Main Road, Jaihindpuram, Madurai, 625011",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6933990368",
+   "name": "Ganga Hospital",
+   "type": "Hospital",
+   "lat": 9.906939,
+   "lon": 78.101557,
+   "address": "Ramalinga Nagar, Palanganatham, Madurai, 625003",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423852",
+   "name": "Raj Hospital",
+   "type": "Hospital",
+   "lat": 9.915934,
+   "lon": 78.090646,
+   "address": "Swaroop Second Cross, Madakkulam, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423845",
+   "name": "Vijaya Hospital",
+   "type": "Hospital",
+   "lat": 9.915456,
+   "lon": 78.115734,
+   "address": "West Masi Street, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7252177852",
+   "name": "Jeya Raj Hospital",
+   "type": "Hospital",
+   "lat": 9.917528,
+   "lon": 78.118013,
+   "address": "Matharkhan Dabethar Lane, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423869",
+   "name": "Dr. Nainar Hospital",
+   "type": "Hospital",
+   "lat": 9.913123,
+   "lon": 78.1124,
+   "address": "Thirupparankundram Road, Jaihindpuram, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423861",
+   "name": "Silvester Asan Hospital",
+   "type": "Hospital",
+   "lat": 9.924542,
+   "lon": 78.098595,
+   "address": "Ponmeni Narayanan Street, Kalavasal, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6933833944",
+   "name": "S.K.V. Hospital",
+   "type": "Hospital",
+   "lat": 9.926304,
+   "lon": 78.100176,
+   "address": "Travellers Bungalow Road, Kalavasal, Madurai, 625532",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7252177851",
+   "name": "Grace Hospital",
+   "type": "Hospital",
+   "lat": 9.91833,
+   "lon": 78.104361,
+   "address": "Sarvodaya Main Rd, Ellis Nagar, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7252177859",
+   "name": "Sundaram Hospital",
+   "type": "Hospital",
+   "lat": 9.921277,
+   "lon": 78.099891,
+   "address": "Pillaiyar Kovil Street, Kalavasal, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-4881691515",
+   "name": "Golden Hospital, Madurai",
+   "type": "Hospital",
+   "lat": 9.927539,
+   "lon": 78.155108,
+   "address": "2nd Main Road, Vandiyur, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13609188987",
+   "name": "Lily Hospital",
+   "type": "Hospital",
+   "lat": 9.924032,
+   "lon": 78.148919,
+   "address": "Anna Nagar 1st East Cross Street, Anna Nagar, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423871",
+   "name": "Dr. Ramesh Babu Childrens Clinic",
+   "type": "PHC",
+   "lat": 9.917188,
+   "lon": 78.13365,
+   "address": "Srinivasa Perumal Koil St, Goripalayam, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423849",
+   "name": "Dr. Oks ENT Clinic",
+   "type": "PHC",
+   "lat": 9.918055,
+   "lon": 78.124746,
+   "address": "East Marrett Street, Goripalayam, Madurai, 625001",
+   "phone": "0452 232 0136;04522320136;9489227019",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423854",
+   "name": "Dr. Kathiresan Clinic",
+   "type": "PHC",
+   "lat": 9.913962,
+   "lon": 78.102547,
+   "address": "B3 Road, Ellis Nagar, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423841",
+   "name": "Priyam Clinic",
+   "type": "PHC",
+   "lat": 9.920789,
+   "lon": 78.101898,
+   "address": "Church Rd, Ellis Nagar, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285523",
+   "name": "Agatheesh Physiotherapy Clinic",
+   "type": "PHC",
+   "lat": 9.940063,
+   "lon": 78.08432,
+   "address": "Melakkal Road, Kochadai, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285494",
+   "name": "Sahana Speciality Clinic",
+   "type": "PHC",
+   "lat": 9.900439,
+   "lon": 78.101634,
+   "address": "Lakshmi Road, Jaihindpuram, Madurai, 625003",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423814",
+   "name": "Azhagumuthu Skin Clinic",
+   "type": "PHC",
+   "lat": 9.928505,
+   "lon": 78.093786,
+   "address": "Chokkalinga Nagar 4th street, Ponmeni, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6914957596",
+   "name": "Sri Omsakthi Clinic",
+   "type": "PHC",
+   "lat": 9.941415,
+   "lon": 78.141133,
+   "address": "Azhagarkovil Road, Nagavakulam, Madurai, 625007",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423859",
+   "name": "Santosh Clinic",
+   "type": "PHC",
+   "lat": 9.914872,
+   "lon": 78.128568,
+   "address": "Old Kuyavarpalayam Road, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13460479701",
+   "name": "A.S.K SKIN CLINIC",
+   "type": "PHC",
+   "lat": 9.917556,
+   "lon": 78.127587,
+   "address": "Kamarajar Salai, Anuppanadi, Madurai, 625009",
+   "phone": "0452 232 0435",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285501",
+   "name": "Saradha Clinic",
+   "type": "PHC",
+   "lat": 9.937405,
+   "lon": 78.08599,
+   "address": "Doak Nagar Main Road, Kochadai, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285462",
+   "name": "Pranav Clinic",
+   "type": "PHC",
+   "lat": 9.903018,
+   "lon": 78.106563,
+   "address": "Murugan Theatre Streeet, Jaihindpuram, Madurai, 625011",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285519",
+   "name": "Vasanth Homeo Clinic",
+   "type": "PHC",
+   "lat": 9.897213,
+   "lon": 78.113785,
+   "address": "Villapuram Housing board main road, Villapuram, Madurai, 625011",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423816",
+   "name": "Sri Sai Physiotherapy Clinic",
+   "type": "PHC",
+   "lat": 9.922283,
+   "lon": 78.092744,
+   "address": "Chandra Gandhi Nagar Main Road, Ponmeni, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285466",
+   "name": "Sugam Clinic",
+   "type": "PHC",
+   "lat": 9.917534,
+   "lon": 78.157916,
+   "address": "Netaji Street, Vandiyur, Madurai, 625020",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285480",
+   "name": "Subam Dental Clinic",
+   "type": "PHC",
+   "lat": 9.881725,
+   "lon": 78.114158,
+   "address": "kanaku Pillai St, Avaniyapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285510",
+   "name": "Vennila Homoeo Clinic",
+   "type": "PHC",
+   "lat": 9.881005,
+   "lon": 78.114102,
+   "address": "Aruppukottai Road, Avaniyapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285487",
+   "name": "Dharun Homeo Care Clinic",
+   "type": "PHC",
+   "lat": 9.883539,
+   "lon": 78.11374,
+   "address": "Avaniapuram - Thirupparankundram Road, Avaniyapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285507",
+   "name": "Vishalakshi Clinic",
+   "type": "PHC",
+   "lat": 9.879973,
+   "lon": 78.116823,
+   "address": "Sempoorani Rd, Avaniyapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6927322289",
+   "name": "Saroja Poly Clinic",
+   "type": "PHC",
+   "lat": 9.900224,
+   "lon": 78.12138,
+   "address": "Aruppukottai Road, Villapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423865",
+   "name": "NCS Clinic",
+   "type": "PHC",
+   "lat": 9.916742,
+   "lon": 78.125586,
+   "address": "East Veli Street, Goripalayam, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285509",
+   "name": "Shreedevi Clinic",
+   "type": "PHC",
+   "lat": 9.937669,
+   "lon": 78.08567,
+   "address": "Melakkal Road, Thuvariman, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285505",
+   "name": "GR Dental Clinic",
+   "type": "PHC",
+   "lat": 9.938777,
+   "lon": 78.08492,
+   "address": "Melakkal Road, Thuvariman, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285496",
+   "name": "Sri Kanna Clinic",
+   "type": "PHC",
+   "lat": 9.892492,
+   "lon": 78.116935,
+   "address": "Aruppukottai Road, Villapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285522",
+   "name": "Perumal Clinic",
+   "type": "PHC",
+   "lat": 9.884776,
+   "lon": 78.115746,
+   "address": "Aruppukottai Road, Avaniyapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285472",
+   "name": "Madhavas Siddha Ayurveda Clinic",
+   "type": "PHC",
+   "lat": 9.899518,
+   "lon": 78.096342,
+   "address": "Nehru Nagar 1st St, Palanganatham, Madurai, 625003",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6932160287",
+   "name": "Visaka Poly Clinic",
+   "type": "PHC",
+   "lat": 9.916173,
+   "lon": 78.113136,
+   "address": "Katrapalayam Street, Jaihindpuram, Madurai, 625003",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423842",
+   "name": "Thirumal Clinic",
+   "type": "PHC",
+   "lat": 9.920396,
+   "lon": 78.127462,
+   "address": "Kanpalayam 5th street, Goripalayam, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285490",
+   "name": "Dr. Prabhu Homeo Clinic",
+   "type": "PHC",
+   "lat": 9.905823,
+   "lon": 78.105924,
+   "address": "Jaihindpuram 2nd Main Road, Jaihindpuram, Madurai, 625011",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423855",
+   "name": "Manian Clinic",
+   "type": "PHC",
+   "lat": 9.918595,
+   "lon": 78.130411,
+   "address": "Kanpalayam 3rd street, Goripalayam, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285514",
+   "name": "GK Clinic",
+   "type": "PHC",
+   "lat": 9.896699,
+   "lon": 78.118707,
+   "address": "Aruppukottai Road, Villapuram, Madurai, 625012",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-740881977",
+   "name": "Rajalakshmi E.N.T Nursing Home",
+   "type": "PHC",
+   "lat": 9.908727,
+   "lon": 78.146621,
+   "address": "Anupanadi Road, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840285475",
+   "name": "Advanced Dental Inplant Centre",
+   "type": "PHC",
+   "lat": 9.938322,
+   "lon": 78.084917,
+   "address": "Melakkal Road, Thuvariman, Madurai, 625016",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6932075314",
+   "name": "Siva Polyclinic and S L Hospital",
+   "type": "PHC",
+   "lat": 9.938117,
+   "lon": 78.126034,
+   "address": "PT Rajan Road, Goripalayam, Madurai, 625002",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6936709096",
+   "name": "Booma Nursing Home",
+   "type": "PHC",
+   "lat": 9.935562,
+   "lon": 78.134257,
+   "address": "Gokhale Road, Goripalayam, Madurai, 625002",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6926973390",
+   "name": "Harley Rram Nursing Home",
+   "type": "PHC",
+   "lat": 9.925547,
+   "lon": 78.11472,
+   "address": "Krishna Rao Tank Street, Sellur, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423868",
+   "name": "Dr. Srinivasan Neuro",
+   "type": "PHC",
+   "lat": 9.921356,
+   "lon": 78.093984,
+   "address": "East Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-6934018807",
+   "name": "Vijay Nursing Home,Madurai",
+   "type": "PHC",
+   "lat": 9.876491,
+   "lon": 78.060747,
+   "address": "Pandian Nagar, Vilachery, Madurai, 625005",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-7840423825",
+   "name": "Abhiman Kidney Centre",
+   "type": "PHC",
+   "lat": 9.913992,
+   "lon": 78.13179,
+   "address": "D3 D3 ROAD, Anuppanadi, Madurai, 625009",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13270313801",
+   "name": "Fathima siddha herbal hospital",
+   "type": "PHC",
+   "lat": 9.921722,
+   "lon": 78.094313,
+   "address": "East Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-8986963317",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 9.936427,
+   "lon": 78.142759,
+   "address": "Dr. Ambedkar Road, KK Nagar, Madurai, 625002",
+   "open24h": true,
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13267418714",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 9.918779,
+   "lon": 78.093601,
+   "address": "West Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13319274401",
+   "name": "J P PHARMACY",
+   "type": "Pharmacy",
+   "lat": 9.914852,
+   "lon": 78.117278,
+   "address": "South Masi Street, Jaihindpuram, Madurai, 625001",
+   "phone": "095855 35255",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13287856926",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 9.932991,
+   "lon": 78.092117,
+   "address": "Theni Main Road, Bethaniyapuram, Madurai, 625017",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13609235749",
+   "name": "SRI VELA Pharmacy",
+   "type": "Pharmacy",
+   "lat": 9.92246,
+   "lon": 78.148857,
+   "address": "80 Feet Road, Anna Nagar, Madurai, 625990",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13380652901",
+   "name": "JP Pharmacy",
+   "type": "Pharmacy",
+   "lat": 9.921443,
+   "lon": 78.125271,
+   "address": "East Veli St-Munichalai Connecting Road, Goripalayam, Madurai, 625001",
+   "phone": "095855 43302",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13266990301",
+   "name": "DEVAKI MEDICAL",
+   "type": "Pharmacy",
+   "lat": 9.922532,
+   "lon": 78.093528,
+   "address": "West Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-9784710317",
+   "name": "Cooperative Medicine Shop",
+   "type": "Pharmacy",
+   "lat": 9.923897,
+   "lon": 78.124002,
+   "address": "East Veli Street, Goripalayam, Madurai, 625001",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13926814722",
+   "name": "Bawaa Medical Centre",
+   "type": "Pharmacy",
+   "lat": 9.924713,
+   "lon": 78.139198,
+   "address": "Kuruvikkaran Road, Anna Nagar, Madurai, 625020",
+   "phone": "0452 4063344",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13267461998",
+   "name": "Suguna Medicals",
+   "type": "Pharmacy",
+   "lat": 9.921272,
+   "lon": 78.148567,
+   "address": "Anna Nagar Main Road, Anna Nagar, Madurai, 625990",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-9787264317",
+   "name": "Devaki Medical",
+   "type": "Pharmacy",
+   "lat": 9.922447,
+   "lon": 78.096763,
+   "address": "Jawahar Main Road, Ponmeni, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-11578562171",
+   "name": "Maha Medicals",
+   "type": "Pharmacy",
+   "lat": 9.9144,
+   "lon": 78.133028,
+   "address": "Chairman Muthuramaiyer Road, Anuppanadi, Madurai, 625009",
+   "phone": "0452 423 1309",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-9794168923",
+   "name": "Vadamalaiyan Medical",
+   "type": "Pharmacy",
+   "lat": 9.923624,
+   "lon": 78.094394,
+   "address": "East Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-13267418712",
+   "name": "Sakthi medicals",
+   "type": "Pharmacy",
+   "lat": 9.921878,
+   "lon": 78.09342,
+   "address": "West Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-9794169517",
+   "name": "SS Medical",
+   "type": "Pharmacy",
+   "lat": 9.936845,
+   "lon": 78.092418,
+   "address": "Anna Main Street, Bethaniyapuram, Madurai, 625017",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-node-9794169119",
+   "name": "Sri Lakshmi Medical",
+   "type": "Pharmacy",
+   "lat": 9.921652,
+   "lon": 78.094,
+   "address": "East Service Road, Kalavasal, Madurai, 625010",
+   "city": "Madurai"
+  },
+  {
+   "id": "osm-way-209546207",
+   "name": "Sankara Nethralaya",
+   "type": "Hospital",
+   "lat": 13.066738,
+   "lon": 80.249347,
+   "address": "Anderson Road, Zone 9 Teynampet, Chennai, 600006",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-29116157",
+   "name": "Egmore Eye Hospital",
+   "type": "Hospital",
+   "lat": 13.070363,
+   "lon": 80.260095,
+   "address": "Rukmani Lakshmipathi Road, Zone 5 Royapuram, Chennai, 600008",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-1314584114",
+   "name": "Government child birth Hospital",
+   "type": "Hospital",
+   "lat": 13.076555,
+   "lon": 80.224569,
+   "address": "2nd Cross Street West, Zone 8 Anna Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-1104433136",
+   "name": "Chennai National Hospital Speciality Clinics",
+   "type": "Hospital",
+   "lat": 13.094809,
+   "lon": 80.291448,
+   "address": "Beach Road, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-217846762",
+   "name": "Corporation Baby Hospital",
+   "type": "Hospital",
+   "lat": 13.097164,
+   "lon": 80.275415,
+   "address": "Thirupalli Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-1176875169",
+   "name": "Shaarave Hospital",
+   "type": "Hospital",
+   "lat": 13.098394,
+   "lon": 80.279877,
+   "address": "Mulla Sahib Street, Zone 5 Royapuram, Chennai, 600001",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-354840384",
+   "name": "JV Hospital",
+   "type": "Hospital",
+   "lat": 13.050544,
+   "lon": 80.229746,
+   "address": "Tailor Estate 1st Street, Zone 10 Kodambakkam, Chennai, 600024",
+   "emergency": true,
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-354840226",
+   "name": "R.R Dental Hospital",
+   "type": "Hospital",
+   "lat": 13.051901,
+   "lon": 80.229261,
+   "address": "Tailor Estate 2nd Street, Zone 10 Kodambakkam, Chennai, 600024",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6926437405",
+   "name": "Frontline Eye Hospital",
+   "type": "Hospital",
+   "lat": 13.032353,
+   "lon": 80.251721,
+   "address": "Tiruvellore Thattai Krishnamachariar 2nd Cross Street, Zone 9 Teynampet, Chennai, 600018",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6932138889",
+   "name": "Rathi Med Speciality Hospital",
+   "type": "Hospital",
+   "lat": 13.09165,
+   "lon": 80.217984,
+   "address": "Anna Nagar 3rd Avenue, Zone 8 Anna Nagar, Chennai, 600040",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-9980280804",
+   "name": "Shreyas hospital",
+   "type": "Hospital",
+   "lat": 13.12667,
+   "lon": 80.201439,
+   "address": "Vivekananda Nagar Main Road, Ward 83, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7818702358",
+   "name": "Uma Hospital",
+   "type": "Hospital",
+   "lat": 13.13454,
+   "lon": 80.205888,
+   "address": "Rajaji Street Extension, Ward 32, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965240",
+   "name": "Dr. H. Yogish Hospital",
+   "type": "Hospital",
+   "lat": 13.073733,
+   "lon": 80.226835,
+   "address": "EVR Periyar Salai, Zone 8 Anna Nagar, Chennai, 600029",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965213",
+   "name": "Ranjith Hospital",
+   "type": "Hospital",
+   "lat": 13.088884,
+   "lon": 80.241855,
+   "address": "Medavakkam Tank Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600010",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-1127285905",
+   "name": "Aakash Fertility Centre & Hospital",
+   "type": "Hospital",
+   "lat": 13.05546,
+   "lon": 80.211837,
+   "address": "Alagiri Nagar 1st street, Zone 10 Kodambakkam, Chennai, 600026",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6934246102",
+   "name": "Srinivas Priya Hospital (P) Ltd",
+   "type": "Hospital",
+   "lat": 13.110047,
+   "lon": 80.246685,
+   "address": "Patel Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600011",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914768001",
+   "name": "Sen Hospital",
+   "type": "Hospital",
+   "lat": 13.110565,
+   "lon": 80.241878,
+   "address": "Bunder Garden Main Street, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600011",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936669886",
+   "name": "K.J. Hospital",
+   "type": "Hospital",
+   "lat": 13.079002,
+   "lon": 80.25267,
+   "address": "EVR Periyar Salai, Zone 8 Anna Nagar, Chennai, 600084",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936415699",
+   "name": "Dr. A. Ramachandran's Diabetes Hospital",
+   "type": "Hospital",
+   "lat": 13.068534,
+   "lon": 80.25799,
+   "address": "Montieth Road, Zone 5 Royapuram, Chennai, 600008",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6928878284",
+   "name": "Lifeline Rigid Hospital",
+   "type": "Hospital",
+   "lat": 13.07802,
+   "lon": 80.233699,
+   "address": "New Avadi Road, Zone 8 Anna Nagar, Chennai, 600010",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965260",
+   "name": "Srl Hospital",
+   "type": "Hospital",
+   "lat": 13.08142,
+   "lon": 80.233376,
+   "address": "New Avadi Road, Zone 8 Anna Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6926055920",
+   "name": "A.K. Hospital, Chennai",
+   "type": "Hospital",
+   "lat": 13.074144,
+   "lon": 80.220515,
+   "address": "Nelson Manickam Road, Zone 8 Anna Nagar, Chennai, 600029",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6928042666",
+   "name": "Dr.Agarwal's Eye Hospital Ltd., Anna Nagar",
+   "type": "Hospital",
+   "lat": 13.084741,
+   "lon": 80.221968,
+   "address": "Anna Nagar 2nd Avenue, Zone 8 Anna Nagar, Chennai, 600102",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936275517",
+   "name": "Dr Agarwal Eye Hospital Ltd",
+   "type": "Hospital",
+   "lat": 13.11359,
+   "lon": 80.227076,
+   "address": "Jawwahar Nagar 1st Main Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600082",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965246",
+   "name": "Naz Unani Hospital",
+   "type": "Hospital",
+   "lat": 13.085016,
+   "lon": 80.269998,
+   "address": "Swaminathan Lane, Zone 5 Royapuram, Chennai, 600007",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965232",
+   "name": "An-Noor Eye Hospital",
+   "type": "Hospital",
+   "lat": 13.084958,
+   "lon": 80.266998,
+   "address": "Vepery High Road, Zone 5 Royapuram, Chennai, 600003",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-303590777",
+   "name": "Corporation Hospital",
+   "type": "Hospital",
+   "lat": 13.033662,
+   "lon": 80.257247,
+   "address": "CP Ramaswamy Road, Zone 9 Teynampet, Chennai, 600018",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6937434309",
+   "name": "Srinivasa Hospital P P N, Chennai",
+   "type": "Hospital",
+   "lat": 13.050338,
+   "lon": 80.229938,
+   "address": "Railway Border Road, Zone 10 Kodambakkam, Chennai, 600024",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965238",
+   "name": "Meta Hospital",
+   "type": "Hospital",
+   "lat": 13.082674,
+   "lon": 80.27059,
+   "address": "Raja Muthiah Road, Zone 5 Royapuram, Chennai, 600003",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7252333347",
+   "name": "Govt Peripheral Hospital Periyar Nagar",
+   "type": "Hospital",
+   "lat": 13.115305,
+   "lon": 80.223385,
+   "address": "Karthikeyan Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600082",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6926118208",
+   "name": "S M Hospital, Chennai",
+   "type": "Hospital",
+   "lat": 13.040097,
+   "lon": 80.204421,
+   "address": "13th Street, Zone 10 Kodambakkam, Chennai, 600078",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-1180926082",
+   "name": "The Arya Vysya Meternity Home and Child Welfare Centre",
+   "type": "Hospital",
+   "lat": 13.091103,
+   "lon": 80.28139,
+   "address": "Govindappa Naicken Street, Zone 5 Royapuram, Chennai, 600001",
+   "phone": "04425381525",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7257421540",
+   "name": "Sunrays Laproscopic Centre",
+   "type": "Hospital",
+   "lat": 13.031913,
+   "lon": 80.209989,
+   "address": "Nagathamman Koil Road, Zone 10 Kodambakkam, Chennai, 600083",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936696240",
+   "name": "Titan Eye",
+   "type": "Hospital",
+   "lat": 13.082343,
+   "lon": 80.207629,
+   "address": "4th Avenue (Santhi Colony Road), Zone 8 Anna Nagar, Chennai, 600040",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-1315895438",
+   "name": "sree dhanalakshmi family clinic",
+   "type": "Hospital",
+   "lat": 13.058305,
+   "lon": 80.211745,
+   "address": "Jawaharlal Nehru Road (100 Feet Road), Zone 10 Kodambakkam, Chennai, 600026",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965216",
+   "name": "Mythili Hospitals",
+   "type": "Hospital",
+   "lat": 13.070432,
+   "lon": 80.242149,
+   "address": "Mc Nichols Road, Zone 8 Anna Nagar, Chennai, 600031",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914768046",
+   "name": "Billroth Hospitals",
+   "type": "Hospital",
+   "lat": 13.075743,
+   "lon": 80.227259,
+   "address": "Lakshmi Talkies Road, Shenoy Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6928899364",
+   "name": "Dr. Seshiah Diabetes Research Institute and Dr. Balaji Diabetes Care Centre",
+   "type": "Hospital",
+   "lat": 13.074859,
+   "lon": 80.229984,
+   "address": "Ayyavoo Street, Zone 8 Anna Nagar, Chennai, 600029",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-12146055740",
+   "name": "Commissioner of Police office, Greater chennai Police",
+   "type": "Hospital",
+   "lat": 13.081276,
+   "lon": 80.263118,
+   "address": "EVK Sampath Salai, Zone 5 Royapuram, Chennai, 600003",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914880558",
+   "name": "Mother and Child Care Clinic, Chennai",
+   "type": "PHC",
+   "lat": 13.022355,
+   "lon": 80.204205,
+   "address": "Balaji Nagar 1st Main, Zone 13 Adyar, Chennai, 600032",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823776219",
+   "name": "JKR Clinic",
+   "type": "PHC",
+   "lat": 13.051075,
+   "lon": 80.200756,
+   "address": "Vedavalli Street, Zone 10 Kodambakkam, Chennai, 600093",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6934018827",
+   "name": "Vaman Clinic Eye and Ent Care",
+   "type": "PHC",
+   "lat": 13.038894,
+   "lon": 80.213702,
+   "address": "Dr Ambedkar Road, Zone 10 Kodambakkam, Chennai, 600083",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6937570093",
+   "name": "Dr Ravishankars Eye Clinic and Nursing Home",
+   "type": "PHC",
+   "lat": 13.087214,
+   "lon": 80.259606,
+   "address": "Purasaiwalkam Flyover, Zone 5 Royapuram, Chennai, 600112",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7254940229",
+   "name": "Dr. Premkumar's Orthopedic Clinic",
+   "type": "PHC",
+   "lat": 13.056671,
+   "lon": 80.235049,
+   "address": "Nachiappan Street, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7825009793",
+   "name": "Dr. Rao's Clinic",
+   "type": "PHC",
+   "lat": 13.129397,
+   "lon": 80.216133,
+   "address": "1st Main Road, Kolathur, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7181734862",
+   "name": "Dr. M. Mohamed Meeran Clinic",
+   "type": "PHC",
+   "lat": 13.121642,
+   "lon": 80.243604,
+   "address": "Chinna Kuzhandai Street, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600039",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7825009821",
+   "name": "Akshita Speciality Clinic",
+   "type": "PHC",
+   "lat": 13.127749,
+   "lon": 80.216857,
+   "address": "Paper Mills Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823776257",
+   "name": "D` Mas Joint & Sports Injury Clinic",
+   "type": "PHC",
+   "lat": 13.057901,
+   "lon": 80.245504,
+   "address": "Nageswara Road, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-12640713376",
+   "name": "Capstone Clinic",
+   "type": "PHC",
+   "lat": 13.053106,
+   "lon": 80.2436,
+   "address": "Chokkalingam Street, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965212",
+   "name": "Dr. V.G.K Memorial Homeo Clinic",
+   "type": "PHC",
+   "lat": 13.088176,
+   "lon": 80.241875,
+   "address": "Medavakkam Tank Road, Zone 8 Anna Nagar, Chennai, 600010",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-5338508432",
+   "name": "Swami Eye Clinic & Surgi Center",
+   "type": "PHC",
+   "lat": 13.105809,
+   "lon": 80.207788,
+   "address": "PA Koil Street, Zone 8 Anna Nagar, Chennai, 600049",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914937661",
+   "name": "Sri Sai Sankara Dental Clinic And Orthodontic Cent",
+   "type": "PHC",
+   "lat": 13.117369,
+   "lon": 80.231597,
+   "address": "Sundara Perumal Koil Street, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600082",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7818702376",
+   "name": "Dr. Ezhilarasi Clinic",
+   "type": "PHC",
+   "lat": 13.132763,
+   "lon": 80.207333,
+   "address": "Gangaiamman Kovil Street, Ward 32, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7825009818",
+   "name": "Sendoor Clinic",
+   "type": "PHC",
+   "lat": 13.116533,
+   "lon": 80.22505,
+   "address": "Jaganathan Street, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600082",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7252333360",
+   "name": "Subam Clinic",
+   "type": "PHC",
+   "lat": 13.05774,
+   "lon": 80.273916,
+   "address": "Triplicane High Road, Zone 9 Teynampet, Chennai, 600005",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-13142131701",
+   "name": "Dr Abirami's skincare clinic",
+   "type": "PHC",
+   "lat": 13.014952,
+   "lon": 80.230733,
+   "address": "Ponni Amman Koil Street, Zone 13 Adyar, Chennai, 600025",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936324681",
+   "name": "Dr Vas Dental Clinic",
+   "type": "PHC",
+   "lat": 13.03419,
+   "lon": 80.232562,
+   "address": "Mannar Street, Zone 10 Kodambakkam, Chennai, 600017",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-4580687657",
+   "name": "Siva clinic",
+   "type": "PHC",
+   "lat": 13.031321,
+   "lon": 80.224728,
+   "address": "எல்லை அம்மன் கோவில் தெரு, Zone 10 Kodambakkam, Chennai, 600033",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936681271",
+   "name": "Sri Balaji Ent And Maternity Clinic",
+   "type": "PHC",
+   "lat": 13.025794,
+   "lon": 80.222763,
+   "address": "Jones lane, Zone 10 Kodambakkam, Chennai, 600015",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10933806238",
+   "name": "G.T. Clinic",
+   "type": "PHC",
+   "lat": 13.095807,
+   "lon": 80.279821,
+   "address": "Mint Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823415026",
+   "name": "Sri Sarada Ayurveda Clinic",
+   "type": "PHC",
+   "lat": 13.029721,
+   "lon": 80.260616,
+   "address": "Subbarayan Salai, Zone 9 Teynampet, Chennai, 600028",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823415029",
+   "name": "Dr. Vasantha Clinic",
+   "type": "PHC",
+   "lat": 13.029245,
+   "lon": 80.260279,
+   "address": "St. Mary's Road, Zone 9 Teynampet, Chennai, 600004",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914937681",
+   "name": "Sri Sayee Poly Clinic",
+   "type": "PHC",
+   "lat": 13.042289,
+   "lon": 80.266512,
+   "address": "Indiraniammal Street, Zone 9 Teynampet, Chennai, 600004",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936891601",
+   "name": "Aarthi Scans",
+   "type": "PHC",
+   "lat": 13.034668,
+   "lon": 80.257678,
+   "address": "CV Raman Road, Zone 9 Teynampet, Chennai, 600018",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6933038519",
+   "name": "Ishwarya Nursing Home",
+   "type": "PHC",
+   "lat": 13.112941,
+   "lon": 80.28226,
+   "address": "Kuresan Street, Tondiarpet, Chennai, 600021",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6933510882",
+   "name": "Jayam Nursing Home",
+   "type": "PHC",
+   "lat": 13.122272,
+   "lon": 80.289497,
+   "address": "Thandavarayan Street, Zone 5 Royapuram, Chennai, 600021",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914880505",
+   "name": "Vijaya Institute Of Trauma and Orthopadics",
+   "type": "PHC",
+   "lat": 13.04778,
+   "lon": 80.206549,
+   "address": "Arcot Road, Zone 10 Kodambakkam, Chennai, 600026",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965239",
+   "name": "Vardhman Multispeciality",
+   "type": "PHC",
+   "lat": 13.090224,
+   "lon": 80.267898,
+   "address": "Sami Pillai Street, Zone 5 Royapuram, Chennai, 600112",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6929592184",
+   "name": "Bagdi Nursing Home",
+   "type": "PHC",
+   "lat": 13.053385,
+   "lon": 80.237494,
+   "address": "Dr MGR Salai, Zone 9 Teynampet, Chennai, 600017",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7825009796",
+   "name": "Maayi Nursing Home",
+   "type": "PHC",
+   "lat": 13.117541,
+   "lon": 80.228607,
+   "address": "70Ft Road, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-3680482049",
+   "name": "Sri Meenakshi Nursing Home, Chennai",
+   "type": "PHC",
+   "lat": 13.041711,
+   "lon": 80.228583,
+   "address": "Railway Border Road, Zone 10 Kodambakkam, Chennai, 600001",
+   "phone": "044 2345 5290",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914767986",
+   "name": "Sundaravadanan Nursing Home",
+   "type": "PHC",
+   "lat": 13.079356,
+   "lon": 80.256047,
+   "address": "EVR Periyar Salai, Zone 5 Royapuram, Chennai, 600010",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7824965255",
+   "name": "Psy Hub, Brain and Behaviour",
+   "type": "PHC",
+   "lat": 13.08215,
+   "lon": 80.233161,
+   "address": "Halls Road, Zone 8 Anna Nagar, Chennai, 600010",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6914880574",
+   "name": "Mohan Nursing Home, Tiruvallur",
+   "type": "PHC",
+   "lat": 13.102534,
+   "lon": 80.209041,
+   "address": "Konnur High Road, Zone 8 Anna Nagar, Chennai, 600049",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823776199",
+   "name": "Pranic Health",
+   "type": "PHC",
+   "lat": 13.06246,
+   "lon": 80.24239,
+   "address": "Seetha Nagar Main Road, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6933010456",
+   "name": "Janaki E.N.T. Nursing Home",
+   "type": "PHC",
+   "lat": 13.097057,
+   "lon": 80.282196,
+   "address": "Nagamani Garden Street, Zone 5 Royapuram, Chennai, 600001",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6936709049",
+   "name": "Siva Sakthi Nursing Home",
+   "type": "PHC",
+   "lat": 13.060782,
+   "lon": 80.221768,
+   "address": "Kamaraj Nagar 4th Street, Zone 9 Teynampet, Chennai, 600094",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6933881025",
+   "name": "Sree Narayana Nursing Home",
+   "type": "PHC",
+   "lat": 13.108976,
+   "lon": 80.248137,
+   "address": "Vasan Street, Zone 6 Thiru. Vi. Ka. Nagar, Chennai, 600011",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-7823776220",
+   "name": "Skin Doctor",
+   "type": "PHC",
+   "lat": 13.056753,
+   "lon": 80.246255,
+   "address": "Thirumurthy Nagar 6th Street, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-14167313302",
+   "name": "APOLLO pharmacy Chindatripet",
+   "type": "Pharmacy",
+   "lat": 13.074192,
+   "lon": 80.269909,
+   "address": "Swami Naicken Street, Zone 5 Royapuram, Chennai, 600002",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-1697808540",
+   "name": "Periyandaver Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.026682,
+   "lon": 80.270192,
+   "address": "4th Trust Cross Street, Zone 9 Teynampet, Chennai, 600028",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6237693085",
+   "name": "Muthu Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.085375,
+   "lon": 80.252013,
+   "address": "Vellala Street, Zone 8 Anna Nagar, Chennai, 600084",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-1948616269",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.067751,
+   "lon": 80.205005,
+   "address": "MTC Busway, Zone 10 Kodambakkam, Chennai, 600107",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-11832500011",
+   "name": "RR Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.037489,
+   "lon": 80.267071,
+   "address": "Luz Church Road, Zone 9 Teynampet, Chennai, 600004",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-11395977109",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.046782,
+   "lon": 80.226321,
+   "address": "Viswanathapuram Main Road, Zone 10 Kodambakkam, Chennai, 600024",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-12547945101",
+   "name": "Daksha Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.072267,
+   "lon": 80.230347,
+   "address": "Venkatachalapathy Street, Zone 8 Anna Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-612527668",
+   "name": "Seven Star Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.072666,
+   "lon": 80.208369,
+   "address": "Jai Nagar 1st Main Road, Zone 10 Kodambakkam, Chennai, 600106",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10208901306",
+   "name": "Alahu Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.096609,
+   "lon": 80.289686,
+   "address": "Thambu Chetty Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-370319221",
+   "name": "Apollo Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.06454,
+   "lon": 80.243327,
+   "address": "Wheatcrofts Road, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-13607074536",
+   "name": "S. R. Pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.074177,
+   "lon": 80.224358,
+   "address": "EVR Periyar Salai, Zone 8 Anna Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-13039283371",
+   "name": "Cure blue pharmacy",
+   "type": "Pharmacy",
+   "lat": 13.014916,
+   "lon": 80.229668,
+   "address": "Srinagar colony cross street, Zone 13 Adyar, Chennai, 600025",
+   "phone": "+919042313331",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-way-1076599893",
+   "name": "Smith Stocking & Co",
+   "type": "Pharmacy",
+   "lat": 13.088732,
+   "lon": 80.287115,
+   "address": "Netaji Subhash Chandra Bose Road, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10115689799",
+   "name": "City Medicals",
+   "type": "Pharmacy",
+   "lat": 13.096386,
+   "lon": 80.289078,
+   "address": "Mannady Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10583922905",
+   "name": "K. S. Medicals",
+   "type": "Pharmacy",
+   "lat": 13.101022,
+   "lon": 80.292295,
+   "address": "Meerali Lane, Zone 5 Royapuram, Chennai, 600021",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10595586116",
+   "name": "London Medicals",
+   "type": "Pharmacy",
+   "lat": 13.099602,
+   "lon": 80.288573,
+   "address": "New Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10963479044",
+   "name": "Eswari Medicals",
+   "type": "Pharmacy",
+   "lat": 13.102494,
+   "lon": 80.284357,
+   "address": "Taiyappa Mudali Lane, Zone 5 Royapuram, Chennai, 600021",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10798116925",
+   "name": "Malick Medicals",
+   "type": "Pharmacy",
+   "lat": 13.088628,
+   "lon": 80.282147,
+   "address": "Netaji Subhash Chandra Bose Road, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10933457922",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 13.095083,
+   "lon": 80.280902,
+   "address": "Thatha Muthiappan Street 1, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-11533446513",
+   "name": "Rithick Medicals",
+   "type": "Pharmacy",
+   "lat": 13.09946,
+   "lon": 80.283684,
+   "address": "Francisturin Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6036592551",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 13.108615,
+   "lon": 80.207706,
+   "address": "Mounasamy Madam Street, Zone 8 Anna Nagar, Chennai, 600049",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-5336395126",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 13.102666,
+   "lon": 80.208917,
+   "address": "Konnur High Road, Zone 8 Anna Nagar, Chennai, 600038",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-5400382372",
+   "name": "Ashok Medicals",
+   "type": "Pharmacy",
+   "lat": 13.034963,
+   "lon": 80.212384,
+   "address": "Jawaharlal Nehru Road (100 Feet Road), Zone 10 Kodambakkam, Chennai, 600083",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-378692904",
+   "name": "Sugam",
+   "type": "Pharmacy",
+   "lat": 13.039551,
+   "lon": 80.250293,
+   "address": "Poes Main Road, Zone 9 Teynampet, Chennai, 600018",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-12640732029",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 13.04976,
+   "lon": 80.24042,
+   "address": "Thirumalai Road, Zone 9 Teynampet, Chennai, 600034",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-11395977110",
+   "name": "Jayalaksmi medicals",
+   "type": "Pharmacy",
+   "lat": 13.045455,
+   "lon": 80.225879,
+   "address": "Corporation Colony Road, Zone 10 Kodambakkam, Chennai, 600024",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-941482690",
+   "name": "Seetha Medicals",
+   "type": "Pharmacy",
+   "lat": 13.07064,
+   "lon": 80.208159,
+   "address": "Jai Nagar 1st Main Road, Zone 10 Kodambakkam, Chennai, 600106",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-12497428101",
+   "name": "Saffra Medicals",
+   "type": "Pharmacy",
+   "lat": 13.072045,
+   "lon": 80.230545,
+   "address": "Kanthan Street, Zone 8 Anna Nagar, Chennai, 600030",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-3453302328",
+   "name": "Naga Medicals",
+   "type": "Pharmacy",
+   "lat": 13.025018,
+   "lon": 80.221377,
+   "address": "Jones Road, Zone 10 Kodambakkam, Chennai, 600015",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-13839616627",
+   "name": "T.U.T.S Kamadhenu Cooperative Medical Shop",
+   "type": "Pharmacy",
+   "lat": 13.033099,
+   "lon": 80.267643,
+   "address": "RK Mutt Road, Zone 9 Teynampet, Chennai, 600004",
+   "phone": "+91 44 2462 2409",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-3800583779",
+   "name": "Saravana Medicals",
+   "type": "Pharmacy",
+   "lat": 13.036267,
+   "lon": 80.222266,
+   "address": "Thambiah Road, Zone 10 Kodambakkam, Chennai, 600033",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-3745022788",
+   "name": "Vinodh Medicals",
+   "type": "Pharmacy",
+   "lat": 13.039126,
+   "lon": 80.221271,
+   "address": "Arya Gowda Road, Zone 10 Kodambakkam, Chennai, 600033",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-6274294885",
+   "name": "Good Health Medicals",
+   "type": "Pharmacy",
+   "lat": 13.063683,
+   "lon": 80.277322,
+   "address": "Lal Mohammed Street, Zone 9 Teynampet, Chennai, 600005",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-9980280808",
+   "name": "MedPlus",
+   "type": "Pharmacy",
+   "lat": 13.127997,
+   "lon": 80.201544,
+   "address": "Vivekananda Nagar Main Road, Ward 83, Chennai, 600099",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-5338512294",
+   "name": "Sri Azhagu Medicals",
+   "type": "Pharmacy",
+   "lat": 13.107679,
+   "lon": 80.206109,
+   "address": "Redhills Road, Zone 8 Anna Nagar, Chennai, 600049",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10933806243",
+   "name": "Lal Medicals",
+   "type": "Pharmacy",
+   "lat": 13.095857,
+   "lon": 80.279831,
+   "address": "Mint Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10895930390",
+   "name": "Shri Rajeshwar Medical",
+   "type": "Pharmacy",
+   "lat": 13.094219,
+   "lon": 80.280132,
+   "address": "Anna Pillai Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-5338522331",
+   "name": "Thai Medical and Generals",
+   "type": "Pharmacy",
+   "lat": 13.109282,
+   "lon": 80.206215,
+   "address": "Redhills Road, Zone 8 Anna Nagar, Chennai, 600049",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-10973661157",
+   "name": "Mahaveer Medicals",
+   "type": "Pharmacy",
+   "lat": 13.092629,
+   "lon": 80.279867,
+   "address": "Audiappa Naicken Street, Zone 5 Royapuram, Chennai, 600079",
+   "city": "Chennai"
+  },
+  {
+   "id": "osm-node-11513795735",
+   "name": "Raghavendra Medicals",
+   "type": "Pharmacy",
+   "lat": 13.102908,
+   "lon": 80.284205,
+   "address": "Portugese Church Street 2, Zone 5 Royapuram, Chennai, 600021",
+   "city": "Chennai"
+  }
+ ]
+}

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { LocateFixed, MapPin } from 'lucide-react'
+import { LocateFixed } from 'lucide-react'
 
 interface ClimatePlaceMapProps {
   locationName: string
@@ -75,43 +75,19 @@ export default function ClimatePlaceMap({
       maxZoom: 19,
     }).addTo(map)
 
-    // Create custom pulsating red station marker
     const customIcon = L.divIcon({
       className: 'climate-station-marker',
-      html: `
-        <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(220, 38, 38, 0.25); animation: pulse 2s infinite ease-out;"></div>
-          <div style="width: 28px; height: 28px; border-radius: 50% 50% 50% 0; background: #DC2626; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);">
-            <span style="transform: rotate(45deg); color: #FFFFFF; font-size: 13px; font-weight: 900; line-height: 1;">📍</span>
-          </div>
-        </div>
-      `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 32],
-      popupAnchor: [0, -32],
+      html: '<span style="display:block;width:18px;height:18px;border-radius:50%;background:#DC2626;border:3px solid #fff;box-shadow:0 0 0 6px rgba(220,38,38,0.2),0 2px 6px rgba(0,0,0,0.3)"></span>',
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+      popupAnchor: [0, -12],
     })
 
     const marker = L.marker([actualLat, actualLon], { icon: customIcon }).addTo(map)
-
-    const tempDisplay = temp !== undefined ? ` • <b>${temp}°C</b>` : ''
-    marker
-      .bindPopup(
-        `<div style="font-family: inherit; padding: 4px 2px;">
-          <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13px; color: #0F172A;">
-            <span style="color: #DC2626;">📍</span> ${locationName}
-          </div>
-          <div style="font-size: 11px; color: #64748B; margin-top: 4px; font-family: monospace;">
-            Lat: ${actualLat.toFixed(4)}° N, Lon: ${actualLon.toFixed(4)}° E
-          </div>
-          <div style="font-size: 11px; color: #0F172A; margin-top: 4px; font-weight: 600;">
-            ${weatherCondition}${tempDisplay}
-          </div>
-          <div style="font-size: 10px; color: #DC2626; margin-top: 4px; font-weight: 700; text-transform: uppercase;">
-            ● Active Climate & Heat Telemetry Station
-          </div>
-        </div>`
-      )
-      .openPopup()
+    const tempDisplay = temp !== undefined ? ` · ${temp}°C` : ''
+    marker.bindPopup(
+      `<div style="font-family:inherit;font-size:13px;line-height:1.4"><strong>${locationName}</strong><br/><span style="color:#64748B">${weatherCondition}${tempDisplay}</span></div>`,
+    )
 
     markerRef.current = marker
     mapInstanceRef.current = map
@@ -145,79 +121,15 @@ export default function ClimatePlaceMap({
   }
 
   return (
-    <div
-      className="panel"
-      style={{
-        overflow: 'hidden',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 12,
-        background: 'var(--panel-bg)',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 16px',
-          borderBottom: '1px solid var(--border-subtle)',
-          background: 'var(--panel-elevated)',
-        }}
+    <div className="relative isolate overflow-hidden rounded-xl border border-line">
+      <div ref={mapContainerRef} className="relative z-[1] h-[300px] w-full" />
+      <button
+        type="button"
+        onClick={handleCenter}
+        className="absolute top-3 right-3 z-[2] inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-xs font-medium text-fg shadow-sm hover:bg-surface-2"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <MapPin size={16} style={{ color: 'var(--main-red)' }} />
-          <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>
-            Location Ground Map: {locationName}
-          </strong>
-          <span
-            style={{
-              fontSize: 10,
-              fontFamily: 'var(--font-mono)',
-              padding: '2px 6px',
-              borderRadius: 4,
-              background: '#FEF2F2',
-              color: 'var(--main-red)',
-              border: '1px solid rgba(220, 38, 38, 0.25)',
-              fontWeight: 700,
-            }}
-          >
-            {actualLat.toFixed(4)}° N, {actualLon.toFixed(4)}° E
-          </span>
-        </div>
-
-        <button
-          onClick={handleCenter}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '4px 10px',
-            fontSize: 11,
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 700,
-            background: 'var(--panel-bg)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 6,
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-          }}
-          title="Center on this location"
-        >
-          <LocateFixed size={12} style={{ color: 'var(--main-red)' }} />
-          <span>Center Place</span>
-        </button>
-      </div>
-
-      <div
-        ref={mapContainerRef}
-        style={{
-          height: 280,
-          width: '100%',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      />
+        <LocateFixed className="size-3.5" aria-hidden /> Re-center
+      </button>
     </div>
   )
 }

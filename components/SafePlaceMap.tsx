@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LocateFixed } from 'lucide-react'
@@ -29,59 +29,32 @@ function getMarkerColor(type: SafePlaceType): string {
   }
 }
 
-function getMarkerIconSvg(type: SafePlaceType): string {
-  const color = getMarkerColor(type)
-  let symbol = '✚'
-  if (type === 'PHC') symbol = '⚕'
-  if (type === 'Shelter') symbol = '⌂'
-  if (type === 'Pharmacy') symbol = 'Rx'
-
-  return `
-    <div style="
-      width: 32px;
-      height: 32px;
-      border-radius: 50% 50% 50% 0;
-      background: ${color};
-      transform: rotate(-45deg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #FFFFFF;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      cursor: pointer;
-    ">
-      <span style="
-        transform: rotate(45deg);
-        color: #FFFFFF;
-        font-size: ${type === 'Pharmacy' ? '11px' : '14px'};
-        font-weight: 900;
-        line-height: 1;
-      ">${symbol}</span>
-    </div>
-  `
+// Inline SVG glyphs (lucide-style strokes) so pins need no image requests.
+const TYPE_GLYPH: Record<SafePlaceType, string> = {
+  Hospital: '<path d="M12 6v12M6 12h12"/>',
+  PHC: '<path d="M4 12h4l2-4 4 8 2-4h4"/>',
+  Shelter: '<path d="M4 11l8-6 8 6v8H4z"/><path d="M10 19v-5h4v5"/>',
+  Pharmacy: '<rect x="4" y="9" width="16" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M9.5 9.5l5 5"/>',
 }
 
+function getMarkerIconSvg(type: SafePlaceType, selected = false): string {
+  const size = selected ? 37 : 32
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${getMarkerColor(type)};display:grid;place-items:center;border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.35)${selected ? ',0 0 0 4px rgba(255,255,255,.6)' : ''};cursor:pointer;transition:transform .2s">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${TYPE_GLYPH[type]}</svg>
+  </div>`
+}
+
+function getClusterIconSvg(count: number): string {
+  const size = count >= 100 ? 48 : count >= 20 ? 42 : 36
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#0F1419;color:#fff;display:grid;place-items:center;font:600 13px ui-monospace,monospace;border:3px solid rgba(255,255,255,.9);box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer">${count}</div>`
+}
+
+// User location: 12px dot with a static 40% halo (no pulse).
 function getUserLocationIconSvg(): string {
-  return `
-    <div style="position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
-      <div style="
-        position: absolute;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: rgba(255, 193, 7, 0.4);
-        animation: pulse 1.8s infinite ease-out;
-      "></div>
-      <div style="
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #FFC107;
-        border: 2.5px solid #1F0505;
-        box-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
-      "></div>
-    </div>
-  `
+  return `<div style="position:relative;width:28px;height:28px;display:grid;place-items:center">
+    <div style="position:absolute;inset:0;border-radius:50%;background:rgba(29,78,216,.4)"></div>
+    <div style="width:12px;height:12px;border-radius:50%;background:#1D4ED8;border:2px solid #fff"></div>
+  </div>`
 }
 
 export default function SafePlaceMap({
@@ -96,6 +69,7 @@ export default function SafePlaceMap({
   const userMarkerRef = useRef<L.Marker | null>(null)
   const lastFittedDatasetRef = useRef<string>('')
   const onSelectPlaceRef = useRef(onSelectPlace)
+  const [zoom, setZoom] = useState(13)
 
   // Keep callback reference updated without triggering effects
   useEffect(() => {
@@ -133,6 +107,7 @@ export default function SafePlaceMap({
       maxZoom: 19,
     }).addTo(map)
 
+    map.on('zoomend', () => setZoom(map.getZoom()))
     const markersLayer = L.layerGroup().addTo(map)
     markersLayerRef.current = markersLayer
     mapInstanceRef.current = map
@@ -174,15 +149,15 @@ export default function SafePlaceMap({
     if (!map || !userLocation) return
 
     // Smoothly fly to newly selected/searched coordinates
-    map.flyTo([userLocation.lat, userLocation.lon], 14, { duration: 1.0 })
+    map.flyTo([userLocation.lat, userLocation.lon], 14, { duration: 0.7 })
 
     const label =
       userLocation.source === 'gps'
-        ? '📍 Current GPS Location'
-        : `📍 Selected: ${userLocation.shortName || userLocation.displayName || 'Location'}`
+        ? 'Your location'
+        : userLocation.shortName || userLocation.displayName || 'Selected location'
     const sublabel =
       userLocation.source === 'gps'
-        ? 'Browser Detected Geolocation'
+        ? `Accurate to about ${Math.round(userLocation.accuracy ?? 0)} m`
         : userLocation.displayName || 'Searched Center'
 
     const popupHtml = `
@@ -200,8 +175,8 @@ export default function SafePlaceMap({
       const userIcon = L.divIcon({
         className: 'custom-user-pin',
         html: getUserLocationIconSvg(),
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
       })
 
       const marker = L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
@@ -225,13 +200,41 @@ export default function SafePlaceMap({
       bounds.push([userLocation.lat, userLocation.lon])
     }
 
+    const clustered = new Set<string>()
+    if (places.length > 50) {
+      const cell = (60 * 360) / (256 * Math.pow(2, zoom))
+      const groups = new Map<string, SafePlace[]>()
+      places.forEach((pl) => {
+        const key = `${Math.floor(pl.lat / cell)}:${Math.floor(pl.lon / cell)}`
+        groups.set(key, [...(groups.get(key) ?? []), pl])
+      })
+      groups.forEach((group) => {
+        if (group.length < 2) return
+        group.forEach((pl) => clustered.add(pl.id))
+        const lat = group.reduce((sum, pl) => sum + pl.lat, 0) / group.length
+        const lon = group.reduce((sum, pl) => sum + pl.lon, 0) / group.length
+        const size = group.length >= 100 ? 48 : group.length >= 20 ? 42 : 36
+        L.marker([lat, lon], {
+          icon: L.divIcon({ className: 'custom-facility-pin', html: getClusterIconSvg(group.length), iconSize: [size, size], iconAnchor: [size / 2, size / 2] }),
+          title: `${group.length} places`,
+        })
+          .addTo(markersLayer)
+          .on('click', () => map.flyTo([lat, lon], Math.min(18, zoom + 2), { duration: 0.7 }))
+      })
+    }
+
     places.forEach((place) => {
+      if (clustered.has(place.id)) {
+        bounds.push([place.lat, place.lon])
+        return
+      }
+      const selected = selectedPlace?.id === place.id
       const markerIcon = L.divIcon({
         className: 'custom-facility-pin',
-        html: getMarkerIconSvg(place.type),
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30],
+        html: getMarkerIconSvg(place.type, selected),
+        iconSize: selected ? [37, 37] : [32, 32],
+        iconAnchor: selected ? [18.5, 18.5] : [16, 16],
+        popupAnchor: [0, -16],
       })
 
       const dirUrl = getDirectionsUrl(place.lat, place.lon, place.name)
@@ -258,7 +261,7 @@ export default function SafePlaceMap({
           <p style="margin: 0 0 6px; font-size: 11px; color: #4B5563; line-height: 1.3;">${place.address}</p>
           ${
             place.isDemo
-              ? `<div style="font-size: 9px; color: #B45309; background: #FEF3C7; padding: 1px 4px; border-radius: 3px; margin-bottom: 6px; display: inline-block;">Demo Facility</div>`
+              ? `<div style="font-size: 9px; color: #B45309; background: #FEF3C7; padding: 1px 4px; border-radius: 3px; margin-bottom: 6px; display: inline-block;">Sample facility</div>`
               : ''
           }
           <div style="margin-top: 6px;">
@@ -272,7 +275,7 @@ export default function SafePlaceMap({
               font-weight: 700;
               font-size: 11px;
               text-decoration: none;
-            ">Get Directions ↗</a>
+            ">Directions</a>
           </div>
         </div>
       `
@@ -284,6 +287,8 @@ export default function SafePlaceMap({
       marker.on('click', () => {
         onSelectPlaceRef.current?.(place)
       })
+      // Markers are rebuilt when the selection changes; keep the selected popup open.
+      if (selected) marker.openPopup()
 
       bounds.push([place.lat, place.lon])
     })
@@ -308,16 +313,14 @@ export default function SafePlaceMap({
         lastFittedDatasetRef.current = currentDatasetKey
       }
     }
-  }, [places, userLocation])
+  }, [places, userLocation, zoom, selectedPlace?.id])
 
   // Pan to selected place when explicitly clicked from the facility card list
   useEffect(() => {
     const map = mapInstanceRef.current
     if (!map || !selectedPlace) return
 
-    map.flyTo([selectedPlace.lat, selectedPlace.lon], 15, {
-      duration: 1.0,
-    })
+    map.flyTo([selectedPlace.lat, selectedPlace.lon], 15, { duration: 0.7 })
   }, [selectedPlace])
 
   // Re-center map directly on currently selected location
@@ -334,97 +337,29 @@ export default function SafePlaceMap({
   }, [userLocation, places])
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        minHeight: 380,
-        borderRadius: 14,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Leaflet DOM container */}
-      <div
-        ref={mapContainerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          minHeight: 380,
-          zIndex: 1,
-          touchAction: 'pan-x pan-y',
-        }}
-      />
+    <div className="relative isolate h-full min-h-[340px] w-full overflow-hidden">
+      <div ref={mapContainerRef} className="relative z-[1] h-full min-h-[340px] w-full" style={{ touchAction: 'pan-x pan-y' }} />
 
-      {/* Top Legend & Re-center Control Strip */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 10,
-          left: 10,
-          right: 10,
-          zIndex: 400,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        {/* Category Legend */}
-        <div
-          style={{
-            background: 'rgba(31, 5, 5, 0.88)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
-            borderRadius: 8,
-            padding: '6px 12px',
-            display: 'flex',
-            gap: 12,
-            fontSize: 11,
-            color: '#FFF',
-            pointerEvents: 'auto',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C62828' }} /> Hospital
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2563EB' }} /> PHC
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706' }} /> Shelter
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#059669' }} /> Pharmacy
-          </span>
-        </div>
-
-        {/* Re-center Button */}
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-[400] flex items-start justify-between gap-2">
+        <ul className="pointer-events-auto flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-line bg-surface/95 px-3 py-1.5 text-[11px] text-fg-2 shadow-sm backdrop-blur">
+          {[
+            ['Hospital', '#C62828'],
+            ['Health centre', '#2563EB'],
+            ['Shelter', '#D97706'],
+            ['Pharmacy', '#059669'],
+          ].map(([label, color]) => (
+            <li key={label} className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full" style={{ background: color }} aria-hidden />
+              {label}
+            </li>
+          ))}
+        </ul>
         <button
+          type="button"
           onClick={handleRecenter}
-          title="Re-center map on currently selected location"
-          style={{
-            background: 'rgba(31, 5, 5, 0.88)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 193, 7, 0.4)',
-            borderRadius: 8,
-            padding: '6px 10px',
-            fontSize: 11,
-            fontWeight: 700,
-            color: 'var(--bright-yellow)',
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-            transition: 'all 0.15s ease',
-          }}
+          className="pointer-events-auto inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface/95 px-2.5 text-xs font-medium text-fg shadow-sm backdrop-blur hover:bg-surface"
         >
-          <LocateFixed size={13} />
-          <span>Re-center</span>
+          <LocateFixed className="size-3.5" aria-hidden /> Re-center
         </button>
       </div>
     </div>

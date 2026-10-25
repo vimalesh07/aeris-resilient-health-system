@@ -9,7 +9,7 @@ import {
 } from '@/types/aeris'
 
 export const DEFAULT_USER_PROFILE: UserProfile = {
-  name: 'Vimal',
+  name: '',
   age: 20,
   sex: 'Male',
   heightCm: 175,
@@ -21,7 +21,7 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
   knownHrvBaseline: 65,
   healthNotes: '',
   units: 'metric',
-  emergencyContactPhone: '9715042529',
+  emergencyContactPhone: '',
   enableSmsAlerts: true,
   enableWhatsappAlerts: true,
 }

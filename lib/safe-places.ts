@@ -146,108 +146,41 @@ export async function geocodeLocation(query: string): Promise<{
   }
 }
 
+export type PlacesSource = 'overpass' | 'nominatim' | 'saved' | 'none' | 'sample'
+
 /**
- * Fetch real places using the server-side /api/overpass proxy route.
- * Queries live OpenStreetMap facilities around user or searched coordinates.
- * Returns only verified real facilities. If none are found, returns empty list without inventing fake hospitals.
+ * Nearby safe places via the server (/api/overpass), which tries live
+ * OpenStreetMap sources and then a saved snapshot. Sample places are used only
+ * when the server can't be reached at all, and are always marked as samples.
  */
 export async function fetchNearbySafePlaces(
   lat: number,
   lon: number,
   signal?: AbortSignal
-): Promise<{ places: SafePlace[]; isDemoFallback: boolean; fallbackReason?: string }> {
+): Promise<{ places: SafePlace[]; isDemoFallback: boolean; source: PlacesSource; fallbackReason?: string }> {
   try {
     const response = await fetch('/api/overpass', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lat, lon, radius: 6000 }),
       signal,
     })
-
-    if (!response.ok) {
-      throw new Error(`Overpass proxy returned HTTP ${response.status}`)
-    }
-
-    const data = await response.json()
-    const elements = data?.elements || []
-
-    if (!elements || elements.length === 0) {
-      return {
-        places: [],
-        isDemoFallback: false,
-        fallbackReason: 'No verified nearby facilities found for this location in OpenStreetMap.',
-      }
-    }
-
-    const parsedPlaces: SafePlace[] = elements.map((elem: any) => {
-      const tags = elem.tags || {}
-      let type: SafePlaceType = 'PHC'
-
-      if (tags.amenity === 'hospital') {
-        type = 'Hospital'
-      } else if (tags.amenity === 'pharmacy') {
-        type = 'Pharmacy'
-      } else if (
-        tags.emergency === 'shelter' ||
-        tags.social_facility === 'shelter' ||
-        tags.amenity === 'social_facility'
-      ) {
-        type = 'Shelter'
-      } else {
-        type = 'PHC'
-      }
-
-      const name =
-        tags.name ||
-        tags['name:en'] ||
-        tags['name:ta'] ||
-        tags['name:hi'] ||
-        (type === 'Hospital'
-          ? 'Emergency Hospital'
-          : type === 'Pharmacy'
-          ? 'Local Pharmacy'
-          : type === 'Shelter'
-          ? 'Designated Safe Shelter'
-          : 'Primary Health Centre')
-
-      const addressParts = [
-        tags['addr:street'],
-        tags['addr:suburb'],
-        tags['addr:city'],
-        tags['addr:district'],
-        tags['addr:postcode'],
-      ].filter(Boolean)
-
-      const address = addressParts.length > 0 ? addressParts.join(', ') : 'Verified OpenStreetMap Location'
-      // For ways/polygons, coordinates are provided in center
-      const elemLat = typeof elem.lat === 'number' ? elem.lat : (elem.center?.lat ?? lat)
-      const elemLon = typeof elem.lon === 'number' ? elem.lon : (elem.center?.lon ?? lon)
-      const distanceKm = calculateDistanceKm(lat, lon, elemLat, elemLon)
-
-      return {
-        id: `osm-${elem.type || 'node'}-${elem.id}`,
-        name,
-        type,
-        lat: elemLat,
-        lon: elemLon,
-        distanceKm,
-        address,
-        phone: tags.phone || tags['contact:phone'] || undefined,
-        openNow: tags.opening_hours?.includes('24/7') ? true : undefined,
-        isDemo: false,
-        capabilities: [tags.healthcare ? `Care: ${tags.healthcare}` : 'Verified Emergency Ready'],
-      }
-    })
-
-    return { places: parsedPlaces, isDemoFallback: false }
-  } catch (err: any) {
-    console.warn('Overpass fetch failed:', err?.message)
+    if (!response.ok) throw new Error(`Server returned HTTP ${response.status}`)
+    const data = (await response.json()) as { places?: SafePlace[]; source?: PlacesSource; note?: string }
     return {
-      places: [],
+      places: data.places ?? [],
       isDemoFallback: false,
-      fallbackReason: err?.message || 'Unable to connect to OpenStreetMap servers.',
+      source: data.source ?? 'none',
+      fallbackReason: data.note,
+    }
+  } catch (err: any) {
+    if (err?.name === 'AbortError') throw err
+    console.warn('Safe places lookup failed:', err?.message)
+    return {
+      places: getDemoSafePlaces(lat, lon),
+      isDemoFallback: true,
+      source: 'sample',
+      fallbackReason: 'AERIS could not reach the server, so these are sample places for illustration only. Call 112 or 108 in an emergency.',
     }
   }
 }
@@ -273,43 +206,43 @@ export function prioritizeSafePlaces(
     if (isHighHealthRisk) {
       if (place.type === 'Hospital') {
         priorityWeight += 100
-        reason = '⚠️ High Physiological Risk: Prioritizing 24/7 Trauma ICU & Emergency Triage'
+        reason = 'Your risk is high — nearest emergency care first'
       } else if (place.type === 'PHC') {
         priorityWeight += 60
-        reason = 'Rapid Vitals Stabilization & Primary Care Centre'
+        reason = 'Can check vitals and stabilise you'
       }
     }
 
     if (isHeatwaveRisk) {
       if (place.type === 'Shelter') {
         priorityWeight += 95
-        reason = '☀️ Heatwave Alert: Designated Cooling Shelter with Hydration & HVAC'
+        reason = 'Heatwave — a cool place to rest and rehydrate'
       } else if (place.type === 'Hospital') {
         priorityWeight += 80
-        reason = 'Emergency Heat Exhaustion & Hyperthermia Treatment'
+        reason = 'Treats heat exhaustion and heatstroke'
       } else if (place.type === 'Pharmacy') {
         priorityWeight += 40
-        reason = 'ORS & Electrolyte Rehydration Stocks Available'
+        reason = 'ORS and electrolytes for rehydration'
       }
     }
 
     if (isFloodMonsoonRisk) {
       if (place.type === 'Shelter') {
         priorityWeight += 110
-        reason = '🌧️ Monsoon / Flood Safe Zone: High-Ground Resilient Elevation'
+        reason = 'Flooding risk — shelter on higher ground'
       } else if (place.type === 'Hospital') {
         priorityWeight += 70
-        reason = 'Flood-Prepared Emergency Medical Facility'
+        reason = 'Emergency care during floods'
       }
     }
 
     if (isPollutionRisk) {
       if (place.type === 'Hospital') {
         priorityWeight += 85
-        reason = 'Air Quality Hazard: Pulmonary & Respiratory Oxygen Unit'
+        reason = 'Poor air — breathing and oxygen support'
       } else if (place.type === 'Pharmacy') {
         priorityWeight += 65
-        reason = 'Inhalers, N95 Masks & Clean-Air Resp Supplies'
+        reason = 'Inhalers and N95 masks'
       }
     }
 

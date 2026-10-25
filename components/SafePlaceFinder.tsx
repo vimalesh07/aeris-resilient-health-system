@@ -6,12 +6,12 @@ import {
   AlertCircle,
   AlertTriangle,
   Building2,
-  Compass,
   ExternalLink,
   Flame,
   Home,
   Info,
   Loader2,
+  LocateFixed,
   MapPin,
   Navigation,
   Phone,
@@ -19,9 +19,14 @@ import {
   Search,
   Shield,
   ShieldAlert,
-  Sparkles,
   Wind,
 } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { Segmented } from '@/components/ui/segmented'
+import { useIsDesktop } from '@/hooks/useIsDesktop'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import {
   fetchNearbySafePlaces,
@@ -29,6 +34,7 @@ import {
   geocodeLocation,
   getDemoSafePlaces,
   getDirectionsUrl,
+  type PlacesSource,
   prioritizeSafePlaces,
 } from '@/lib/safe-places'
 import { SafePlace, SafePlaceFilter, SafePlaceType, UserLocation } from '@/types/aeris'
@@ -36,26 +42,7 @@ import { SafePlace, SafePlaceFilter, SafePlaceType, UserLocation } from '@/types
 // Dynamic import of Leaflet map to guarantee zero SSR hydration issues
 const SafePlaceMap = dynamic(() => import('@/components/SafePlaceMap'), {
   ssr: false,
-  loading: () => (
-    <div
-      style={{
-        height: '100%',
-        minHeight: 380,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--panel-elevated)',
-        borderRadius: 14,
-        border: '1px solid var(--border-subtle)',
-        color: 'var(--text-primary)',
-        gap: 10,
-      }}
-    >
-      <Loader2 size={28} className="animate-spin" style={{ color: 'var(--main-red)' }} />
-      <span style={{ fontSize: 13, fontWeight: 600 }}>Loading OpenStreetMap Leaflet Engine...</span>
-    </div>
-  ),
+  loading: () => <div className="h-full min-h-[340px] animate-pulse bg-surface-2" />,
 })
 
 interface SafePlaceFinderProps {
@@ -88,8 +75,11 @@ export function SafePlaceFinder({
   const [loadingMessage, setLoadingMessage] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isDemoData, setIsDemoData] = useState<boolean>(false)
+  const [source, setSource] = useState<PlacesSource>('none')
   const [fallbackReason, setFallbackReason] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState<boolean>(false)
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
+  const isDesktop = useIsDesktop()
 
   // Risk detection state
   const isHighRisk =
@@ -113,13 +103,13 @@ export function SafePlaceFinder({
       setErrorMessage(null)
       setPlaces([]) // Clear previous facility results immediately
       setSelectedPlace(null)
-      setLoadingMessage(`Geocoding coordinates for "${q}" via OpenStreetMap...`)
+      setLoadingMessage(`Looking up "${q}"…`)
 
       try {
         const results = await geocodeLocation(q)
         if (!results || results.length === 0) {
           setIsLoading(false)
-          setErrorMessage(`No geographic coordinates found for "${q}". Please try a nearby town or district.`)
+          setErrorMessage(`We couldn’t find "${q}". Try a nearby town or district.`)
           return
         }
 
@@ -133,11 +123,12 @@ export function SafePlaceFinder({
         }
         setUserLocation(newLocation)
 
-        setLoadingMessage(`Found ${match.shortName}. Scanning nearby emergency healthcare, shelters & pharmacies...`)
+        setLoadingMessage(`Finding facilities near ${match.shortName}…`)
 
         const fetchResult = await fetchNearbySafePlaces(match.lat, match.lon)
         setPlaces(fetchResult.places)
         setIsDemoData(fetchResult.isDemoFallback)
+        setSource(fetchResult.source)
         setFallbackReason(fetchResult.fallbackReason || null)
         setHasSearched(true)
       } catch (err: any) {
@@ -161,7 +152,7 @@ export function SafePlaceFinder({
     setErrorMessage(null)
     setPlaces([]) // Clear previous facility results
     setSelectedPlace(null)
-    setLoadingMessage('Acquiring your browser GPS location...')
+    setLoadingMessage('Getting your location…')
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -174,17 +165,18 @@ export function SafePlaceFinder({
           lon,
           accuracy,
           source: 'gps',
-          displayName: `GPS (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
-          shortName: 'GPS Location',
+          displayName: `Your location (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
+          shortName: 'you',
         }
         setUserLocation(newLocation)
 
-        setLoadingMessage('Scanning for nearby verified facilities around your GPS coordinates...')
+        setLoadingMessage('Finding facilities near you…')
 
         try {
           const result = await fetchNearbySafePlaces(lat, lon)
           setPlaces(result.places)
           setIsDemoData(result.isDemoFallback)
+          setSource(result.source)
           setFallbackReason(result.fallbackReason || null)
           setHasSearched(true)
         } catch (err: any) {
@@ -198,7 +190,7 @@ export function SafePlaceFinder({
         setIsLoading(false)
         setLoadingMessage('')
         if (err.code === err.PERMISSION_DENIED) {
-          setErrorMessage('Location permission was denied. You can search any town or city using the search bar above.')
+          setErrorMessage('Location access is blocked. Search for your town instead, or allow location in your browser settings.')
         } else if (err.code === err.POSITION_UNAVAILABLE) {
           setErrorMessage('GPS position is currently unavailable. Please search for your town/city above.')
         } else if (err.code === err.TIMEOUT) {
@@ -243,171 +235,89 @@ export function SafePlaceFinder({
     }
   }, [places])
 
-  // Icon helper by type
-  const getTypeIcon = (type: SafePlaceType) => {
-    switch (type) {
-      case 'Hospital':
-        return <Building2 size={16} />
-      case 'PHC':
-        return <Shield size={16} />
-      case 'Shelter':
-        return <Home size={16} />
-      case 'Pharmacy':
-        return <Pill size={16} />
-    }
-  }
+  const FILTERS: { id: SafePlaceFilter; label: string; icon?: React.ElementType }[] = [
+    { id: 'All', label: 'All' },
+    { id: 'Hospital', label: 'Hospitals', icon: Building2 },
+    { id: 'PHC', label: 'Health centres', icon: Shield },
+    { id: 'Shelter', label: 'Shelters', icon: Home },
+    { id: 'Pharmacy', label: 'Pharmacies', icon: Pill },
+  ]
 
-  // Color badge helper
-  const getTypeBadgeClass = (type: SafePlaceType) => {
-    switch (type) {
-      case 'Hospital':
-        return 'safe-badge-hospital'
-      case 'PHC':
-        return 'safe-badge-phc'
-      case 'Shelter':
-        return 'safe-badge-shelter'
-      case 'Pharmacy':
-        return 'safe-badge-pharmacy'
-    }
-  }
+  const TYPE_LABEL: Record<SafePlaceType, string> = { Hospital: 'Hospital', PHC: 'Health centre', Shelter: 'Shelter', Pharmacy: 'Pharmacy' }
+  const TYPE_TONE: Record<SafePlaceType, 'danger' | 'success' | 'warning' | 'info'> = { Hospital: 'danger', PHC: 'info', Shelter: 'warning', Pharmacy: 'success' }
+
+  const priority =
+    scenario === 'Heat' || risks.heat >= 50
+      ? { icon: Flame, text: 'Cooling shelters and heatstroke care are listed first because of the heat.' }
+      : scenario === 'Monsoon' || telemetry.rain
+      ? { icon: ShieldAlert, text: 'Flood shelters on higher ground are listed first because of rain.' }
+      : telemetry.externalAqi >= 100 || risks.environmental >= 50
+      ? { icon: Wind, text: 'Facilities with oxygen and respiratory care are listed first because of poor air.' }
+      : isHighRisk
+      ? { icon: AlertTriangle, text: '24/7 emergency and ICU facilities are listed first because your risk is high.' }
+      : null
 
   return (
-    <div className="safe-place-finder-container">
-      {/* 1. Emergency Risk Alert Banner if High Risk detected */}
+    <div className="flex flex-col gap-4">
       {isHighRisk && (
-        <div className="emergency-risk-banner">
-          <div className="banner-left">
-            <span className="banner-icon-pulse">
-              <AlertTriangle size={22} />
-            </span>
+        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-danger-line bg-danger-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden />
             <div>
-              <strong>⚠️ High Health Risk Detected</strong>
-              <p>Find the nearest safe healthcare facility.</p>
+              <p className="text-sm font-semibold text-danger">Your health risk is high</p>
+              <p className="text-sm text-fg-2">Find the nearest hospital now.</p>
             </div>
           </div>
-          <button
-            className="emergency-action-btn"
+          <Button
+            variant="danger"
             onClick={() => {
               setActiveFilter('Hospital')
-              if (!hasSearched) {
-                handleSearchLocation('Valliyur, Tirunelveli')
-              }
+              if (!hasSearched) handleUseCurrentLocation()
             }}
           >
-            <Building2 size={16} />
-            Find Safe Place
-          </button>
+            <Building2 /> Nearest hospital
+          </Button>
         </div>
       )}
 
-      {/* 2. Top Header & Title */}
-      <div className="safe-finder-header">
-        <div className="header-info">
-          <div className="header-eyebrow">
-            <MapPin size={14} style={{ color: 'var(--main-red)' }} />
-            <span>Resilient Geo-Spatial Safety Engine</span>
-          </div>
-          <h2>Safe Place Finder</h2>
-          <p className="header-desc">
-            Search any city, town, or area to locate verified hospitals, primary health centres (PHCs), disaster
-            cooling shelters, and pharmacies linked with AERIS climate hazard intelligence.
-          </p>
-        </div>
-
-        {/* Location Status Indicator */}
-        <div className="header-location-box">
-          <div className="location-indicator">
-            <span className={`location-dot ${userLocation ? 'active' : ''}`} />
-            <div className="location-meta">
-              <small>
-                {userLocation?.source === 'gps'
-                  ? 'Current GPS Location'
-                  : userLocation
-                  ? 'Selected Location'
-                  : 'Location Status'}
-              </small>
-              <strong>
-                {userLocation?.source === 'search'
-                  ? userLocation.shortName || userLocation.displayName
-                  : userLocation
-                  ? `Lat: ${userLocation.lat.toFixed(4)}, Lon: ${userLocation.lon.toFixed(4)}`
-                  : 'No location selected'}
-              </strong>
-              {userLocation && (
-                <span style={{ fontSize: 10, color: 'var(--bright-yellow)', display: 'block', opacity: 0.9 }}>
-                  Lat: {userLocation.lat.toFixed(4)} • Lon: {userLocation.lon.toFixed(4)}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Location Search Bar & Quick Location Selection */}
-      <div className="safe-search-section">
-        <div className="search-input-group">
-          <div className="search-input-wrapper">
-            <Search size={18} className="search-input-icon" />
+      <Card className="sticky top-[calc(var(--topbar-h)+8px)] z-[var(--z-sticky)] p-4 shadow-md md:p-5">
+        <form
+          className="flex flex-col gap-2 md:flex-row"
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSearchLocation()
+          }}
+          role="search"
+        >
+          <label className="relative flex-1">
+            <span className="sr-only">Search a city, town or area</span>
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted" aria-hidden />
             <input
-              type="text"
-              className="safe-search-input"
-              placeholder="Search city, town or area (e.g. Valliyur, Tirunelveli)..."
+              type="search"
+              className="h-11 w-full rounded-xl border border-line bg-surface-2 pr-3 pl-10 text-[15px] text-fg placeholder:text-fg-muted focus:border-brand focus:bg-surface focus:outline-none"
+              placeholder="Search a city, town or area"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearchLocation()
-                }
-              }}
               disabled={isLoading}
+              autoComplete="off"
             />
-            {searchQuery && (
-              <button
-                className="search-clear-btn"
-                onClick={() => setSearchQuery('')}
-                title="Clear input"
-              >
-                ✕
-              </button>
-            )}
+          </label>
+          <div className="grid grid-cols-2 gap-2 md:flex">
+            <Button type="submit" size="lg" className="h-11" disabled={isLoading || !searchQuery.trim()}>
+              {isLoading ? <Loader2 className="animate-spin" /> : <Search />} Search
+            </Button>
+            <Button type="button" variant="secondary" size="lg" className="h-11" onClick={handleUseCurrentLocation} disabled={isLoading}>
+              <LocateFixed /> Near me
+            </Button>
           </div>
-
-          <button
-            className="find-places-btn"
-            onClick={() => handleSearchLocation()}
-            disabled={isLoading || !searchQuery.trim()}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Searching...</span>
-              </>
-            ) : (
-              <>
-                <Search size={16} />
-                <span>Search Location</span>
-              </>
-            )}
-          </button>
-
-          <button
-            className="gps-locate-btn"
-            onClick={handleUseCurrentLocation}
-            disabled={isLoading}
-            title="Use browser Geolocation API"
-          >
-            <Compass size={16} />
-            <span>📍 Use My Current Location</span>
-          </button>
-        </div>
-
-        {/* Quick Pick Location Pills */}
-        <div className="quick-locations-strip">
-          <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>Quick Select:</span>
+        </form>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-xs text-fg-muted">Try:</span>
           {QUICK_LOCATIONS.map((loc) => (
             <button
               key={loc}
-              className="quick-loc-pill"
+              type="button"
+              className="h-7 cursor-pointer rounded-full border border-line bg-surface px-3 text-xs text-fg-2 hover:border-line-strong hover:text-fg disabled:opacity-50"
               onClick={() => {
                 setSearchQuery(loc)
                 handleSearchLocation(loc)
@@ -418,288 +328,201 @@ export function SafePlaceFinder({
             </button>
           ))}
         </div>
-      </div>
+      </Card>
 
-      {/* 4. Loading & Error Status Messages */}
       {isLoading && (
-        <div className="safe-finder-status-box loading">
-          <Loader2 size={18} className="animate-spin" />
-          <span>{loadingMessage || 'Locating verified facilities...'}</span>
-        </div>
+        <p className="flex items-center gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-2" role="status">
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+          {loadingMessage || 'Finding nearby facilities…'}
+        </p>
       )}
 
       {errorMessage && (
-        <div className="safe-finder-status-box error">
-          <AlertCircle size={18} />
-          <div style={{ flex: 1 }}>
-            <span>{errorMessage}</span>
-          </div>
-        </div>
+        <p className="flex items-start gap-2 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {errorMessage}
+        </p>
       )}
 
-      {/* Demo Notice if Demo Data is Active */}
-      {isDemoData && hasSearched && (
-        <div className="safe-finder-demo-notice">
-          <Info size={15} />
+      {hasSearched && !isLoading && (isDemoData || source === 'saved' || source === 'nominatim') && (
+        <p
+          className={cn(
+            'flex items-start gap-2 rounded-xl border px-4 py-3 text-sm text-fg-2',
+            isDemoData ? 'border-warning-line bg-warning-soft' : 'border-info-line bg-info-soft',
+          )}
+        >
+          <Info className={cn('mt-0.5 size-4 shrink-0', isDemoData ? 'text-warning' : 'text-info')} aria-hidden />
           <span>
-            <b>DEMO DATA:</b> {fallbackReason || 'Simulation data active.'} These facilities are for project demonstration.
+            <strong className="text-fg">{isDemoData ? 'Sample places. ' : source === 'saved' ? 'Saved map data. ' : 'Live search. '}</strong>
+            {fallbackReason}
           </span>
-        </div>
+        </p>
       )}
 
-      {/* 5. Hazard AI Priority Strip */}
       {hasSearched && (
-        <div className="hazard-context-strip">
-          <span className="hazard-strip-label">
-            <Sparkles size={14} style={{ color: 'var(--main-red)' }} /> Emergency AI Priority:
-          </span>
-          {scenario === 'Heat' || risks.heat >= 50 ? (
-            <span className="hazard-strip-tag heat">
-              <Flame size={13} /> Prioritizing Cooling Shelters & Heatstroke Wards
-            </span>
-          ) : scenario === 'Monsoon' || telemetry.rain ? (
-            <span className="hazard-strip-tag monsoon">
-              <ShieldAlert size={13} /> Prioritizing Elevated Flood Shelters & High Ground
-            </span>
-          ) : telemetry.externalAqi >= 100 || risks.environmental >= 50 ? (
-            <span className="hazard-strip-tag pollution">
-              <Wind size={13} /> Prioritizing Oxygen Stations & Respiratory Facilities
-            </span>
-          ) : isHighRisk ? (
-            <span className="hazard-strip-tag critical">
-              <AlertTriangle size={13} /> Prioritizing 24/7 Trauma Emergency & ICU Triage
-            </span>
-          ) : (
-            <span className="hazard-strip-tag normal">
-              All signals normal. Standard proximity routing active.
-            </span>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex gap-1.5 overflow-x-auto pb-1" role="radiogroup" aria-label="Facility type">
+            {FILTERS.map(({ id, label, icon: Icon }) => {
+              const active = activeFilter === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setActiveFilter(id)}
+                  className={cn(
+                    'inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors',
+                    active ? 'border-fg bg-fg text-on-fg' : 'border-line bg-surface text-fg-2 hover:border-line-strong hover:text-fg',
+                  )}
+                >
+                  {Icon && <Icon className="size-4" aria-hidden />}
+                  {label}
+                  <span className={cn('text-xs tabular-nums', active ? 'opacity-80' : 'text-fg-muted')}>{counts[id as keyof typeof counts] || 0}</span>
+                </button>
+              )
+            })}
+          </div>
+          {priority && (
+            <p className="flex items-center gap-2 text-xs text-fg-2">
+              <priority.icon className="size-4 shrink-0 text-warning" aria-hidden />
+              {priority.text}
+            </p>
           )}
         </div>
       )}
 
-      {/* 6. Filter Strip: [All] [Hospitals] [PHCs] [Shelters] [Pharmacies] */}
-      {hasSearched && (
-        <div className="safe-filter-strip">
-          {(['All', 'Hospital', 'PHC', 'Shelter', 'Pharmacy'] as SafePlaceFilter[]).map((f) => {
-            const count = counts[f as keyof typeof counts] || 0
-            const label =
-              f === 'All'
-                ? 'All Safe Places'
-                : f === 'Hospital'
-                ? 'Hospitals'
-                : f === 'PHC'
-                ? 'PHCs'
-                : f === 'Shelter'
-                ? 'Shelters'
-                : 'Pharmacies'
-
-            return (
-              <button
-                key={f}
-                className={`safe-filter-pill ${activeFilter === f ? 'selected' : ''}`}
-                onClick={() => setActiveFilter(f)}
-              >
-                {f === 'Hospital' && <Building2 size={13} />}
-                {f === 'PHC' && <Shield size={13} />}
-                {f === 'Shelter' && <Home size={13} />}
-                {f === 'Pharmacy' && <Pill size={13} />}
-                <span>{label}</span>
-                <span className="filter-count">{count}</span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      {/* 7. Main Interactive Area: Map View + Results Card Directory */}
       {hasSearched ? (
-        <div className={`safe-finder-body ${compact ? 'compact-layout' : ''}`}>
-          {/* Map View */}
-          <div className="safe-map-card">
-            <div className="map-card-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Compass size={15} style={{ color: 'var(--main-red)' }} />
-                <strong>
-                  {userLocation?.shortName
-                    ? `Safety Map: ${userLocation.shortName}`
-                    : 'Interactive Resilient Safety Map'}
-                </strong>
-              </div>
-              <span style={{ fontSize: 11, color: '#9CA3AF' }}>OpenStreetMap + Leaflet</span>
+        <>
+        <Segmented
+          className="lg:hidden"
+          label="Show places as"
+          value={mobileView}
+          onChange={setMobileView}
+          options={[
+            { value: 'list', label: 'List' },
+            { value: 'map', label: 'Map' },
+          ]}
+        />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+          {(isDesktop || mobileView === 'map') && (
+          <Card className="overflow-hidden p-0 lg:order-2 lg:col-span-7 lg:sticky lg:top-[calc(var(--topbar-h)+120px)] lg:self-start">
+            <div className="h-[340px] md:h-[520px]">
+              <SafePlaceMap userLocation={userLocation} places={filteredPlaces} selectedPlace={selectedPlace} onSelectPlace={handleSelectPlace} />
             </div>
-            <div className="map-wrapper">
-              <SafePlaceMap
-                userLocation={userLocation}
-                places={filteredPlaces}
-                selectedPlace={selectedPlace}
-                onSelectPlace={handleSelectPlace}
-              />
-            </div>
-          </div>
+          </Card>
 
-          {/* Facility List Directory */}
-          <div className="safe-list-card">
-            <div className="list-card-head">
-              <strong>
-                {userLocation?.shortName
-                  ? `Facilities in ${userLocation.shortName} (${filteredPlaces.length})`
-                  : `Nearby Facilities (${filteredPlaces.length})`}
-              </strong>
-              <small>Sorted by Hazard Priority & Distance</small>
+          )}
+          <Card className={cn('flex flex-col overflow-hidden p-0 lg:order-1 lg:col-span-5', !isDesktop && mobileView === 'map' && 'hidden')}>
+            <div className="border-b border-line px-4 py-3">
+              <p className="text-sm font-semibold text-fg">
+                {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
+                {userLocation?.shortName ? ` near ${userLocation.shortName}` : ' nearby'}
+              </p>
+              <p className="text-xs text-fg-muted">Sorted by priority, then distance</p>
             </div>
 
             {filteredPlaces.length === 0 ? (
-              <div className="safe-empty-state">
-                <Info size={32} style={{ opacity: 0.5, color: 'var(--main-red)' }} />
-                <strong style={{ fontSize: 14, color: 'var(--text-primary)' }}>
-                  No verified nearby facilities found for this location.
-                </strong>
-                <p style={{ fontSize: 12, color: '#9CA3AF', margin: '4px 0 12px', maxWidth: 360 }}>
-                  No medical amenities or emergency shelters are currently indexed in OpenStreetMap within 6km of{' '}
-                  <b>{userLocation?.shortName || 'this area'}</b>.
+              <div className="flex flex-col items-center px-6 py-12 text-center">
+                <MapPin className="size-8 text-fg-muted" aria-hidden />
+                <p className="mt-3 text-sm font-semibold text-fg">{activeFilter === 'Shelter' ? 'No shelters mapped here' : 'No places found here'}</p>
+                <p className="mt-1 max-w-xs text-sm text-fg-2">
+                  {activeFilter === 'Shelter'
+                    ? 'Official relief shelters are rarely mapped online. Call 1077, the district disaster helpline, for the nearest open relief camp.'
+                    : source === 'none'
+                    ? 'Map data is unavailable right now and there is no saved data for this area. Try again shortly, or call 108 for an ambulance.'
+                    : 'No matching places within 6 km. Try another category or a nearby town.'}
                 </p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <button className="text-action-link" onClick={() => setActiveFilter('All')}>
+                {activeFilter === 'Shelter' && (
+                  <a href="tel:1077" className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white">
+                    Call 1077
+                  </a>
+                )}
+                {activeFilter !== 'All' && (
+                  <Button variant="link" className="mt-3" onClick={() => setActiveFilter('All')}>
                     Show all categories
-                  </button>
-                  <span style={{ color: '#4B5563' }}>•</span>
-                  <button
-                    className="text-action-link"
-                    onClick={() => handleSearchLocation('Valliyur, Tirunelveli')}
-                  >
-                    View Valliyur, Tirunelveli Facilities →
-                  </button>
-                </div>
+                  </Button>
+                )}
               </div>
             ) : (
-              <div className="facility-cards-scroll">
+              <ul className="flex max-h-[520px] flex-col gap-2 overflow-y-auto p-3">
                 {filteredPlaces.map((place) => {
                   const isSelected = selectedPlace?.id === place.id
-                  const dirUrl = getDirectionsUrl(place.lat, place.lon, place.name)
-
                   return (
-                    <article
-                      key={place.id}
-                      className={`facility-card ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedPlace(place)}
-                    >
-                      <div className="facility-top">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span className={`facility-type-badge ${getTypeBadgeClass(place.type)}`}>
-                            {getTypeIcon(place.type)}
-                            <span>{place.type}</span>
-                          </span>
-                          {place.isDemo && <span className="demo-data-badge">DEMO DATA</span>}
+                    <li key={place.id}>
+                      <article
+                        className={cn(
+                          'cursor-pointer rounded-xl border p-3.5 transition-colors',
+                          isSelected ? 'border-brand bg-brand-soft' : 'border-line bg-surface hover:border-line-strong',
+                        )}
+                        onClick={() => setSelectedPlace(place)}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <Badge tone={TYPE_TONE[place.type]}>{TYPE_LABEL[place.type]}</Badge>
+                            {place.isDemo && <Badge tone="neutral">Sample</Badge>}
+                          </div>
+                          {place.distanceKm !== undefined && (
+                            <span className="flex items-center gap-1 font-mono text-xs text-fg-muted tabular-nums">
+                              <Navigation className="size-3" aria-hidden /> {place.distanceKm} km
+                            </span>
+                          )}
                         </div>
-
-                        {place.distanceKm !== undefined && (
-                          <div className="facility-distance">
-                            <Navigation size={12} />
-                            <span>{place.distanceKm} km away</span>
+                        <h3 className="mt-2 text-sm font-semibold text-fg">{place.name}</h3>
+                        <p className="mt-0.5 text-xs text-fg-2">{place.address}</p>
+                        {place.recommendationReason && <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs text-fg-2">{place.recommendationReason}</p>}
+                        {place.capabilities && place.capabilities.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {place.capabilities.slice(0, 4).map((cap) => (
+                              <span key={cap} className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] text-fg-muted">
+                                {cap}
+                              </span>
+                            ))}
                           </div>
                         )}
-                      </div>
-
-                      <h3 className="facility-name">{place.name}</h3>
-                      <p className="facility-address">{place.address}</p>
-
-                      {/* Hazard-aware recommendation reason */}
-                      {place.recommendationReason && (
-                        <div className="facility-hazard-callout">
-                          <Sparkles size={12} />
-                          <span>{place.recommendationReason}</span>
-                        </div>
-                      )}
-
-                      {/* Capabilities pills */}
-                      {place.capabilities && place.capabilities.length > 0 && (
-                        <div className="facility-capabilities">
-                          {place.capabilities.map((cap, idx) => (
-                            <span key={idx} className="cap-pill">
-                              {cap}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Action footer: Phone & Get Directions */}
-                      <div className="facility-foot">
-                        {place.phone ? (
+                        <div className="mt-3 flex items-center gap-2 border-t border-line pt-3">
+                          {place.phone && (
+                            <a
+                              href={`tel:${place.phone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex h-11 items-center gap-1.5 rounded-xl border border-line px-3.5 text-sm font-medium text-fg hover:bg-surface-2"
+                            >
+                              <Phone className="size-3.5" aria-hidden /> Call
+                            </a>
+                          )}
                           <a
-                            href={`tel:${place.phone}`}
-                            className="facility-phone-link"
+                            href={getDirectionsUrl(place.lat, place.lon, place.name)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
+                            className="ml-auto inline-flex h-11 items-center gap-1.5 rounded-xl bg-fg px-4 text-sm font-semibold text-on-fg hover:opacity-90"
                           >
-                            <Phone size={13} />
-                            <span>{place.phone}</span>
+                            Directions <ExternalLink className="size-3.5" aria-hidden />
                           </a>
-                        ) : (
-                          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Verified OpenStreetMap Place</span>
-                        )}
-
-                        <a
-                          href={dirUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="directions-btn"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span>Get Directions</span>
-                          <ExternalLink size={13} />
-                        </a>
-                      </div>
-                    </article>
+                        </div>
+                      </article>
+                    </li>
                   )
                 })}
-              </div>
+              </ul>
             )}
-          </div>
+          </Card>
         </div>
+        </>
       ) : (
-        /* Initial Prompt before search */
-        <div className="safe-initial-prompt">
-          <div className="prompt-inner">
-            <span className="prompt-icon">
-              <MapPin size={32} />
+        !isLoading && (
+          <Card className="flex flex-col items-center px-6 py-14 text-center">
+            <span className="grid size-14 place-items-center rounded-2xl bg-brand-soft text-brand">
+              <MapPin className="size-7" aria-hidden />
             </span>
-            <h3>Search Any City or Town for Safe Places</h3>
-            <p>
-              Type your town or city name above (e.g. <b>Valliyur, Tirunelveli</b>, Nagercoil, Chennai) or click{' '}
-              <b>"📍 Use My Current Location"</b> to center the map and load real emergency facilities.
-            </p>
-            <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button
-                className="find-places-btn"
-                onClick={() => {
-                  setSearchQuery('Valliyur, Tirunelveli')
-                  handleSearchLocation('Valliyur, Tirunelveli')
-                }}
-                disabled={isLoading}
-              >
-                <Search size={16} />
-                Search Valliyur, Tirunelveli
-              </button>
-              <button
-                className="gps-locate-btn"
-                onClick={handleUseCurrentLocation}
-                disabled={isLoading}
-              >
-                <Compass size={16} />
-                📍 Use My Current Location
-              </button>
-            </div>
-          </div>
-        </div>
+            <h2 className="mt-4 text-lg font-semibold text-fg">Find help near you</h2>
+            <p className="mt-1 max-w-md text-sm text-fg-2">Use your location or search a town to see hospitals, health centres, shelters and pharmacies on the map.</p>
+            <Button className="mt-5" onClick={handleUseCurrentLocation}>
+              <LocateFixed /> Use my location
+            </Button>
+          </Card>
+        )
       )}
-
-      {/* 8. Mandated Emergency Disclaimer */}
-      <div className="safe-disclaimer">
-        <Info size={14} />
-        <p>
-          <strong>Notice:</strong> Safe Place Finder provides location-based suggestions. In a real emergency, contact
-          local emergency services (Ambulance: <b>102 / 108</b>, National Emergency: <b>112</b>, Disaster Helpline: <b>1077</b>).
-        </p>
-      </div>
     </div>
   )
 }

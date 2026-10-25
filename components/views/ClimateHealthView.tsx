@@ -1,247 +1,241 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { CloudSun, MapPin, RefreshCw } from 'lucide-react'
+import { CloudSun, CloudRain, Droplets, Gauge, Lightbulb, MapPin, RefreshCw, Sun, Thermometer, Wind } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import { RiskBadge } from '@/components/ui/RiskBadge'
+import { PageHeader } from '@/components/ui/page-header'
+import { Card, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Stat } from '@/components/ui/meter'
+import { AnimatedNumber } from '@/components/ui/animated-number'
+import { cn } from '@/lib/utils'
+import { RiskGlow } from '@/components/vitals/RiskGlow'
+import { motion } from 'motion/react'
+import { t } from '@/lib/motion'
+import { TierBadge } from '@/components/vitals/RiskRing'
+
+const AQI_BANDS = [
+  { max: 50, label: 'Good', color: 'var(--safe-solid)' },
+  { max: 100, label: 'Moderate', color: 'var(--monitor-solid)' },
+  { max: 150, label: 'Sensitive', color: '#EA580C' },
+  { max: 200, label: 'Unhealthy', color: 'var(--critical-solid)' },
+  { max: 300, label: 'Very unhealthy', color: '#9333EA' },
+  { max: 500, label: 'Hazardous', color: '#7F1D1D' },
+]
+
+function AqiBand({ aqi }: { aqi: number }) {
+  const pct = Math.min(99, (Math.min(aqi, 500) / 500) * 100)
+  return (
+    <div className="mt-4">
+      <div className="relative flex h-2 gap-0.5">
+        {AQI_BANDS.map((b, i) => (
+          <span key={b.label} className="h-full rounded-full" style={{ background: b.color, flexGrow: b.max - (AQI_BANDS[i - 1]?.max ?? 0) }} />
+        ))}
+        <span aria-hidden className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-fg shadow" style={{ left: `${pct}%` }} />
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] text-fg-muted">
+        <span>0</span>
+        <span>100</span>
+        <span>200</span>
+        <span>300</span>
+        <span>500</span>
+      </div>
+    </div>
+  )
+}
 
 const ClimatePlaceMap = dynamic(() => import('@/components/ClimatePlaceMap'), {
   ssr: false,
-  loading: () => (
-    <div
-      style={{
-        height: 280,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--panel-elevated)',
-        borderRadius: 12,
-        border: '1px solid var(--border-subtle)',
-        color: 'var(--text-muted)',
-        fontSize: 13,
-        gap: 8,
-      }}
-    >
-      <span style={{ fontSize: 20 }}>📍</span>
-      <span>Loading OpenStreetMap Leaflet Engine for Place...</span>
-    </div>
-  ),
+  loading: () => <div className="h-[300px] animate-pulse rounded-xl bg-surface-2" />,
 })
 
+function aqiInfo(aqi: number) {
+  if (aqi <= 50) return { label: 'Good', tone: 'success' as const, advice: 'Air is clean. Outdoor activity is fine.' }
+  if (aqi <= 100) return { label: 'Moderate', tone: 'warning' as const, advice: 'Sensitive people should limit long outdoor exertion.' }
+  if (aqi <= 150) return { label: 'Unhealthy for sensitive groups', tone: 'warning' as const, advice: 'Wear a mask outdoors if you have asthma or heart conditions.' }
+  if (aqi <= 200) return { label: 'Unhealthy', tone: 'danger' as const, advice: 'Reduce time outdoors and keep windows closed.' }
+  return { label: 'Hazardous', tone: 'danger' as const, advice: 'Stay indoors. Use a mask and air purifier if available.' }
+}
+
+function heatInfo(psi: number) {
+  if (psi >= 7) return { level: 'CRITICAL', label: 'High heat strain', advice: 'Stop activity, move to shade or a cool place and drink water now.' }
+  if (psi >= 4) return { level: 'WARNING', label: 'Moderate heat strain', advice: 'Take breaks in the shade and drink water every 20 minutes.' }
+  return { level: 'SAFE', label: 'Low heat strain', advice: 'Your body is handling the current temperature well.' }
+}
+
 export function ClimateHealthView() {
-  const {
-    telemetry,
-    baseline,
-    risks,
-    dailyAnalysis,
-    useRealWeather,
-    setUseRealWeather,
-    realWeatherData,
-    fetchLiveWeather,
-  } = useTelemetry()
+  const { telemetry, baseline, risks, dailyAnalysis, useRealWeather, setUseRealWeather, realWeatherData, fetchLiveWeather } = useTelemetry()
+  const [refreshing, setRefreshing] = useState(false)
 
   const psi = risks.psi
-  const wbgt = risks.wbgt
+  const heat = heatInfo(psi)
+  const aqi = aqiInfo(telemetry.externalAqi)
+  const place = realWeatherData?.locationName
 
-  const psiCategory =
-    psi >= 9.0
-      ? 'Critical Heat Strain (≥9.0)'
-      : psi >= 7.0
-      ? 'High Heat Strain (7.0–8.9)'
-      : psi >= 4.0
-      ? 'Moderate Strain (4.0–6.9)'
-      : 'Safe / Low Strain (0.0–3.9)'
+  // Heat glow mix: 0% = amber, 100% = red
+  const heatMix = Math.round(Math.min(100, Math.max(0, (psi / 9) * 100)))
+  // Map: always on desktop; on phones it loads only when opened
+  const [mapOpened, setMapOpened] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setIsDesktop(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  const showMap = isDesktop || mapOpened
 
-  const psiBadgeLevel =
-    psi >= 9.0 ? 'CRITICAL' : psi >= 7.0 ? 'CRITICAL' : psi >= 4.0 ? 'WARNING' : 'SAFE'
+  const refresh = async () => {
+    setRefreshing(true)
+    await fetchLiveWeather()
+    setRefreshing(false)
+  }
 
   return (
-    <div style={{ paddingTop: 16 }}>
-      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14 }}>
-        <div>
-          <p className="eyebrow">Environmental Hazard & Climate Resilience</p>
-          <h1 style={{ fontSize: 'clamp(24px, 4vw, 30px)', fontWeight: 800, margin: '4px 0 6px', color: 'var(--text-primary)' }}>Climate Health & Environmental Load</h1>
-          <p className="subhead">
-            Integrates live ambient weather with <strong>Open-Meteo Air Quality & Climate API</strong>.
+    <>
+      <PageHeader
+        title="Climate health"
+        description="How today’s heat, humidity and air quality are affecting your body."
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setUseRealWeather(!useRealWeather)} aria-pressed={useRealWeather}>
+              <span className={cn('size-2 rounded-full', useRealWeather ? 'bg-success' : 'bg-fg-muted')} />
+              {useRealWeather ? 'Live weather on' : 'Live weather off'}
+            </Button>
+            {useRealWeather && (
+              <Button variant="secondary" size="icon" onClick={refresh} aria-label="Refresh weather" disabled={refreshing}>
+                <RefreshCw className={cn(refreshing && 'animate-spin')} />
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
+        <Card className="relative isolate overflow-hidden p-5 md:p-6 lg:col-span-7">
+          {/* The only hue-shifting glow in the app: amber at rest, red as heat strain rises */}
+          <RiskGlow tier={`heat-${Math.round(heatMix / 10)}`} color={`color-mix(in oklab, var(--critical-solid) ${heatMix}%, var(--monitor-solid))`} />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <motion.span layoutId="morph-outside" transition={t.emphasis} className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg-2 ring-1 ring-line ring-inset">
+                <CloudSun className="size-4" aria-hidden />
+              </motion.span>
+              <div>
+              <p className="text-eyebrow font-medium text-fg-muted uppercase">Heat strain</p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight text-fg md:text-2xl">{heat.label}</h2>
+              </div>
+            </div>
+            <TierBadge tier={heat.level === 'CRITICAL' ? 'critical' : heat.level === 'WARNING' ? 'monitor' : 'safe'} />
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            <Stat label="Strain index" value={<AnimatedNumber value={psi} decimals={1} />} unit="/ 9" />
+            <Stat label="Feels-like heat (WBGT)" value={risks.wbgt} unit="°C" />
+            <Stat label="Body temp" value={telemetry.bodyTemp.toFixed(1)} unit="°C" hint={`Baseline ${baseline.tempBaseline}°C`} />
+          </div>
+          <p className="mt-5 flex gap-3 text-[20px] leading-snug text-fg">
+            <Lightbulb className="mt-1 size-5 shrink-0 text-monitor" aria-hidden />
+            {heat.advice}
           </p>
-        </div>
+        </Card>
 
-        {/* Real Weather API Toggle Button */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button
-            onClick={() => setUseRealWeather(!useRealWeather)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 12px',
-              borderRadius: 8,
-              fontSize: 11,
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              border: useRealWeather ? '1px solid var(--main-red)' : '1px solid var(--border-subtle)',
-              background: useRealWeather ? '#FEF2F2' : 'var(--panel-elevated)',
-              color: useRealWeather ? 'var(--main-red)' : 'var(--text-secondary)',
-              cursor: 'pointer',
-            }}
-          >
-            <CloudSun size={14} />
-            <span>{useRealWeather ? 'Live Weather API Active' : 'Enable Weather API'}</span>
-          </button>
+        <Card className="p-5 md:p-6 lg:col-span-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-eyebrow font-medium text-fg-muted uppercase">Air quality</p>
+              <p className="mt-2 leading-none">
+                <AnimatedNumber value={telemetry.externalAqi} className="font-mono text-metric font-light text-fg tabular-nums" />
+              </p>
+              <p className="mt-1 text-xs text-fg-muted">US AQI</p>
+            </div>
+            <Badge tone={aqi.tone} dot>
+              {aqi.label}
+            </Badge>
+          </div>
+          <AqiBand aqi={telemetry.externalAqi} />
+          <p className="mt-4 text-sm text-fg-2">{aqi.advice}</p>
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line pt-4 text-sm">
+            {[
+              ['PM2.5', telemetry.pm25],
+              ['PM10', telemetry.pm10],
+              ['Ozone', telemetry.o3],
+              ['NO₂', telemetry.no2],
+            ].map(([label, v]) => (
+              <div key={label as string} className="flex justify-between gap-2">
+                <dt className="text-fg-muted">{label}</dt>
+                <dd className="font-mono text-fg tabular-nums">{v !== null && v !== undefined ? `${v} µg/m³` : '—'}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
 
-          {useRealWeather && (
-            <button className="icon-button" onClick={() => fetchLiveWeather()} title="Refresh live weather">
-              <RefreshCw size={14} />
-            </button>
+        <Card className="p-5 md:p-6 lg:col-span-12">
+          <CardHeader title="Weather now" description={place ? `${place}${realWeatherData?.timestamp ? ` · updated ${realWeatherData.timestamp}` : ''}` : 'Using your location'} />
+          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-5">
+            <Stat label="Temperature" value={telemetry.ambientTemp.toFixed(1)} unit="°C" />
+            <Stat label="Humidity" value={telemetry.humidity} unit="%" />
+            <Stat label="Pressure" value={telemetry.pressure} unit="hPa" />
+            <Stat label="UV index" value={realWeatherData?.uvIndex ?? '—'} />
+            <Stat label="Rain" value={telemetry.rain ? 'Raining' : 'Dry'} />
+          </div>
+          <div className="mt-2 hidden gap-4 text-xs text-fg-muted md:flex">
+            <span className="flex items-center gap-1"><Thermometer className="size-3.5" /> Air temperature</span>
+            <span className="flex items-center gap-1"><Droplets className="size-3.5" /> Relative humidity</span>
+            <span className="flex items-center gap-1"><Gauge className="size-3.5" /> Barometric pressure</span>
+            <span className="flex items-center gap-1"><Sun className="size-3.5" /> UV</span>
+            <span className="flex items-center gap-1"><CloudRain className="size-3.5" /> Precipitation</span>
+          </div>
+        </Card>
+
+        <Card className="p-5 md:p-6 lg:col-span-5">
+          <CardHeader title="Climate and your body" icon={<Wind className="size-4" />} />
+          {risks.climateBodyAnalysis.length > 0 || dailyAnalysis.trendInsights.length > 0 ? (
+            <ul className="mt-4 grid gap-3">
+              {[...risks.climateBodyAnalysis, ...dailyAnalysis.trendInsights].slice(0, 5).map((line) => (
+                <li key={line} className="flex gap-2.5 text-sm text-fg-2">
+                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-fg-muted" aria-hidden />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-fg-2">No climate-related strain detected. AERIS will flag it here when heat or air quality starts affecting your vitals.</p>
           )}
-        </div>
+        </Card>
+
+        <Card className="overflow-hidden p-0 lg:sticky lg:top-[calc(var(--topbar-h)+16px)] lg:col-span-7 lg:self-start">
+          <div className="flex items-center gap-2 px-5 pt-5 pb-3">
+            <MapPin className="size-4 text-fg-muted" aria-hidden />
+            <p className="text-sm font-medium text-fg">{place || 'Your area'}</p>
+          </div>
+          <div className="px-3 pb-3">
+            {showMap ? (
+              <ClimatePlaceMap
+                locationName={place || 'Your area'}
+                lat={realWeatherData?.latitude ?? 10.9038}
+                lon={realWeatherData?.longitude ?? 76.9602}
+                weatherCondition={realWeatherData?.weatherCondition || '—'}
+                temp={telemetry.ambientTemp}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMapOpened(true)}
+                className="grid h-[200px] w-full cursor-pointer place-items-center rounded-xl border border-dashed border-line-strong bg-surface-2 text-sm font-medium text-fg-2 hover:text-fg"
+              >
+                <span className="flex items-center gap-2">
+                  <MapPin className="size-4" aria-hidden /> Show map of {place || 'your area'}
+                </span>
+              </button>
+            )}
+          </div>
+        </Card>
       </div>
 
-      {/* Location / Weather Source Banner */}
-      <article className="panel" style={{ padding: 14, marginBottom: 14, background: 'var(--panel-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <MapPin size={18} style={{ color: 'var(--main-red)' }} />
-          <div>
-            <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>
-              Location: {realWeatherData?.locationName || 'Madukkarai'}
-            </strong>
-            <small style={{ display: 'block', color: 'var(--text-secondary)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-              Condition: {realWeatherData?.weatherCondition || 'Clouds / Clear'} • UV Index: {realWeatherData?.uvIndex ?? 4} • Updated: {realWeatherData?.timestamp || 'Live Feed'}
-            </small>
-          </div>
-        </div>
-        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', background: '#FEF2F2', padding: '3px 8px', borderRadius: 4, color: 'var(--main-red)', border: '1px solid rgba(220,38,38,0.25)', fontWeight: 700 }}>
-          Open-Meteo Climate Feed
-        </span>
-      </article>
-
-      {/* Actual Place Leaflet Map */}
-      <div style={{ marginBottom: 20 }}>
-        <ClimatePlaceMap
-          locationName={realWeatherData?.locationName || 'Madukkarai'}
-          lat={realWeatherData?.latitude ?? 10.9038}
-          lon={realWeatherData?.longitude ?? 76.9602}
-          weatherCondition={realWeatherData?.weatherCondition || 'Clear / Clouds'}
-          temp={telemetry.ambientTemp}
-        />
-      </div>
-
-      {/* CLIMATE ↔ HUMAN PHYSIOLOGY INTERACTION ANALYSIS */}
-      {false && (
-      <article className="panel" style={{ padding: 20, marginBottom: 20 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 12px', color: 'var(--text-primary)' }}>
-          CLIMATE ↔ HUMAN PHYSIOLOGY INTERACTION ANALYSIS
-        </h3>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 14px' }}>
-          AERIS evaluates ambient climate load against physiological response relative to your personal circadian baseline.
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, borderLeft: '3px solid var(--yellow)' }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>ENVIRONMENTAL LOAD</span>
-            <p style={{ margin: '4px 0 0', fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Ambient: {telemetry.ambientTemp}°C | Humidity: {telemetry.humidity}%
-            </p>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>WBGT Approx: {wbgt}°C</span>
-          </div>
-
-          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, borderLeft: '3px solid var(--main-red)' }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>PHYSIOLOGICAL RESPONSE</span>
-            <p style={{ margin: '4px 0 0', fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Body Temp: {telemetry.bodyTemp}°C | HR: {telemetry.heartRate} BPM
-            </p>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              Baseline: {baseline.restingHR} BPM / {baseline.tempBaseline}°C
-            </span>
-          </div>
-
-          <div style={{ background: 'var(--panel-elevated)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, borderLeft: '3px solid var(--yellow)' }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>THERMAL STRAIN INDEX (PSI)</span>
-            <p style={{ margin: '4px 0 0', fontSize: 16, fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--text-primary)' }}>
-              PSI {psi} / 9
-            </p>
-            <div style={{ marginTop: 4 }}>
-              <RiskBadge level={psiBadgeLevel} score={psi} size="sm" />
-            </div>
-          </div>
-        </div>
-
-        {/* Correlation Insights */}
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-secondary)' }}>
-          <strong style={{ color: 'var(--text-primary)' }}>Correlation Insights:</strong>
-          {dailyAnalysis.trendInsights.map((insight, idx) => (
-            <p key={idx} style={{ margin: '4px 0', color: 'var(--text-secondary)' }}>• {insight}</p>
-          ))}
-        </div>
-      </article>
-      )}
-
-      {/* Weather & External AQI Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 20 }}>
-        <article className="panel" style={{ padding: 20 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px', color: 'var(--text-primary)' }}>☀️ Climate & Heat Metrics</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>🌡️ Ambient Temperature</span>
-              <strong>{telemetry.ambientTemp.toFixed(1)} °C</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>💧 Relative Humidity</span>
-              <strong>{telemetry.humidity} %</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>⏱️ Barometric Pressure</span>
-              <strong>{telemetry.pressure} hPa</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>♨️ Wet-Bulb Globe Temp (WBGT)</span>
-              <strong>{wbgt} °C</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>🌧️ Precipitation / Rain</span>
-              <strong style={{ color: telemetry.rain ? 'var(--risk-critical)' : 'var(--risk-safe)' }}>
-                {telemetry.rain ? 'Active Rain' : 'Dry'}
-              </strong>
-            </div>
-          </div>
-        </article>
-
-        <article className="panel" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>🌬️ External Air Quality (AQI)</h3>
-            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', background: 'var(--panel-elevated)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)' }}>
-              OPEN-METEO FEED
-            </span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>🍃 Overall US AQI</span>
-              <strong>{telemetry.externalAqi} ({telemetry.externalAqi <= 50 ? 'Good' : telemetry.externalAqi <= 100 ? 'Moderate' : 'Unhealthy'})</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>🌫️ PM2.5 Concentration</span>
-              <strong>{telemetry.pm25 !== null ? `${telemetry.pm25} µg/m³` : 'N/A'}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>💨 PM10 Concentration</span>
-              <strong>{telemetry.pm10 !== null ? `${telemetry.pm10} µg/m³` : 'N/A'}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>🧪 Ozone (O₃)</span>
-              <strong>{telemetry.o3 !== null ? `${telemetry.o3} µg/m³` : 'N/A'}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)' }}>⚠️ Nitrogen Dioxide (NO₂)</span>
-              <strong>{telemetry.no2 !== null ? `${telemetry.no2} µg/m³` : 'N/A'}</strong>
-            </div>
-          </div>
-          <small style={{ display: 'block', margin: '10px 0 0', color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-            * External AQI data is fetched via Open-Meteo Air Quality API.
-          </small>
-        </article>
-      </div>
-    </div>
+      <p className="mt-8 text-center text-xs text-fg-muted">Weather and air quality from Open-Meteo.</p>
+    </>
   )
 }

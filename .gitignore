@@ -21,3 +21,13 @@ node_modules
 aeris-resilient-health-system/
 *.mp4
 ~$*
+
+# AI assistant / agent tooling
+.claude/
+AGENTS.md
+CLAUDE.md
+docs/*-prompt.md
+
+# Build artifacts and unused extracted assets
+*.tsbuildinfo
+extracted_logos/

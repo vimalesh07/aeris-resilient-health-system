@@ -2,12 +2,13 @@
 
 import React, { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronDown, Construction, HeartPulse, Inbox, ShieldCheck, Siren, Utensils } from 'lucide-react'
+import { ChevronDown, Inbox, ShieldCheck, Siren } from 'lucide-react'
 import { PortalShell } from '@/components/PortalShell'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card } from '@/components/ui/card'
-import { Badge, type BadgeTone } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge'
 import { Segmented } from '@/components/ui/segmented'
+import { SEVERITY_RANK, SEVERITY_TONE, TYPE_ICON, TYPE_LABEL, relativeTime } from '@/lib/incident-meta'
 import { cn } from '@/lib/utils'
 
 interface Incident {
@@ -17,19 +18,7 @@ interface Incident {
   status: string
   summary: string
   created_at: string
-}
-
-const SEVERITY_TONE: Record<string, BadgeTone> = { critical: 'danger', high: 'warning', medium: 'info', low: 'neutral' }
-const SEVERITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
-const TYPE_ICON: Record<string, React.ElementType> = { sos: Siren, threshold: HeartPulse, obstacle: Construction, food: Utensils }
-const TYPE_LABEL: Record<string, string> = { sos: 'SOS', threshold: 'Health alert', obstacle: 'Blocked path', food: 'Food & water' }
-
-function relativeTime(iso: string) {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+  escalated_at?: string | null
 }
 
 export function GovernmentDashboard({ profile, incidents }: { profile: { full_name: string; role: 'government' }; incidents: Incident[] }) {
@@ -68,7 +57,7 @@ function IncidentFeed({ incidents }: { incidents: Incident[] }) {
     <>
       <PageHeader
         title="Incident feed"
-        description="Emergency requests from AERIS users in your region. Identities and personal health data are hidden."
+        description="Incidents verified and escalated by AERIS administrators. Identities and personal health data are hidden."
         eyebrow={
           <Badge tone="success">
             <ShieldCheck className="size-3.5" aria-hidden /> Anonymised
@@ -111,9 +100,9 @@ function IncidentFeed({ incidents }: { incidents: Incident[] }) {
             <span className="grid size-12 place-items-center rounded-full bg-surface-2 text-fg-muted">
               <Inbox className="size-5" aria-hidden />
             </span>
-            <p className="mt-3 text-sm font-semibold text-fg">{incidents.length === 0 ? 'No incidents yet' : 'Nothing matches this filter'}</p>
+            <p className="mt-3 text-sm font-semibold text-fg">{incidents.length === 0 ? 'Nothing escalated yet' : 'Nothing matches this filter'}</p>
             <p className="mt-1 max-w-sm text-sm text-fg-2">
-              {incidents.length === 0 ? 'SOS calls and critical health alerts from users will appear here as they happen.' : 'Try another filter to see more incidents.'}
+              {incidents.length === 0 ? 'Incidents appear here once an AERIS administrator reviews and escalates them.' : 'Try another filter to see more incidents.'}
             </p>
           </div>
         ) : (
@@ -141,6 +130,7 @@ function IncidentFeed({ incidents }: { incidents: Incident[] }) {
                         <Badge tone={inc.status?.toLowerCase() === 'resolved' ? 'success' : 'neutral'}>{inc.status}</Badge>
                       </div>
                       <p className="mt-0.5 truncate text-sm text-fg-2">{inc.summary}</p>
+                      <p className="mt-0.5 text-xs text-fg-muted">Escalated by AERIS admin · {relativeTime(inc.escalated_at ?? inc.created_at)}</p>
                     </div>
                     <span className="hidden shrink-0 font-mono text-xs text-fg-muted sm:block">{relativeTime(inc.created_at)}</span>
                     <motion.span animate={{ rotate: open ? 180 : 0 }} className="shrink-0 text-fg-muted">
@@ -152,7 +142,7 @@ function IncidentFeed({ incidents }: { incidents: Incident[] }) {
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <div className="px-4 pb-4 pl-16 text-sm text-fg-2 md:px-5 md:pl-[68px]">
                           <p className="whitespace-pre-line">{inc.summary}</p>
-                          <p className="mt-2 font-mono text-xs text-fg-muted">Reported {new Date(inc.created_at).toLocaleString()} · ID {inc.id.slice(0, 8)}</p>
+                          <p className="mt-2 font-mono text-xs text-fg-muted">Escalated {new Date(inc.escalated_at ?? inc.created_at).toLocaleString()} · ID {inc.id.slice(0, 8)}</p>
                         </div>
                       </motion.div>
                     )}

@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { FileText, Loader2, ShieldCheck, Siren, UserCog, Users } from 'lucide-react'
+import { FileText, Hourglass, Loader2, ShieldCheck, Siren, UserCog, Users } from 'lucide-react'
 import { PortalShell } from '@/components/PortalShell'
+import { RequestQueue, type AdminRequest } from '@/components/admin/RequestQueue'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,21 +21,27 @@ const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
   { value: 'admin', label: 'Admin', description: 'Full access, including role changes' },
 ]
 
+type Counts = { users: number; requests: number; alerts: number; pending: number }
+
 export function AdminDashboard({
   profile,
   counts,
+  requests,
+  live,
 }: {
   profile: { full_name: string; role: 'admin' }
-  counts: { users: number; requests: number; alerts: number }
+  counts: Counts
+  requests: AdminRequest[]
+  live: boolean
 }) {
   return (
     <PortalShell portal="Admin console" role="admin" name={profile.full_name}>
-      <AdminContent counts={counts} />
+      <AdminContent counts={counts} requests={requests} live={live} />
     </PortalShell>
   )
 }
 
-function AdminContent({ counts }: { counts: { users: number; requests: number; alerts: number } }) {
+function AdminContent({ counts, requests, live }: { counts: Counts; requests: AdminRequest[]; live: boolean }) {
   const { toast } = useToast()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<Role>('user')
@@ -43,6 +50,7 @@ function AdminContent({ counts }: { counts: { users: number; requests: number; a
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const stats = [
+    { label: 'Pending review', value: counts.pending, icon: Hourglass },
     { label: 'Registered users', value: counts.users, icon: Users },
     { label: 'Emergency requests', value: counts.requests, icon: Siren },
     { label: 'Risk alerts', value: counts.alerts, icon: FileText },
@@ -86,7 +94,7 @@ function AdminContent({ counts }: { counts: { users: number; requests: number; a
     <>
       <PageHeader title="Admin console" description="Manage accounts and monitor emergency activity across AERIS." />
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4" aria-label="Overview">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-4" aria-label="Overview">
         {stats.map(({ label, value, icon: Icon }, i) => (
           <motion.div key={label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}>
             <Card className="flex items-center gap-4 p-5">
@@ -103,6 +111,10 @@ function AdminContent({ counts }: { counts: { users: number; requests: number; a
           </motion.div>
         ))}
       </section>
+
+      <div className="mt-5">
+        <RequestQueue initialRequests={requests} live={live} />
+      </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-5">
         <Card className="p-5 md:p-6 lg:col-span-3">

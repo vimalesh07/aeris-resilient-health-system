@@ -229,6 +229,8 @@ export interface PushNotificationEvent {
   timestamp: string
   targetPhone?: string
   smsStatus?: string
+  /** Recorded in the AERIS admin queue for review. */
+  sentToCoordinators?: boolean
   vitals?: { heartRate: number; spo2: number; bodyTemp?: number }
   location?: { lat: number; lon: number }
 }

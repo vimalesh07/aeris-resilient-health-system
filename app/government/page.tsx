@@ -14,7 +14,7 @@ export default async function GovernmentPage() {
     )
   }
   const supabase = await createServerSupabaseClient()
-  const { data } = await supabase.from('government_incidents').select('id, incident_type, severity, status, summary, created_at').order('created_at', { ascending: false }).limit(100)
+  const { data } = await supabase.from('government_incidents').select('id, incident_type, severity, status, summary, created_at, escalated_at').order('created_at', { ascending: false }).limit(100)
   return <GovernmentDashboard profile={{ full_name: context.profile.full_name, role: 'government' }} incidents={data || []} />
 }
 

@@ -52,26 +52,59 @@ export async function POST(req: Request) {
     const requestType = (type || 'sos') as 'sos' | 'food' | 'obstacle' | 'threshold' | 'cancel'
     const normalizedSeverity = ['Low', 'Medium', 'High', 'Critical'].includes(severity) ? severity.toLowerCase() : 'high'
 
-    // A cancellation is a follow-up message, not a new emergency request.
-    if (hasSupabaseEnv() && requestType !== 'cancel') {
+    // Requests go to the admin queue; an admin decides whether the government sees them.
+    // A cancellation is a follow-up message: it marks the latest pending request as a false alarm.
+    let requestId: string | null = null
+    if (hasSupabaseEnv()) {
       try {
         const supabase = await createServerSupabaseClient()
-        const { error: requestError } = await supabase.from('emergency_requests').insert({
-          user_id: context.user.id,
-          request_type: requestType,
-          severity: normalizedSeverity,
-          title: String(title || 'AERIS emergency request').slice(0, 500),
-          details: String(trigger || '').slice(0, 4000),
-          recommended_action: String(recommendedAction || '').slice(0, 4000),
-          location_lat: typeof location?.lat === 'number' ? location.lat : null,
-          location_lon: typeof location?.lon === 'number' ? location.lon : null,
-          vitals: vitals && typeof vitals === 'object' ? vitals : {},
-        })
-        if (requestError) {
-          console.warn('Unable to record emergency request in Supabase:', requestError)
+        const requestTitle = String(title || 'AERIS emergency request').slice(0, 500)
+        if (requestType === 'cancel') {
+          const { data: cancelledId, error: cancelError } = await supabase.rpc('cancel_my_emergency_request')
+          if (cancelError) console.warn('Unable to mark emergency request as cancelled:', cancelError)
+          requestId = cancelledId ?? null
+        } else {
+          // Automatic threshold alerts repeat while vitals stay out of range; keep one pending request per 10 minutes.
+          let duplicateId: string | null = null
+          if (requestType === 'threshold') {
+            const { data: existing } = await supabase
+              .from('emergency_requests')
+              .select('id')
+              .eq('user_id', context.user.id)
+              .eq('request_type', requestType)
+              .eq('title', requestTitle)
+              .is('admin_decision', null)
+              .gte('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
+              .limit(1)
+              .maybeSingle()
+            duplicateId = existing?.id ?? null
+          }
+          if (duplicateId) {
+            requestId = duplicateId
+          } else {
+            const { data: inserted, error: requestError } = await supabase
+              .from('emergency_requests')
+              .insert({
+                user_id: context.user.id,
+                request_type: requestType,
+                severity: normalizedSeverity,
+                title: requestTitle,
+                details: String(trigger || '').slice(0, 4000),
+                recommended_action: String(recommendedAction || '').slice(0, 4000),
+                location_lat: typeof location?.lat === 'number' ? location.lat : null,
+                location_lon: typeof location?.lon === 'number' ? location.lon : null,
+                vitals: vitals && typeof vitals === 'object' ? vitals : {},
+              })
+              .select('id')
+              .single()
+            if (requestError) {
+              console.warn('Unable to record emergency request in Supabase:', requestError)
+            }
+            requestId = inserted?.id ?? null
+          }
         }
       } catch (insertErr) {
-        console.warn('Error inserting emergency request into Supabase:', insertErr)
+        console.warn('Error recording emergency request in Supabase:', insertErr)
       }
     }
 
@@ -209,6 +242,7 @@ Live Location: ${mapsUrl}`
       telegramDelivered,
       channel: 'telegram',
       type: body.type || 'sos',
+      requestId,
       messagePreview: messageText,
     })
   } catch (err: any) {

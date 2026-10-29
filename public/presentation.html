@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AERIS — Elite Technical Presentation | Team STRAW HATS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090E;
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-card-hover: rgba(30, 41, 59, 0.9);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(198, 40, 40, 0.4);
+      --red-primary: #C62828;
+      --red-bright: #FF3B30;
+      --red-glow: rgba(255, 59, 48, 0.45);
+      --cyan-bright: #00E5FF;
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --gold-accent: #FFC107;
+      --green-status: #10B981;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Ambient Cyber Glow Grid */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 15% 15%, rgba(198, 40, 40, 0.15) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 85%, rgba(0, 229, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Top HUD Header */
+    header.hud-header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(7, 9, 14, 0.88);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo-img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.3));
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      background: rgba(255, 193, 7, 0.15);
+      color: var(--gold-accent);
+      border: 1px solid rgba(255, 193, 7, 0.35);
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .hud-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .hud-btn.active {
+      color: var(--cyan-bright);
+      border-color: var(--cyan-bright);
+      background: rgba(0, 229, 255, 0.12);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    /* Slide Deck Presentation Area */
+    .deck-container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 110px);
+      z-index: 5;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 28px 56px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(35px) scale(0.985);
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0) scale(1);
+    }
+
+    .slide.prev {
+      transform: translateX(-35px) scale(0.985);
+    }
+
+    /* Slide Typography */
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cyan-bright);
+      font-family: var(--font-mono);
+      margin-bottom: 6px;
+    }
+
+    .slide-badge.bonus {
+      color: var(--gold-accent);
+    }
+
+    .slide-badge.bonus::before {
+      background: var(--gold-accent) !important;
+      box-shadow: 0 0 10px var(--gold-accent) !important;
+    }
+
+    .slide-badge::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan-bright);
+      box-shadow: 0 0 8px var(--cyan-bright);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.65); }
+    }
+
+    .slide-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #FFFFFF 40%, #CBD5E1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 22px;
+      max-width: 950px;
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .grid-img-left {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .grid-img-right {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    /* Image Display Cards with Hover Zoom */
+    .img-frame {
+      background: rgba(10, 15, 28, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .img-frame img {
+      max-width: 100%;
+      max-height: 380px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .img-frame:hover img {
+      transform: scale(1.02);
+    }
+
+    .img-caption {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--cyan-bright);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      background: var(--bg-card-hover);
+    }
+
+    .card.highlight-red { border-color: var(--border-glow); }
+    .card.highlight-red::before { background: linear-gradient(90deg, transparent, var(--red-bright), transparent); }
+    .card.highlight-cyan { border-color: rgba(0, 229, 255, 0.35); }
+    .card.highlight-cyan::before { background: linear-gradient(90deg, transparent, var(--cyan-bright), transparent); }
+    .card.highlight-gold { border-color: rgba(255, 193, 7, 0.35); }
+    .card.highlight-gold::before { background: linear-gradient(90deg, transparent, var(--gold-accent), transparent); }
+    .card.highlight-green { border-color: rgba(16, 185, 129, 0.35); }
+    .card.highlight-green::before { background: linear-gradient(90deg, transparent, var(--green-status), transparent); }
+
+    .card-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #E2E8F0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pill.red { background: rgba(198, 40, 40, 0.2); color: #FFA4A4; border-color: rgba(198, 40, 40, 0.4); }
+    .pill.cyan { background: rgba(0, 229, 255, 0.15); color: var(--cyan-bright); border-color: rgba(0, 229, 255, 0.3); }
+    .pill.gold { background: rgba(255, 193, 7, 0.15); color: var(--gold-accent); border-color: rgba(255, 193, 7, 0.3); }
+    .pill.green { background: rgba(16, 185, 129, 0.15); color: var(--green-status); border-color: rgba(16, 185, 129, 0.3); }
+
+    /* Formula Display */
+    .formula-box {
+      background: rgba(5, 10, 20, 0.85);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 8px 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #E0F2FE;
+      box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.05);
+    }
+
+    .formula-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--cyan-bright);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .formula-code {
+      font-size: 13px;
+      font-weight: 600;
+      color: #38BDF8;
+    }
+
+    /* LoRa Visualizer */
+    .lora-visualizer {
+      height: 150px;
+      width: 100%;
+      border-radius: 10px;
+      background: radial-gradient(circle at center, rgba(198, 40, 40, 0.18) 0%, rgba(10, 15, 28, 0.95) 75%);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .lora-node {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--red-primary);
+      box-shadow: 0 0 20px var(--red-bright);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .lora-ring {
+      position: absolute;
+      border: 2px solid var(--red-bright);
+      border-radius: 50%;
+      animation: loraExpand 3s infinite cubic-bezier(0.1, 0.6, 0.3, 1);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lora-ring:nth-child(2) { animation-delay: 0.75s; }
+    .lora-ring:nth-child(3) { animation-delay: 1.5s; }
+    .lora-ring:nth-child(4) { animation-delay: 2.25s; }
+
+    @keyframes loraExpand {
+      0% { width: 36px; height: 36px; opacity: 0.9; border-color: var(--red-bright); }
+      70% { opacity: 0.3; border-color: var(--cyan-bright); }
+      100% { width: 300px; height: 300px; opacity: 0; }
+    }
+
+    /* Live Canvas ECG/PPG Waveform */
+    canvas.ecg-canvas {
+      width: 100%;
+      height: 80px;
+      background: #050811;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    /* Interactive Simulation Playground on Bonus Slide */
+    .sim-playground {
+      background: rgba(10, 15, 28, 0.9);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sim-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+
+    .sim-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .sim-btn.active {
+      background: rgba(198, 40, 40, 0.25);
+      border-color: var(--red-bright);
+      box-shadow: 0 0 12px var(--red-glow);
+    }
+
+    .sim-display {
+      background: #050811;
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .sim-metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 6px;
+    }
+
+    /* Comparison Table */
+    table.comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    table.comp-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    table.comp-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #E2E8F0;
+    }
+
+    table.comp-table tr.highlight-row {
+      background: rgba(198, 40, 40, 0.15);
+      font-weight: 700;
+    }
+
+    table.comp-table tr.highlight-row td:first-child {
+      color: #FF8A80;
+    }
+
+    /* Bottom HUD Footer */
+    footer.deck-footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 32px;
+      background: rgba(7, 9, 14, 0.92);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 480px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 0 20px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 6.25%;
+      background: linear-gradient(90deg, var(--red-primary), var(--cyan-bright));
+      transition: width 0.3s ease;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--red-primary);
+      border-color: var(--red-bright);
+      box-shadow: 0 0 10px var(--red-glow);
+    }
+
+    /* Speaker Notes Slide-out Panel */
+    .speaker-drawer {
+      position: absolute;
+      bottom: 56px;
+      right: 32px;
+      width: 460px;
+      max-height: 290px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--cyan-bright);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 18px;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .speaker-drawer.visible {
+      display: flex;
+    }
+
+    .speaker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--cyan-bright);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .speaker-body {
+      font-size: 13px;
+      color: #E2E8F0;
+      line-height: 1.6;
+      overflow-y: auto;
+      max-height: 220px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Top Navigation HUD -->
+  <header class="hud-header">
+    <div class="brand">
+      <img src="straw_hats_logo.png" alt="Straw Hats Logo" class="brand-logo-img">
+      <div class="brand-text">
+        <h1>AERIS <span class="brand-tag">Team STRAW HATS</span></h1>
+      </div>
+    </div>
+    <div class="hud-controls">
+      <button class="hud-btn" id="btnNotes" onclick="toggleNotes()">
+        <span>📝</span> Speaker Notes (N)
+      </button>
+      <button class="hud-btn" id="btnFullscreen" onclick="toggleFullScreen()">
+        <span>⛶</span> Fullscreen (F)
+      </button>
+      <button class="hud-btn" onclick="window.print()">
+        <span>🖨️</span> Export PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Slide Deck Container -->
+  <main class="deck-container" id="deckContainer">
+
+    <!-- ==================== SLIDE 1: HERO / TITLE ==================== -->
+    <section class="slide active" data-slide="1">
+      <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 12px;">
+        <img src="straw_hats_logo.png" alt="Straw Hats" style="height: 60px; object-fit: contain;">
+        <div>
+          <div class="slide-badge">MedTech / HealthTech Innovation</div>
+          <h2 class="slide-title" style="font-size: 38px;">AERIS — AI-Enabled Resilient Health Intelligence System</h2>
+        </div>
+      </div>
+      <p class="slide-subtitle" style="font-size: 16px; color: #CBD5E1;">
+        A privacy-preserving, edge-intelligent personal health companion built for continuous physiological risk awareness, extreme heatwave thermoregulation, and off-grid multi-hazard disaster resilience.
+      </p>
+
+      <div class="grid-3" style="margin-top: 6px;">
+        <div class="card highlight-red">
+          <div class="card-icon">🧠</div>
+          <div class="card-title">Edge AI & TinyML</div>
+          <div class="card-desc">Processes sensitive PPG and motion signals locally on an ESP32 microcontroller with zero forced cloud uploads.</div>
+          <div class="pill-list">
+            <span class="pill red">DPDP Act 2023</span>
+            <span class="pill">Signal Quality Index</span>
+          </div>
+        </div>
+
+        <div class="card highlight-cyan">
+          <div class="card-icon">📡</div>
+          <div class="card-title">Offline LoRa Mesh</div>
+          <div class="card-desc">Maintains emergency SOS broadcast capability over miles when mobile cell towers and Wi-Fi networks collapse.</div>
+          <div class="pill-list">
+            <span class="pill cyan">433 / 868 MHz</span>
+            <span class="pill">Zero Internet Needed</span>
+          </div>
+        </div>
+
+        <div class="card highlight-gold">
+          <div class="card-icon">🌡️</div>
+          <div class="card-title">Clinical Risk Fusion</div>
+          <div class="card-desc">Fuses Moran’s Physiological Strain Index (PSI) and WBGT heatwave indices into an interpretable 0–100 Risk Score.</div>
+          <div class="pill-list">
+            <span class="pill gold">PSI 0–9</span>
+            <span class="pill">Circadian Baseline</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: THE REAL PROBLEM ==================== -->
+    <section class="slide" data-slide="2">
+      <div class="slide-badge">The Real-World Crisis in India</div>
+      <h2 class="slide-title">Why Existing Smartwatches Fail During Real Emergencies</h2>
+      <p class="slide-subtitle">
+        During peak summer heatwaves (45°C+) or severe monsoon floods, vulnerable citizens (elderly individuals, outdoor gig workers) face acute health emergencies precisely when telecom networks collapse.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="problem_solution_diagram.png" alt="Problem vs Solution">
+          <div class="img-caption">Problem vs. Our Edge-Intelligent Solution</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="card highlight-red">
+            <div class="card-title" style="font-size: 15px;">❌ 1. Isolated Metrics (No Climate Context)</div>
+            <div class="card-desc">A 110 BPM heart rate in an air-conditioned room is normal; at 44°C ambient heat, it is fatal heat stroke. Traditional smartwatches cannot correlate human biology with environmental hazards.</div>
+          </div>
+          <div class="card highlight-red">
+            <div class="card-title" style="font-size: 15px;">📵 2. Total Network Fragility</div>
+            <div class="card-desc">Commercial wearables depend 100% on active cellular towers. During cyclones and floods, towers lose power and go dark, rendering cloud-dependent SOS features completely useless.</div>
+          </div>
+          <div class="card highlight-red">
+            <div class="card-title" style="font-size: 15px;">💸 3. Economic & Privacy Barriers</div>
+            <div class="card-desc">Priced from ₹5,000 to ₹45,000, commercial wearables are economically inaccessible to daily-wage workers, while uploading personal medical vitals to corporate servers violates privacy.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 3: SYSTEM ARCHITECTURE & FLOW ==================== -->
+    <section class="slide" data-slide="3">
+      <div class="slide-badge">End-to-End System Architecture</div>
+      <h2 class="slide-title">Dual-Mode Communication Architecture & Offline Flow</h2>
+      <p class="slide-subtitle">
+        Real-time sensor acquisition on ESP32, local noise reduction, and dual-pathway failover transmission.
+      </p>
+
+      <div class="img-frame" style="margin-bottom: 14px;">
+        <img src="offline_comm_flow.png" alt="Architecture & Offline Communication Flow" style="max-height: 200px;">
+        <div class="img-caption">System Architecture: Online Cloud Path vs. Offline LoRa Disaster Lifeline</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card highlight-cyan">
+          <div class="card-title">🌐 Pathway A: Online Routine Monitoring</div>
+          <div class="card-desc">
+            * Bluetooth Low Energy (BLE) / Wi-Fi telemetry to local AERIS Hub.<br>
+            * Streams to Next.js 16 dashboard with sub-50ms latency via WebSockets.<br>
+            * Automated alerts via Telegram Bot API and Fast2SMS Indian cellular gateway.<br>
+            * Supabase cloud persistence with strict Row Level Security (RLS).
+          </div>
+        </div>
+
+        <div class="card highlight-red">
+          <div class="card-title">🚨 Pathway B: Offline Disaster Lifeline (LoRa)</div>
+          <div class="card-desc">
+            * Automatically engages SX1278 Sub-GHz RF transceiver at 433 MHz.<br>
+            * Zero cellular infrastructure, zero internet, zero SIM card needed.<br>
+            * Direct point-to-gateway distress broadcast over 3 to 10 kilometers.<br>
+            * Triggers community emergency sirens and NDRF relief coordination beacons.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 4: HARDWARE & SENSORS ==================== -->
+    <section class="slide" data-slide="4">
+      <div class="slide-badge">Hardware Engineering</div>
+      <h2 class="slide-title">Custom PCB Integration & 5 Multi-Modal Sensor Nodes</h2>
+      <p class="slide-subtitle">
+        Low-cost component selection running on an ESP32 Dual-Core microcontroller with dedicated DSP load-balancing.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="hardware_architecture.png" alt="Hardware Architecture Diagram">
+          <div class="img-caption">Hardware Block Diagram & Sensor Buses</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="card highlight-gold">
+            <div class="card-title" style="font-size: 15px;">🔬 5 Multi-Modal Sensor Nodes</div>
+            <table class="comp-table">
+              <tr><th>Sensor</th><th>Parameter</th><th>Clinical Purpose</th></tr>
+              <tr><td>MAX30102</td><td>PPG HR + SpO₂</td><td>Cardiovascular reserve & Hypoxia</td></tr>
+              <tr><td>MAX30205</td><td>Clinical Temp (0.1°C)</td><td>Subclinical thermal anomaly</td></tr>
+              <tr><td>MPU6050</td><td>6-Axis IMU</td><td>Gait symmetry & Fall detection</td></tr>
+              <tr><td>BME280</td><td>Temp, RH, Barometer</td><td>Ambient WBGT & Storm drop</td></tr>
+              <tr><td>Rain Node</td><td>Precipitation</td><td>Monsoon & Flood contact</td></tr>
+            </table>
+          </div>
+          <div class="card highlight-cyan">
+            <div class="card-title" style="font-size: 14px;">⚡ ESP32 Dual-Core Load Balancing</div>
+            <div class="card-desc">Core 0 dedicated to 400kHz I2C optical DSP; Core 1 executes risk state machines, OLED refresh, and LoRa transmission.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 5: 3D CAD ENCLOSURE ==================== -->
+    <section class="slide" data-slide="5">
+      <div class="slide-badge">Parametric CAD & Ergonomics</div>
+      <h2 class="slide-title">Proposed 3D CAD Enclosure Design (OpenSCAD)</h2>
+      <p class="slide-subtitle">
+        High-precision parametric CAD model (`aeris_wearable_case.scad`) designed for rapid 3D printing and rugged field durability.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="3d_cad_enclosure.png" alt="3D CAD Enclosure Model">
+          <div class="img-caption">OpenSCAD 3D Render: Exploded & Assembled View</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="card highlight-cyan">
+            <div class="card-title" style="font-size: 15px;">📐 Parametric Chassis Highlights</div>
+            <div class="card-desc" style="line-height: 1.6;">
+              * <strong>Dual-Tone High-Contrast Aesthetic:</strong> Alpine White top bezel body with Midnight Black chamfered edge bumpers.<br>
+              * <strong>Tactile SOS Collar:</strong> Right flank button with a raised collar preventing accidental triggers during sleep.<br>
+              * <strong>Acoustic Resonator Grille:</strong> Left flank tuned sound cavities maximizing 85dB piezo buzzer penetration in rain.<br>
+              * <strong>Precision Optical Window:</strong> Bottom chassis recess sealing the MAX30102 PPG sensor against skin motion slippage.<br>
+              * <strong>Standard 20mm Lug Channels:</strong> Compatible with off-the-shelf silicone and velcro straps.
+            </div>
+            <div class="pill-list">
+              <span class="pill cyan">OpenSCAD $fn=60</span>
+              <span class="pill gold">Snap-Lock Tongue</span>
+              <span class="pill">Rapid 3D Print Ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 6: TINYML ON-DEVICE ==================== -->
+    <section class="slide" data-slide="6">
+      <div class="slide-badge">Embedded Signal Intelligence</div>
+      <h2 class="slide-title">TinyML: Perfusion Index & Signal Quality Index (SQI)</h2>
+      <p class="slide-subtitle">
+        Eliminating optical motion noise and classifying vital anomalies on-chip in microcontroller C++ firmware.
+      </p>
+
+      <div class="grid-2">
+        <div class="card highlight-cyan">
+          <div class="card-title">📊 Optical Perfusion Index (PI) Calculation</div>
+          <div class="card-desc">
+            PPG sensors suffer severe noise from hand gestures. AERIS extracts the ratio between dynamic pulsatile AC and static tissue DC:
+          </div>
+          <div class="formula-box">
+            <span class="formula-title">Perfusion Index Formula</span>
+            <span class="formula-code">PI = (AC_Component / DC_Component) * 100</span>
+          </div>
+          <div class="formula-box">
+            <span class="formula-title">RR Beat Delta Regularity Check</span>
+            <span class="formula-code">Physiological Window: 450ms ≤ Beat_Delta ≤ 1100ms</span>
+          </div>
+          <div class="pill-list">
+            <span class="pill red">SQI &lt; 40%: MOTION_NOISE (Alerts suppressed)</span>
+            <span class="pill green">SQI ≥ 70%: High Confidence</span>
+          </div>
+        </div>
+
+        <div class="card highlight-red">
+          <div class="card-title">📈 Live Photoplethysmogram (PPG) Processing</div>
+          <div class="card-desc" style="margin-bottom: 10px;">
+            Real-time optical contour sampled by MAX30102 with hardware peak detection:
+          </div>
+          <canvas id="ecgCanvas" class="ecg-canvas"></canvas>
+          <div class="card-desc" style="margin-top: 12px; line-height: 1.6;">
+            <strong>On-Chip Anomaly Classifier:</strong><br>
+            • SpO₂ &lt; 92% ➔ <code>HYPOXIA</code><br>
+            • BPM &gt; 105 ➔ <code>TACHYCARDIA</code><br>
+            • BPM &lt; 50 ➔ <code>BRADYCARDIA</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 7: OFFLINE DISASTER LORA ==================== -->
+    <section class="slide" data-slide="7">
+      <div class="slide-badge">Resilient Telecommunications</div>
+      <h2 class="slide-title">Offline Disaster Telecommunication (LoRa LPWAN 433 MHz)</h2>
+      <p class="slide-subtitle">
+        The ultimate emergency lifeline when telecommunication networks and power grids collapse during natural disasters.
+      </p>
+
+      <div class="grid-2">
+        <div class="card highlight-red">
+          <div class="card-title">🚨 Long-Range Point-to-Gateway Pathway</div>
+          <div class="card-desc">
+            When standard Wi-Fi drops, AERIS engages its SX1278 transceiver over unlicensed Sub-GHz radio frequencies. A triple-click on the tactile SOS collar transmits an encrypted binary payload directly to local community rescue beacons.
+          </div>
+          <div class="lora-visualizer">
+            <div class="lora-node">📡</div>
+            <div class="lora-ring"></div>
+            <div class="lora-ring"></div>
+            <div class="lora-ring"></div>
+            <div class="lora-ring"></div>
+          </div>
+          <div class="pill-list" style="justify-content: center;">
+            <span class="pill red">3 to 10 km Range</span>
+            <span class="pill cyan">Zero SIM Card Required</span>
+            <span class="pill gold">Zero Cloud Dependency</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📦 Compact Binary Distress Packet Structure</div>
+          <div class="formula-box">
+            <span class="formula-title">LoRa Broadcast Packet Payload (&lt;20 Bytes)</span>
+            <span class="formula-code">
+              [DEV_ID: 2B] | [LAT_LON: 8B] | [HR: 1B]<br>
+              [SpO2: 1B] | [ANOMALY_CODE: 1B] | [CRC: 2B]
+            </span>
+          </div>
+          <div class="card-desc" style="margin-top: 10px; line-height: 1.6;">
+            <strong style="color: #fff;">Hardware Debounced SOS Sequence:</strong><br>
+            1. <strong>Triple-Click Detection:</strong> 3 clicks within a 1.5-second window to prevent accidental triggers.<br>
+            2. <strong>Acoustic Buzzer Chirps:</strong> 3 distinct confirmation pulses before firing radio signals.<br>
+            3. <strong>Direct Siren Trigger:</strong> Activates neighborhood rescue sirens and NDRF dispatch gateways.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 8: CLINICAL RISK ENGINE ==================== -->
+    <section class="slide" data-slide="8">
+      <div class="slide-badge">Mathematical & Clinical Modeling</div>
+      <h2 class="slide-title">Multi-Modal Risk Engine (PSI + WBGT + Circadian Baselines)</h2>
+      <p class="slide-subtitle">
+        Scientifically validated clinical formulas running locally to correlate environmental strain with personal cardiac reserves.
+      </p>
+
+      <div class="grid-3">
+        <div class="card highlight-cyan">
+          <div class="card-title" style="font-size: 15px;">1. Moran's PSI Index</div>
+          <div class="card-desc">Quantifies physiological strain on a 0–9 scale by combining skin temperature and heart rate reserve deltas:</div>
+          <div class="formula-box">
+            <span class="formula-title">Physiological Strain Index</span>
+            <span class="formula-code">PSI = 5*(ΔT / (39.5-T0)) + 5*(ΔHR / (180-HR0))</span>
+          </div>
+          <div class="pill-list"><span class="pill cyan">Clinical Scale 0 to 9</span></div>
+        </div>
+
+        <div class="card highlight-gold">
+          <div class="card-title" style="font-size: 15px;">2. Wet-Bulb Temp (WBGT)</div>
+          <div class="card-desc">Approximates vapor pressure ($e$) from ambient temperature and humidity to model heat exhaustion danger:</div>
+          <div class="formula-box">
+            <span class="formula-title">WBGT Approximation</span>
+            <span class="formula-code">e = (RH/100)*0.6105*exp(...)<br>WBGT = 0.567*T + 0.393*e + 3.94</span>
+          </div>
+          <div class="pill-list"><span class="pill gold">Heatwave Protocol</span></div>
+        </div>
+
+        <div class="card highlight-red">
+          <div class="card-title" style="font-size: 15px;">3. Circadian Baselines</div>
+          <div class="card-desc">Tracks rolling 24-hour hourly averages ($\mu \pm 2\sigma$) to catch subclinical temperature spikes hours before full fever onset.</div>
+          <div class="formula-box">
+            <span class="formula-title">Subclinical Anomaly</span>
+            <span class="formula-code">T_current > T_circadian + 2*σ</span>
+          </div>
+          <div class="pill-list"><span class="pill red">Early Prevention</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 9: 3D DIGITAL TWIN & ANATOMY ==================== -->
+    <section class="slide" data-slide="9">
+      <div class="slide-badge">Visualization & Autonomics</div>
+      <h2 class="slide-title">WebGL 3D Bio-Digital Twin & Resonance Guided Breathing</h2>
+      <p class="slide-subtitle">
+        Interactive Three.js graphics rendering real-time organ strain paired with vagal nerve stimulation tools.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="human_model.png" alt="Human Anatomical Bio-Twin" style="max-height: 350px;">
+          <div class="img-caption">Anatomical Organ Heatmap Mapping</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="card highlight-cyan">
+            <div class="card-title" style="font-size: 15px;">🫀 WebGL 3D Holographic Bio-Twin</div>
+            <div class="card-desc" style="line-height: 1.6;">
+              * <strong>Dynamic Cardiac Pulsing:</strong> The internal 3D heart physically expands and contracts matching the exact live BPM from hardware.<br>
+              * <strong>Regional Shader Heatmaps:</strong> Brain, chest, lungs, and legs dynamically shift between emerald cyan, amber warning, and alert red based on strain contributions.<br>
+              * <strong>Decoupled WebGL Render Loop:</strong> Uses mutable matrix refs, eliminating expensive React virtual DOM re-renders for steady 60 FPS performance.
+            </div>
+          </div>
+          <div class="card highlight-gold">
+            <div class="card-title" style="font-size: 15px;">🧘 GSR-Free Stress & Resonance Breathing</div>
+            <div class="card-desc" style="line-height: 1.6;">
+              * <strong>GSR-Free Stress Estimation:</strong> Combines HRV RMSSD ratio (65% weight) with heart rate reserve (35% weight) without fragile skin electrodes.<br>
+              * <strong>Resonance Breathing Pacer:</strong> 4-4-6 pacing cycle (Inhale 4s, Hold 4s, Exhale 6s) scientifically proven to stimulate vagal nerve tone and reduce tachycardia.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 10: FEASIBILITY & VIABILITY ==================== -->
+    <section class="slide" data-slide="10">
+      <div class="slide-badge">Feasibility & Intelligence</div>
+      <h2 class="slide-title">Multi-Layer Intelligence & Deployment Viability Matrix</h2>
+      <p class="slide-subtitle">
+        Four integrated layers of intelligence ensuring robust operation from microsecond signal processing to civil defense triage.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="feasibility_matrix.png" alt="Feasibility Matrix">
+          <div class="img-caption">Layer-by-Layer Intelligence Architecture</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="card highlight-green">
+            <div class="card-title" style="font-size: 15px;">Four Layers of Intelligence</div>
+            <div class="card-desc" style="line-height: 1.6;">
+              • <strong>Layer 1 (Sensor Hardware):</strong> Sub-millisecond signal acquisition and hardware optical noise filtering on ESP32.<br>
+              • <strong>Layer 2 (On-Device TinyML):</strong> Perfusion Index calculation, SQI gating, and offline anomaly detection in C++.<br>
+              • <strong>Layer 3 (Clinical Risk Engine):</strong> Moran's PSI, WBGT heat index, and 0–100 Composite Risk Index.<br>
+              • <strong>Layer 4 (Civil Defense Hub):</strong> Local triage rule engine paired with Google Gemini 3.6 Flash and dedicated <code>/government</code> incident dashboard.
+            </div>
+            <div class="pill-list">
+              <span class="pill green">Deployment Ready</span>
+              <span class="pill cyan">Multi-Tier Scalability</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 11: IMPACT & NATIONAL ALIGNMENT ==================== -->
+    <section class="slide" data-slide="11">
+      <div class="slide-badge">National Impact & Strategic Policy</div>
+      <h2 class="slide-title">Aligning with National Priorities & Citizen Healthcare Missions</h2>
+      <p class="slide-subtitle">
+        Addressing vulnerable demographics across India with an affordable ₹1,200 Bill of Materials.
+      </p>
+
+      <div class="grid-img-left">
+        <div class="img-frame">
+          <img src="impact_and_benefits.jpg" alt="Impact and Benefits">
+          <div class="img-caption">Demographic Impact & National Program Alignment</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="card highlight-gold">
+            <div class="card-title" style="font-size: 15px;">🏛️ Strategic National Alignment</div>
+            <div class="card-desc" style="line-height: 1.6;">
+              • <strong>Ayushman Bharat Digital Mission (ABDM):</strong> Unified Health Interface (UHI) adherence for longitudinal health record sharing.<br>
+              • <strong>NPCCHH (Climate & Health):</strong> Real-time epidemiological heatwave and environmental pollution surveillance.<br>
+              • <strong>DPDP Act 2023:</strong> Strict on-device data minimization; raw biometric vitals never leave the device.<br>
+              • <strong>NDMA Guidelines:</strong> Common Alerting Protocol (CAP) compliance for disaster emergency relief dispatch.
+            </div>
+            <div class="pill-list">
+              <span class="pill gold">ABDM Compatible</span>
+              <span class="pill red">DPDP 2023 Compliant</span>
+              <span class="pill cyan">NDMA CAP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 12: [BONUS] COMPETITIVE MOAT ==================== -->
+    <section class="slide" data-slide="12">
+      <div class="slide-badge bonus">★ BONUS CONTENT — MARKET DIFFERENTIATION</div>
+      <h2 class="slide-title">Competitive Moat: AERIS vs. Commercial Market Wearables</h2>
+      <p class="slide-subtitle">
+        Why AERIS outperforms commercial smartwatches in extreme disaster resilience, affordability, and climate-correlated health tracking.
+      </p>
+
+      <div class="card highlight-cyan">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Feature / Metric</th>
+              <th style="color: #FF8A80;">AERIS Wearable</th>
+              <th>Apple Watch Ultra</th>
+              <th>Ultrahuman Ring</th>
+              <th>Garmin Forerunner</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight-row">
+              <td><strong>Unit BOM / Retail Cost</strong></td>
+              <td><strong>~ ₹1,200 ($15)</strong></td>
+              <td>₹89,900 ($1,000+)</td>
+              <td>₹28,499 ($340)</td>
+              <td>₹42,990 ($510)</td>
+            </tr>
+            <tr>
+              <td><strong>Offline Disaster Telemetry</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">YES (LoRa 433 MHz)</span></td>
+              <td>NO (Cellular Only)</td>
+              <td>NO (Bluetooth Only)</td>
+              <td>NO (Cellular Only)</td>
+            </tr>
+            <tr>
+              <td><strong>Climate Heat Correlation</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">YES (Moran's PSI + WBGT)</span></td>
+              <td>NO</td>
+              <td>NO</td>
+              <td>Partial (Acclimation)</td>
+            </tr>
+            <tr>
+              <td><strong>Rain / Flood Contact Sensor</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">YES (Conductivity Node)</span></td>
+              <td>NO</td>
+              <td>NO</td>
+              <td>NO</td>
+            </tr>
+            <tr>
+              <td><strong>Operation During 4G Blackout</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">100% Fully Functional</span></td>
+              <td>Useless for SOS</td>
+              <td>Useless for SOS</td>
+              <td>Useless for SOS</td>
+            </tr>
+            <tr>
+              <td><strong>Data Privacy & DPDP Compliance</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">Local Edge Processing</span></td>
+              <td>Proprietary Cloud</td>
+              <td>Cloud Dependent</td>
+              <td>Cloud Dependent</td>
+            </tr>
+            <tr>
+              <td><strong>Triage Dashboards</strong></td>
+              <td><span style="color: var(--green-status); font-weight: 700;">Citizen + Govt (NDMA)</span></td>
+              <td>Consumer App Only</td>
+              <td>Consumer App Only</td>
+              <td>Consumer App Only</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pill-list" style="margin-top: 14px;">
+          <span class="pill cyan">True Life-Safety Infrastructure</span>
+          <span class="pill gold">1/10th Cost of Entry-Level Smartwatches</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 13: [BONUS] FAULT TOLERANCE ==================== -->
+    <section class="slide" data-slide="13">
+      <div class="slide-badge bonus">★ BONUS CONTENT — SYSTEMS ENGINEERING</div>
+      <h2 class="slide-title">Fault Tolerance & Fail-Safe Engineering Under Extreme Stress</h2>
+      <p class="slide-subtitle">
+        Engineered to maintain uninterrupted reliability during component detachment, low battery, and radio channel congestion.
+      </p>
+
+      <div class="grid-3">
+        <div class="card highlight-red">
+          <div class="card-icon">🛑</div>
+          <div class="card-title">1. Optical Decoupling</div>
+          <div class="card-desc">
+            * <strong>Failure Mode:</strong> Sensor detaches from wrist during sleep or running.<br>
+            * <strong>Fail-Safe:</strong> Continuous IR reflection threshold gating (<code>FINGER_THRESHOLD = 1800</code>).<br>
+            * Instantly transitions to <code>NO_FINGER</code> idle state, suppressing false bradycardia/hypoxia panics.
+          </div>
+        </div>
+
+        <div class="card highlight-gold">
+          <div class="card-icon">🔋</div>
+          <div class="card-title">2. Power Management</div>
+          <div class="card-desc">
+            * <strong>Crisis Constraints:</strong> Prolonged multi-day power grid blackouts.<br>
+            * <strong>Fail-Safe:</strong> Dual-core adaptive duty-cycling. Sensor polling scales down to 0.5Hz during calm periods and bursts to 50Hz during anomalies.<br>
+            * 15µA deep-sleep standby enabling up to 7 days of crisis battery life.
+          </div>
+        </div>
+
+        <div class="card highlight-cyan">
+          <div class="card-icon">📡</div>
+          <div class="card-title">3. LoRa Radio Congestion</div>
+          <div class="card-desc">
+            * <strong>Radio Collision:</strong> Hundreds of wearables broadcasting in the same disaster zone.<br>
+            * <strong>Fail-Safe:</strong> Randomized exponential backoff with Listen-Before-Talk (LBT).<br>
+            * 16-bit CRC packet verification and gateway ACK confirmation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 14: [BONUS] LIVE SIMULATION ==================== -->
+    <section class="slide" data-slide="14">
+      <div class="slide-badge bonus">★ BONUS CONTENT — INTERACTIVE DEMO</div>
+      <h2 class="slide-title">Interactive Live Simulation Playground</h2>
+      <p class="slide-subtitle">
+        Test real-time physiological response states right now inside the presentation:
+      </p>
+
+      <div class="sim-playground">
+        <div class="sim-controls">
+          <button class="sim-btn active" onclick="setSimScenario('normal')">
+            <span>🟢 Normal Baseline</span>
+            <span>72 BPM • 36.5°C</span>
+          </button>
+          <button class="sim-btn" onclick="setSimScenario('heat')">
+            <span>🔥 Extreme Heat Strain (PSI 7.2)</span>
+            <span>118 BPM • 38.6°C</span>
+          </button>
+          <button class="sim-btn" onclick="setSimScenario('hypoxia')">
+            <span>⚠️ Arrhythmia & Hypoxia</span>
+            <span>132 BPM • 86% SpO₂</span>
+          </button>
+          <button class="sim-btn" onclick="setSimScenario('lora')">
+            <span>🚨 Offline LoRa SOS Trigger</span>
+            <span>433 MHz RF Broadcast</span>
+          </button>
+        </div>
+
+        <div class="sim-display">
+          <div style="font-size: 13px; font-weight: 700; color: var(--cyan-bright); border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 6px;">
+            AERIS LIVE TELEMETRY STREAM
+          </div>
+          <div class="sim-metric-row">
+            <span>HEART RATE:</span>
+            <span id="simBPM" style="color: #fff; font-weight: 700;">72 BPM</span>
+          </div>
+          <div class="sim-metric-row">
+            <span>SPO2 OXYGEN:</span>
+            <span id="simSpO2" style="color: #fff; font-weight: 700;">98 %</span>
+          </div>
+          <div class="sim-metric-row">
+            <span>SKIN TEMP:</span>
+            <span id="simTemp" style="color: #fff; font-weight: 700;">36.5 °C</span>
+          </div>
+          <div class="sim-metric-row">
+            <span>PSI HEAT STRAIN:</span>
+            <span id="simPSI" style="color: var(--green-status); font-weight: 700;">1.2 / 9.0</span>
+          </div>
+          <div class="sim-metric-row">
+            <span>AERIS RISK INDEX:</span>
+            <span id="simRisk" style="color: var(--green-status); font-weight: 700;">12 / 100 [SAFE]</span>
+          </div>
+          <div class="sim-metric-row">
+            <span>PATHWAY ACTIVE:</span>
+            <span id="simPath" style="color: var(--cyan-bright); font-weight: 700;">BLE / Wi-Fi (Online)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 15: [BONUS] JUDGE Q&A DEFENSE ==================== -->
+    <section class="slide" data-slide="15">
+      <div class="slide-badge bonus">★ BONUS CONTENT — PRESENTATION DEFENSE</div>
+      <h2 class="slide-title">Top 4 Toughest Judge Questions & Bulletproof Rebuttals</h2>
+      <p class="slide-subtitle">
+        Pre-formulated technical defenses for tomorrow's question and answer session.
+      </p>
+
+      <div class="grid-2">
+        <div class="card highlight-cyan">
+          <div class="card-title" style="font-size: 14.5px;">Q1: How can LoRa radio signals penetrate thick urban buildings?</div>
+          <div class="card-desc">
+            <strong>Rebuttal:</strong> Sub-GHz frequencies (433/868 MHz) have significantly longer wavelengths (~69 cm) compared to 2.4GHz Wi-Fi (12 cm) or 5G mmWave. Basic electromagnetic physics allows these longer waves to diffract around buildings and penetrate concrete and foliage with minimal attenuation over 2 to 4 kilometers in dense urban environments.
+          </div>
+        </div>
+
+        <div class="card highlight-gold">
+          <div class="card-title" style="font-size: 14.5px;">Q2: Why choose ESP32 over an ultra-low-power Nordic nRF52?</div>
+          <div class="card-desc">
+            <strong>Rebuttal:</strong> Cost, availability, and dual-core parallelism. The ESP32 costs ~₹320 ($3.80) while providing two physical Xtensa cores: Core 0 handles intensive 400kHz I2C optical DSP, while Core 1 executes LoRa RF protocols without interrupt jitter. With adaptive deep sleep, we achieve multi-day battery autonomy at one-third the cost of nRF chips.
+          </div>
+        </div>
+
+        <div class="card highlight-green">
+          <div class="card-title" style="font-size: 14.5px;">Q3: How do you measure stress accurately without GSR electrodes?</div>
+          <div class="card-desc">
+            <strong>Rebuttal:</strong> Galvanic skin response (GSR) electrodes are notoriously fragile, sweat-sensitive, and prone to rapid electrode oxidation. Instead, we use HRV RMSSD (Root Mean Square of Successive Differences). Clinically established literature (Shaffer et al. 2017) proves RMSSD directly tracks parasympathetic vagal tone and pairs with heart rate reserve with high fidelity.
+          </div>
+        </div>
+
+        <div class="card highlight-red">
+          <div class="card-title" style="font-size: 14.5px;">Q4: How do you prevent accidental emergency SOS panic triggers?</div>
+          <div class="card-desc">
+            <strong>Rebuttal:</strong> We implement physical collar protection plus a multi-stage firmware validation filter: (1) 50ms hardware debounce, (2) triple-press detection window (3 presses within 1.5 seconds), and (3) a 3-second acoustic buzzer chirp countdown, allowing the user to cancel any accidental trigger before the LoRa packet transmits.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 16: CONCLUSION & ROADMAP ==================== -->
+    <section class="slide" data-slide="16">
+      <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 12px;">
+        <img src="straw_hats_logo.png" alt="Straw Hats" style="height: 60px; object-fit: contain;">
+        <div>
+          <div class="slide-badge">Summary & Future Vision</div>
+          <h2 class="slide-title" style="font-size: 38px;">AERIS: Saving Lives Before Emergencies Turn Fatal</h2>
+        </div>
+      </div>
+      <p class="slide-subtitle" style="font-size: 16px; color: #CBD5E1;">
+        Transforming personal health tracking from an expensive luxury gadget into an affordable, climate-resilient, offline-ready life preservation system for every Indian citizen.
+      </p>
+
+      <div class="grid-3" style="margin-top: 6px;">
+        <div class="card highlight-red">
+          <div class="card-title">Phase 1: Validated Prototype</div>
+          <div class="card-desc">Working 5-sensor hardware stack, live WebSocket serial bridge, and full-stack Next.js 16 web hub operational.</div>
+          <div class="pill-list"><span class="pill red">100% Operational</span></div>
+        </div>
+
+        <div class="card highlight-cyan">
+          <div class="card-title">Phase 2: Pilot Field Trials</div>
+          <div class="card-desc">Disaster simulation trials with NDRF / SDMA and LoRa mesh gateway deployment across coastal Tamil Nadu flood zones.</div>
+          <div class="pill-list"><span class="pill cyan">NDRF Field Trials</span></div>
+        </div>
+
+        <div class="card highlight-gold">
+          <div class="card-title">Phase 3: National Scale</div>
+          <div class="card-desc">Ayushman Bharat Digital Mission (ABDM) integration and subsidized distribution for 100,000+ outdoor gig workers.</div>
+          <div class="pill-list"><span class="pill gold">Mass Scale (~₹1,000)</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center;">
+        <span style="font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 0.5px;">Thank You! We are ready for your Questions. 🎙️</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Speaker Notes Panel -->
+  <div class="speaker-drawer" id="speakerDrawer">
+    <div class="speaker-header">
+      <span>🎙️ Speaker Script (Slide <span id="notesSlideNum">1</span>)</span>
+      <span style="cursor: pointer;" onclick="toggleNotes()">✕</span>
+    </div>
+    <div class="speaker-body" id="speakerNotesText">
+      Welcome judges and peers. I am proud to present AERIS—the AI-Enabled Resilient Health Intelligence System developed by Team STRAW HATS. Today, I'll walk you through how we combined edge intelligence, low-cost embedded hardware, and offline disaster radio to protect lives during extreme climate hazards.
+    </div>
+  </div>
+
+  <!-- Bottom HUD Footer Bar -->
+  <footer class="deck-footer">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #fff;" id="slideCounter">01 / 16</span>
+    </div>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevSlide()" title="Previous Slide (Left Arrow)">◀</button>
+      <button class="nav-btn" onclick="nextSlide()" title="Next Slide (Right Arrow or Space)">▶</button>
+    </div>
+  </footer>
+
+  <script>
+    // Speaker notes corresponding to each slide
+    const notesData = {
+      1: "Welcome esteemed judges. I am honored to present AERIS, an AI-Enabled Resilient Health Intelligence System developed by Team STRAW HATS. Our mission is to engineer an affordable, privacy-preserving wearable that detects health risks early and protects citizens during climate disasters even when all power grids and cell towers fail.",
+      2: "Let us examine the crisis in India today. Commercial smartwatches cost anywhere between 5,000 and 45,000 rupees. But during heatwaves or floods, they fail for three reasons: First, they measure heart rate in a clinical vacuum without climate context. Second, they rely 100% on cellular towers—meaning during a disaster, their SOS buttons become completely useless. Third, they upload raw private health data to foreign servers.",
+      3: "This diagram shows our end-to-end system architecture. AERIS operates under a dual-mode communication philosophy. In normal times, it streams vitals via Bluetooth Low Energy and Wi-Fi to our web hub and automated Telegram/SMS contacts. But the moment networks collapse during a cyclone or flood, AERIS instantly shifts to an offline LoRa radio pathway broadcasting encrypted distress packets over miles without internet.",
+      4: "Here is our physical hardware stack. On the left is our custom hardware architecture running on an ESP32 dual-core processor. Core 0 is dedicated to 400kHz I2C optical sampling, while Core 1 handles radio transmission. We integrate 5 physical sensors: pulse oximetry, clinical skin temperature, 6-axis gait IMU, ambient weather, and precipitation detection—all at a Bill of Materials of just 1,200 rupees.",
+      5: "To protect the electronics in rugged disaster conditions, we modeled this custom 3D parametric enclosure in OpenSCAD. Notice the raised tactical collar around the right flank SOS button to prevent accidental clicks while sleeping, the tuned acoustic resonator grille maximizing our 85dB buzzer penetration in heavy rain, and the recessed bottom optical aperture sealing the sensor against skin slippage.",
+      6: "A key innovation is our TinyML signal intelligence running on-chip in C++. Because optical sensors suffer motion artifacts when walking, we calculate the Perfusion Index AC/DC ratio and RR interval regularity. If the Signal Quality Index drops below 40%, it suppresses alerts as motion noise. Otherwise, it classifies tachycardia, bradycardia, and hypoxia in real time with sub-50ms execution.",
+      7: "This slide highlights our offline disaster communication. When cellular towers fail, AERIS engages its SX1278 transceiver over 433 MHz. With a triple-click of the physical SOS button, it transmits a compact binary payload carrying GPS coordinates and vital status over 3 to 10 kilometers directly to community siren gateways and rescue teams—completely offline.",
+      8: "Here is the scientific backbone of AERIS: our Multi-Modal Risk Engine. We implement Moran's Physiological Strain Index combining skin temperature and cardiac reserve deltas, alongside Wet-Bulb Globe Temperature formulas for heat stroke risk. Furthermore, we maintain 24-hour circadian baselines to catch subclinical temperature spikes hours before full fever onset.",
+      9: "On the software side, we built an interactive WebGL 3D Bio-Digital Twin using Three.js. It visually pulses at the user's exact live heart rate and highlights organs based on heat and respiratory strain. In addition, we provide a guided resonance breathing tool with a 4-4-6 second visual pacer to restore parasympathetic autonomic balance.",
+      10: "Here is our Feasibility and Multi-Layer Intelligence matrix. Intelligence is embedded across four tiers: from sensor-level DSP on Core 0, to on-device TinyML gating, to the clinical bioclimatic risk engine, all the way to our civil defense triage hub with NDMA Common Alerting Protocol compliance.",
+      11: "AERIS directly advances India's national health missions: ABDM for Unified Health Interface standards, NPCCHH for heatwave surveillance, and India's DPDP Act 2023 for on-device privacy. At 1,200 rupees, it is practically deployable for millions of elderly citizens, gig workers, and disaster-prone coastal populations across India.",
+      12: "Judges often ask how we compare with market leaders. As shown in this competitive moat matrix, Apple Watch Ultra and Garmin cost between 40,000 and 90,000 rupees, but during a storm or blackout when towers go dark, their SOS features are completely dead. AERIS costs 1/10th the price, works 100% offline via LoRa, and correlates climate heat with human biology.",
+      13: "From a systems engineering perspective, we engineered strict fault tolerance. If the sensor detaches from the skin, our IR threshold check instantly enters idle mode, preventing false bradycardia panics. Our adaptive dual-core sleep ensures 7 days of crisis battery life, and our LoRa protocol uses exponential backoff and CRC checks to prevent radio packet collisions.",
+      14: "Judges, you can see our live simulation playground right here. With a single click, we can simulate an extreme heatwave strain with a PSI of 7.2, an acute hypoxia anomaly, or trigger our offline LoRa broadcast. Notice how the risk index and active transmission pathway update dynamically in real time.",
+      15: "Here are pre-formulated rebuttals to the toughest technical questions: why Sub-GHz LoRa penetrates urban concrete, why dual-core ESP32 provides optimal cost-to-performance, how HRV RMSSD enables accurate GSR-free stress estimation, and how our multi-stage debounce prevents accidental SOS triggers.",
+      16: "In conclusion, AERIS is an offline-ready, climate-resilient life preservation system. Our working prototype, dual-mode telecommunications, and clinical risk algorithms are ready for field trials. Thank you, and we welcome your questions!"
+    };
+
+    let currentSlide = 1;
+    const totalSlides = 16;
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progressBar');
+    const slideCounter = document.getElementById('slideCounter');
+    const notesText = document.getElementById('speakerNotesText');
+    const notesSlideNum = document.getElementById('notesSlideNum');
+
+    function updateSlide(newSlide) {
+      if (newSlide < 1 || newSlide > totalSlides) return;
+      
+      slides.forEach((slide, idx) => {
+        const slideIndex = idx + 1;
+        slide.classList.remove('active', 'prev');
+        if (slideIndex === newSlide) {
+          slide.classList.add('active');
+        } else if (slideIndex < newSlide) {
+          slide.classList.add('prev');
+        }
+      });
+
+      currentSlide = newSlide;
+      slideCounter.textContent = `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+      progressBar.style.width = `${(currentSlide / totalSlides) * 100}%`;
+      
+      if (notesData[currentSlide]) {
+        notesText.textContent = notesData[currentSlide];
+        notesSlideNum.textContent = currentSlide;
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) updateSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) updateSlide(currentSlide - 1);
+    }
+
+    function toggleNotes() {
+      const drawer = document.getElementById('speakerDrawer');
+      const btn = document.getElementById('btnNotes');
+      drawer.classList.toggle('visible');
+      btn.classList.toggle('active');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Interactive Demo Simulation Switcher
+    function setSimScenario(mode) {
+      const bpmEl = document.getElementById('simBPM');
+      const spo2El = document.getElementById('simSpO2');
+      const tempEl = document.getElementById('simTemp');
+      const psiEl = document.getElementById('simPSI');
+      const riskEl = document.getElementById('simRisk');
+      const pathEl = document.getElementById('simPath');
+
+      // Update active button styling
+      document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      if (mode === 'normal') {
+        bpmEl.textContent = '72 BPM'; bpmEl.style.color = '#fff';
+        spo2El.textContent = '98 %'; spo2El.style.color = '#fff';
+        tempEl.textContent = '36.5 °C'; tempEl.style.color = '#fff';
+        psiEl.textContent = '1.2 / 9.0'; psiEl.style.color = 'var(--green-status)';
+        riskEl.textContent = '12 / 100 [SAFE]'; riskEl.style.color = 'var(--green-status)';
+        pathEl.textContent = 'BLE / Wi-Fi (Online)'; pathEl.style.color = 'var(--cyan-bright)';
+      } else if (mode === 'heat') {
+        bpmEl.textContent = '118 BPM'; bpmEl.style.color = 'var(--gold-accent)';
+        spo2El.textContent = '97 %'; spo2El.style.color = '#fff';
+        tempEl.textContent = '38.6 °C'; tempEl.style.color = 'var(--red-bright)';
+        psiEl.textContent = '7.2 / 9.0 (HIGH)'; psiEl.style.color = 'var(--red-bright)';
+        riskEl.textContent = '78 / 100 [WARNING]'; riskEl.style.color = 'var(--red-bright)';
+        pathEl.textContent = 'Local Active Cooling Alert'; pathEl.style.color = 'var(--gold-accent)';
+      } else if (mode === 'hypoxia') {
+        bpmEl.textContent = '132 BPM (Tachycardia)'; bpmEl.style.color = 'var(--red-bright)';
+        spo2El.textContent = '86 % (Hypoxia)'; spo2El.style.color = 'var(--red-bright)';
+        tempEl.textContent = '37.1 °C'; tempEl.style.color = '#fff';
+        psiEl.textContent = '4.5 / 9.0'; psiEl.style.color = 'var(--gold-accent)';
+        riskEl.textContent = '88 / 100 [CRITICAL]'; riskEl.style.color = 'var(--red-bright)';
+        pathEl.textContent = 'Telegram + SMS Dispatch'; pathEl.style.color = 'var(--red-bright)';
+      } else if (mode === 'lora') {
+        bpmEl.textContent = '140 BPM'; bpmEl.style.color = 'var(--red-bright)';
+        spo2El.textContent = '84 %'; spo2El.style.color = 'var(--red-bright)';
+        tempEl.textContent = '39.1 °C'; tempEl.style.color = 'var(--red-bright)';
+        psiEl.textContent = '8.8 / 9.0 (CRITICAL)'; psiEl.style.color = 'var(--red-bright)';
+        riskEl.textContent = '96 / 100 [SOS BROADCAST]'; riskEl.style.color = 'var(--red-bright)';
+        pathEl.textContent = '🚨 LoRa 433 MHz (OFFLINE DISASTER PATH)'; pathEl.style.color = 'var(--red-bright)';
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNotes();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullScreen();
+      } else if (e.key === 'Home') {
+        updateSlide(1);
+      } else if (e.key === 'End') {
+        updateSlide(totalSlides);
+      }
+    });
+
+    // Real-Time Canvas PPG Waveform Simulation
+    const canvas = document.getElementById('ecgCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let x = 0;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = canvas.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      function drawECG() {
+        ctx.fillStyle = 'rgba(5, 8, 17, 0.08)';
+        ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const midY = height / 2;
+
+        x = (x + 2) % width;
+        
+        let y = midY;
+        const phase = (x % 120);
+        if (phase < 15) {
+          y = midY - Math.sin((phase / 15) * Math.PI) * 26;
+        } else if (phase >= 15 && phase < 35) {
+          y = midY + Math.sin(((phase - 15) / 20) * Math.PI) * 8;
+        } else if (phase >= 35 && phase < 55) {
+          y = midY - Math.sin(((phase - 35) / 20) * Math.PI) * 10;
+        }
+
+        ctx.strokeStyle = '#00E5FF';
+        ctx.lineWidth = 2.2;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00E5FF';
+
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+
+        requestAnimationFrame(drawECG);
+      }
+      drawECG();
+    }
+  </script>
+</body>
+</html>

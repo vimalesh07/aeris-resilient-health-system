@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CheckCircle2, Construction, HeartPulse, Loader2, MapPin, Siren, Utensils, X } from 'lucide-react'
+import { CheckCircle2, Construction, HeartPulse, Loader2, MapPin, ShieldCheck, Siren, Utensils, X } from 'lucide-react'
 import { useTelemetry } from '@/hooks/useTelemetry'
 import type { PushNotificationEvent } from '@/types/aeris'
 import { cn } from '@/lib/utils'
@@ -71,6 +71,12 @@ export function PushNotificationToast() {
                     {pending ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
                     {status}
                   </span>
+                  {current.sentToCoordinators && (
+                    <span className="inline-flex items-center gap-1 text-fg-muted">
+                      <ShieldCheck className="size-3.5" aria-hidden />
+                      Sent to AERIS coordinators
+                    </span>
+                  )}
                   {current.location && (
                     <span className="inline-flex items-center gap-1 text-fg-muted">
                       <MapPin className="size-3.5" aria-hidden />

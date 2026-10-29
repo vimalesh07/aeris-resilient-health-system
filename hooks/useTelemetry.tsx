@@ -327,7 +327,8 @@ export function TelemetryProvider({ children, account = null }: { children: Reac
       })
       const data = await res.json()
       const delivered = Boolean(data?.telegramDelivered || String(data?.dispatchStatus || data?.smsStatus || '').startsWith('sent'))
-      setActivePushNotification((prev) => (prev ? { ...prev, smsStatus: delivered ? 'Delivered' : 'Queued (offline demo)' } : null))
+      const sentToCoordinators = params.type !== 'cancel' && Boolean(data?.requestId)
+      setActivePushNotification((prev) => (prev ? { ...prev, smsStatus: delivered ? 'Delivered' : 'Queued (offline demo)', sentToCoordinators } : null))
       return data
     } catch (e: any) {
       console.warn('Push dispatch error:', e)

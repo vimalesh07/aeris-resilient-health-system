@@ -24,6 +24,10 @@ export const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttrib
   return <select ref={ref} className={cn(CONTROL, 'cursor-pointer pr-8', className)} {...props} />
 })
 
+export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, ...props }, ref) {
+  return <textarea ref={ref} className={cn(CONTROL, 'h-auto min-h-24 resize-y py-2.5 leading-relaxed', className)} {...props} />
+})
+
 export function Switch({ checked, onChange, label, description, id }: { checked: boolean; onChange: (v: boolean) => void; label: string; description?: React.ReactNode; id: string }) {
   return (
     <div className="flex items-start justify-between gap-4">

@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import './globals.css'
 
 const geistSans = Geist({
@@ -19,6 +20,12 @@ export const metadata: Metadata = {
   title: 'AERIS — Personal Health Intelligence',
   description: 'AERIS turns everyday signals into clear, personal health intelligence.',
   generator: 'AERIS Edge AI',
+  applicationName: 'AERIS',
+  appleWebApp: {
+    capable: true,
+    title: 'AERIS',
+    statusBarStyle: 'default',
+  },
   icons: {
     icon: [
       {
@@ -65,6 +72,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <InstallPrompt />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
